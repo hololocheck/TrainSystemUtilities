@@ -5,7 +5,7 @@
 <h1 align="center">Train System Utilities</h1>
 
 <p align="center">
-  A BelugaLab railway systems mod for Minecraft, built on <a href="https://github.com/hololocheck/Manta">Manta</a> and <a href="https://github.com/Creators-of-Create/Create">Create</a>.
+  A BelugaLab railway systems mod for Minecraft, built on Manta and <a href="https://github.com/Creators-of-Create/Create">Create</a>.
 </p>
 
 ---
@@ -37,7 +37,7 @@ Manta UI runtime.
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.220+ |
 | [Create](https://www.curseforge.com/minecraft/mc-mods/create) | 6.0.10+ |
-| [Manta](https://github.com/hololocheck/Manta) | 1.0.0+ |
+| Manta | 1.0.0+ |
 | [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib) | 4.7+ |
 
 ## Open core & Preset Place

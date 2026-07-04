@@ -1,0 +1,73 @@
+{
+  "bg": "#1a1a2e", "color": "", "borderColor": "#4fc3f7", "borderWidth": 2, "borderRadius": 10,
+  "fontWeight": "", "isSlot": false, "text": "", "tag": "div", "classes": ["dialog"],
+  "x": 0, "y": 0, "w": 500, "h": 320, "animationKey": "dialog-open",
+  "children": [
+    {
+      "bg": "", "color": "#4fc3f7", "borderColor": "", "borderWidth": 0, "borderRadius": 0,
+      "fontWeight": "bold", "isSlot": false, "text": "", "children": [], "tag": "span",
+      "classes": ["tvm-title"], "x": 10, "y": 12, "w": 360, "h": 11,
+      "translatableKey": "tsu.ticket.title_no_station", "textKey": "tvm-title"
+    },
+    {
+      "bg": "", "color": "#80deea", "borderColor": "", "borderWidth": 0, "borderRadius": 0,
+      "fontWeight": "", "isSlot": false, "text": "", "children": [], "tag": "span",
+      "classes": ["hint-toggle-label"], "x": 390, "y": 12, "w": 30, "h": 11,
+      "translatableKey": "tsu.common.hint"
+    },
+    {
+      "bg": "#555", "color": "", "borderColor": "", "borderWidth": 0, "borderRadius": 6,
+      "fontWeight": "", "isSlot": false, "text": "", "tag": "div",
+      "classes": ["hint-toggle-track"], "x": 424, "y": 11, "w": 24, "h": 12,
+      "bgKey": "hint-toggle-bg", "clickable": true, "transitionKey": "toggle-bg",
+      "children": [
+        {
+          "bg": "#aaa", "color": "", "borderColor": "", "borderWidth": 0, "borderRadius": 4,
+          "fontWeight": "", "isSlot": false, "text": "", "children": [], "tag": "div",
+          "classes": ["hint-toggle-knob"], "x": 426, "y": 13, "w": 8, "h": 8,
+          "bgKey": "hint-knob-bg", "dynamicX": "hint-knob-x", "transitionKey": "toggle-knob"
+        }
+      ]
+    },
+    {
+      "bg": "rgba(255,255,255,0.05)", "color": "#80deea", "borderColor": "#555", "borderWidth": 1,
+      "borderRadius": 3, "fontWeight": "", "isSlot": false, "text": "📖", "children": [], "tag": "div",
+      "classes": ["wiki-btn"], "x": 452, "y": 10, "w": 16, "h": 14, "textAlign": "center",
+      "hoverColor": "#fff", "hoverBorderColor": "#4fc3f7", "clickable": true
+    },
+    {
+      "bg": "rgba(255,255,255,0.05)", "color": "#aaa", "borderColor": "#555", "borderWidth": 1,
+      "borderRadius": 3, "fontWeight": "", "isSlot": false, "text": "×", "children": [], "tag": "div",
+      "classes": ["tvm-popup-close", "mc-popup-close"], "x": 474, "y": 10, "w": 16, "h": 14,
+      "hoverColor": "#f44", "hoverBorderColor": "#f44", "clickable": true, "textAlign": "center"
+    },
+    {
+      "bg": "#4fc3f7", "color": "", "borderColor": "", "borderWidth": 0, "borderRadius": 0,
+      "fontWeight": "", "isSlot": false, "text": "", "children": [], "tag": "div",
+      "classes": ["tvm-sep"], "x": 10, "y": 26, "w": 480, "h": 1
+    },
+    {
+      "bg": "", "color": "#80deea", "borderColor": "", "borderWidth": 0, "borderRadius": 0,
+      "fontWeight": "", "isSlot": false, "text": "", "children": [], "tag": "span",
+      "classes": ["tvm-instruction"], "x": 14, "y": 32, "w": 300, "h": 11,
+      "translatableKey": "tsu.ticket.instruction"
+    },
+    {
+      "bg": "", "color": "#888", "borderColor": "", "borderWidth": 0, "borderRadius": 0,
+      "fontWeight": "", "isSlot": false, "text": "", "children": [], "tag": "span",
+      "classes": ["tvm-count"], "x": 320, "y": 32, "w": 166, "h": 11,
+      "textKey": "tvm-count", "textAlign": "right"
+    },
+    {
+      "bg": "rgba(0,0,0,0.4)", "color": "", "borderColor": "#555", "borderWidth": 1, "borderRadius": 3,
+      "fontWeight": "", "isSlot": false, "text": "", "children": [], "tag": "div",
+      "classes": ["tvm-board-bg"], "x": 14, "y": 48, "w": 472, "h": 258
+    },
+    {
+      "bg": "", "color": "", "borderColor": "", "borderWidth": 0, "borderRadius": 0,
+      "fontWeight": "", "isSlot": false, "text": "", "children": [], "tag": "canvas",
+      "classes": ["tvm-grid"], "canvasKey": "tvm-grid", "x": 16, "y": 50, "w": 468, "h": 254,
+      "clickable": true, "wheelKey": "tvm-grid-scroll"
+    }
+  ]
+}

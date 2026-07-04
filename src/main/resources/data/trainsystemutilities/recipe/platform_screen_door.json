@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "GIG",
+    "GIG",
+    "RIR"
+  ],
+  "key": {
+    "G": { "item": "minecraft:glass" },
+    "I": { "item": "create:iron_sheet" },
+    "R": { "item": "minecraft:redstone" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:platform_screen_door"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,open=false": { "model": "trainsystemutilities:block/platform_screen_door" },
+    "facing=north,open=true":  { "model": "trainsystemutilities:block/platform_screen_door" },
+    "facing=south,open=false": { "model": "trainsystemutilities:block/platform_screen_door" },
+    "facing=south,open=true":  { "model": "trainsystemutilities:block/platform_screen_door" },
+    "facing=east,open=false":  { "model": "trainsystemutilities:block/platform_screen_door" },
+    "facing=east,open=true":   { "model": "trainsystemutilities:block/platform_screen_door" },
+    "facing=west,open=false":  { "model": "trainsystemutilities:block/platform_screen_door" },
+    "facing=west,open=true":   { "model": "trainsystemutilities:block/platform_screen_door" }
+  }
+}

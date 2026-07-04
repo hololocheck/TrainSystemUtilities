@@ -1,0 +1,71 @@
+/* ===== 鉄道管理ブロック 色設定ポップアップ ===== */
+@keyframes popup-in {
+    0% { opacity: 0; margin-top: -10px; }
+    100% { opacity: 1; margin-top: 0px; }
+}
+.color-popup {
+    @apply popup-base-md;
+    width: 150px;
+    border-radius: 8px;
+    box-shadow: none;
+    position: relative;
+}
+.color-popup.popup-opening { animation: popup-in 0.25s ease-out; }
+/* popup-header/title/close は UIComponents.getComponentCSS() で提供 */
+.color-content { display: flex; flex-direction: column; gap: 2px; }
+.color-row {
+    display: flex; align-items: center; gap: 4px;
+    padding: 2px 4px; border-radius: 3px; border: 1px solid transparent;
+}
+.color-row:hover { background: rgba(79,195,247,0.1); border-color: #333; }
+.color-row:active { background: rgba(79,195,247,0.25); border-color: #4fc3f7; }
+.color-row-selected { background: rgba(79,195,247,0.15); border-color: #4fc3f7; }
+.color-icon { white-space: nowrap; }
+.color-label { @apply info-label-style; flex: 1; }
+.color-swatch {
+    width: 12px; height: 12px; border-radius: 2px;
+    border: 1px solid #555;
+}
+.color-presets {
+    margin-top: 4px; padding-top: 4px;
+    border-top: 1px solid #333;
+    display: flex; flex-direction: column; gap: 3px;
+}
+.color-preset-label { color: #4fc3f7; white-space: nowrap; }
+.color-preset-grid {
+    display: flex; flex-wrap: wrap; gap: 3px;
+    margin-bottom: 6px;
+}
+.color-chip {
+    width: 14px; height: 14px; border-radius: 2px;
+    border: 1px solid #555;
+}
+.color-chip:hover { border-color: #fff; }
+.color-chip:active { border-color: #4fc3f7; border-width: 2px; }
+.color-reset-row { display: flex; gap: 4px; margin-top: 3px; }
+.color-reset-btn {
+    color: #888; padding: 2px 4px; border-radius: 3px;
+    border: 1px solid #333; text-align: center;
+    white-space: nowrap; flex: 1;
+}
+.color-reset-btn:hover { color: #ff8a65; border-color: #ff8a65; }
+.color-reset-btn:active { background: rgba(255,138,101,0.2); padding-top: 3px; padding-bottom: 1px; }
+.color-confirm-content {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 8px; padding: 20px 8px;
+}
+.color-confirm-title { color: #4fc3f7; white-space: nowrap; text-align: center; font-weight: bold; }
+.color-confirm-btns { display: flex; gap: 10px; margin-top: 4px; }
+.color-confirm-yes {
+    color: #66bb6a; padding: 3px 14px; border-radius: 4px;
+    border: 2px solid #66bb6a; white-space: nowrap; font-weight: bold;
+}
+.color-confirm-yes:hover { background: rgba(102,187,106,0.3); }
+.color-confirm-yes:active { background: rgba(102,187,106,0.5); padding-top: 4px; padding-bottom: 2px; }
+.color-confirm-no {
+    color: #888; padding: 3px 14px; border-radius: 4px;
+    border: 2px solid #555; white-space: nowrap;
+}
+.color-confirm-no:hover { background: rgba(255,255,255,0.15); }
+.color-confirm-no:active { background: rgba(255,255,255,0.3); padding-top: 4px; padding-bottom: 2px; }

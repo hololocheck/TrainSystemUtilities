@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "trainsystemutilities:block/ticket_vending_machine" },
+    "facing=south": { "model": "trainsystemutilities:block/ticket_vending_machine" },
+    "facing=west":  { "model": "trainsystemutilities:block/ticket_vending_machine" },
+    "facing=east":  { "model": "trainsystemutilities:block/ticket_vending_machine" }
+  }
+}

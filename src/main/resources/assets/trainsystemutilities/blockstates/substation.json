@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "trainsystemutilities:block/substation" },
+    "facing=south": { "model": "trainsystemutilities:block/substation", "y": 180 },
+    "facing=west":  { "model": "trainsystemutilities:block/substation", "y": 270 },
+    "facing=east":  { "model": "trainsystemutilities:block/substation", "y": 90 }
+  }
+}

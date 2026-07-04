@@ -1,0 +1,289 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 128,
+				"texture_height": 128,
+				"visible_bounds_width": 7,
+				"visible_bounds_height": 2.5,
+				"visible_bounds_offset": [0, 0.75, 0]
+			},
+			"bones": [
+				{
+					"name": "柵",
+					"pivot": [-1, 0, -47],
+					"cubes": [
+						{"origin": [-2, 0, 28], "size": [4, 20, 20], "uv": [0, 0], "mirror": true},
+						{"origin": [-2, 0, -48], "size": [4, 20, 20], "uv": [0, 40], "mirror": true}
+					]
+				},
+				{
+					"name": "外側ドア右",
+					"pivot": [0, 1, 17],
+					"cubes": [
+						{
+							"origin": [-1, 1, 16],
+							"size": [2, 16, 2],
+							"uv": {
+								"north": {"uv": [64, 60], "uv_size": [2, 16]},
+								"east": {"uv": [66, 28], "uv_size": [2, 16]},
+								"south": {"uv": [66, 44], "uv_size": [2, 16]},
+								"west": {"uv": [66, 60], "uv_size": [2, 16]},
+								"up": {"uv": [78, 50], "uv_size": [2, 2]},
+								"down": {"uv": [78, 54], "uv_size": [2, -2]}
+							}
+						},
+						{
+							"origin": [-1, 1, 18],
+							"size": [2, 2, 8],
+							"uv": {
+								"north": {"uv": [80, 16], "uv_size": [2, 2]},
+								"east": {"uv": [74, 40], "uv_size": [8, 2]},
+								"south": {"uv": [17, 80], "uv_size": [2, 2]},
+								"west": {"uv": [74, 58], "uv_size": [8, 2]},
+								"up": {"uv": [75, 4], "uv_size": [2, 8]},
+								"down": {"uv": [75, 20], "uv_size": [2, -8]}
+							}
+						},
+						{
+							"origin": [-1, 3, 18],
+							"size": [2, 14, 8],
+							"uv": {
+								"north": {"uv": [72, 14], "uv_size": [2, 14]},
+								"east": {"uv": [60, 0], "uv_size": [8, 14]},
+								"south": {"uv": [72, 28], "uv_size": [2, 14]},
+								"west": {"uv": [60, 14], "uv_size": [8, 14]},
+								"up": {"uv": [76, 50], "uv_size": [2, 8]},
+								"down": {"uv": [64, 84], "uv_size": [2, -8]}
+							}
+						},
+						{
+							"origin": [-1, 1, 26],
+							"size": [2, 16, 2],
+							"uv": {
+								"north": {"uv": [48, 70], "uv_size": [2, 16]},
+								"east": {"uv": [70, 48], "uv_size": [2, 16]},
+								"south": {"uv": [50, 70], "uv_size": [2, 16]},
+								"west": {"uv": [52, 70], "uv_size": [2, 16]},
+								"up": {"uv": [13, 80], "uv_size": [2, 2]},
+								"down": {"uv": [15, 82], "uv_size": [2, -2]}
+							}
+						},
+						{
+							"origin": [-1, 17, 16],
+							"size": [2, 2, 12],
+							"uv": {
+								"north": {"uv": [9, 80], "uv_size": [2, 2]},
+								"east": {"uv": [72, 46], "uv_size": [12, 2]},
+								"south": {"uv": [11, 80], "uv_size": [2, 2]},
+								"west": {"uv": [72, 48], "uv_size": [12, 2]},
+								"up": {"uv": [72, 50], "uv_size": [2, 12]},
+								"down": {"uv": [70, 84], "uv_size": [2, -12]}
+							}
+						}
+					]
+				},
+				{
+					"name": "外側ドア左",
+					"pivot": [0, 0, 0],
+					"cubes": [
+						{
+							"origin": [-1, 1, -28],
+							"size": [2, 16, 2],
+							"uv": {
+								"north": {"uv": [60, 28], "uv_size": [2, 16]},
+								"east": {"uv": [62, 28], "uv_size": [2, 16]},
+								"south": {"uv": [64, 28], "uv_size": [2, 16]},
+								"west": {"uv": [64, 44], "uv_size": [2, 16]},
+								"up": {"uv": [74, 60], "uv_size": [2, 2]},
+								"down": {"uv": [76, 62], "uv_size": [2, -2]}
+							}
+						},
+						{
+							"origin": [-1, 1, -26],
+							"size": [2, 2, 8],
+							"uv": {
+								"north": {"uv": [79, 34], "uv_size": [2, 2]},
+								"east": {"uv": [74, 36], "uv_size": [8, 2]},
+								"south": {"uv": [7, 80], "uv_size": [2, 2]},
+								"west": {"uv": [74, 38], "uv_size": [8, 2]},
+								"up": {"uv": [74, 50], "uv_size": [2, 8]},
+								"down": {"uv": [74, 82], "uv_size": [2, -8]}
+							}
+						},
+						{
+							"origin": [-1, 3, -26],
+							"size": [2, 14, 8],
+							"uv": {
+								"north": {"uv": [62, 70], "uv_size": [2, 14]},
+								"east": {"uv": [48, 56], "uv_size": [8, 14]},
+								"south": {"uv": [72, 0], "uv_size": [2, 14]},
+								"west": {"uv": [56, 56], "uv_size": [8, 14]},
+								"up": {"uv": [75, 20], "uv_size": [2, 8]},
+								"down": {"uv": [75, 36], "uv_size": [2, -8]}
+							}
+						},
+						{
+							"origin": [-1, 1, -18],
+							"size": [2, 16, 2],
+							"uv": {
+								"north": {"uv": [68, 64], "uv_size": [2, 16]},
+								"east": {"uv": [70, 0], "uv_size": [2, 16]},
+								"south": {"uv": [70, 16], "uv_size": [2, 16]},
+								"west": {"uv": [70, 32], "uv_size": [2, 16]},
+								"up": {"uv": [78, 60], "uv_size": [2, 2]},
+								"down": {"uv": [79, 34], "uv_size": [2, -2]}
+							}
+						},
+						{
+							"origin": [-1, 17, -28],
+							"size": [2, 2, 12],
+							"uv": {
+								"north": {"uv": [78, 54], "uv_size": [2, 2]},
+								"east": {"uv": [72, 42], "uv_size": [12, 2]},
+								"south": {"uv": [78, 56], "uv_size": [2, 2]},
+								"west": {"uv": [72, 44], "uv_size": [12, 2]},
+								"up": {"uv": [60, 44], "uv_size": [2, 12]},
+								"down": {"uv": [62, 56], "uv_size": [2, -12]}
+							}
+						}
+					]
+				},
+				{
+					"name": "内側ドア右",
+					"pivot": [0, 1, 17],
+					"cubes": [
+						{
+							"origin": [-0.5, 1, 0],
+							"size": [1, 16, 2],
+							"uv": {
+								"north": {"uv": [72, 74], "uv_size": [1, 16]},
+								"east": {"uv": [68, 32], "uv_size": [2, 16]},
+								"south": {"uv": [73, 74], "uv_size": [1, 16]},
+								"west": {"uv": [68, 48], "uv_size": [2, 16]},
+								"up": {"uv": [20, 80], "uv_size": [1, 2]},
+								"down": {"uv": [80, 22], "uv_size": [1, -2]}
+							}
+						},
+						{
+							"origin": [-0.5, 1, 2],
+							"size": [1, 2, 12],
+							"uv": {
+								"north": {"uv": [80, 26], "uv_size": [1, 2]},
+								"east": {"uv": [74, 0], "uv_size": [12, 2]},
+								"south": {"uv": [27, 80], "uv_size": [1, 2]},
+								"west": {"uv": [74, 2], "uv_size": [12, 2]},
+								"up": {"uv": [4, 80], "uv_size": [1, 12]},
+								"down": {"uv": [80, 16], "uv_size": [1, -12]}
+							}
+						},
+						{
+							"origin": [-0.5, 3, 2],
+							"size": [1, 14, 12],
+							"uv": {
+								"north": {"uv": [79, 18], "uv_size": [1, 14]},
+								"east": {"uv": [48, 28], "uv_size": [12, 14]},
+								"south": {"uv": [79, 74], "uv_size": [1, 14]},
+								"west": {"uv": [48, 42], "uv_size": [12, 14]},
+								"up": {"uv": [5, 80], "uv_size": [1, 12]},
+								"down": {"uv": [6, 92], "uv_size": [1, -12]}
+							}
+						},
+						{
+							"origin": [-0.5, 1, 14],
+							"size": [1, 16, 2],
+							"uv": {
+								"north": {"uv": [78, 4], "uv_size": [1, 16]},
+								"east": {"uv": [58, 70], "uv_size": [2, 16]},
+								"south": {"uv": [78, 20], "uv_size": [1, 16]},
+								"west": {"uv": [60, 70], "uv_size": [2, 16]},
+								"up": {"uv": [28, 80], "uv_size": [1, 2]},
+								"down": {"uv": [80, 30], "uv_size": [1, -2]}
+							}
+						},
+						{
+							"origin": [-0.5, 17, 0],
+							"size": [1, 2, 16],
+							"uv": {
+								"north": {"uv": [25, 80], "uv_size": [1, 2]},
+								"east": {"uv": [70, 68], "uv_size": [16, 2]},
+								"south": {"uv": [26, 80], "uv_size": [1, 2]},
+								"west": {"uv": [70, 70], "uv_size": [16, 2]},
+								"up": {"uv": [77, 20], "uv_size": [1, 16]},
+								"down": {"uv": [77, 90], "uv_size": [1, -16]}
+							}
+						}
+					]
+				},
+				{
+					"name": "内側ドア左",
+					"pivot": [0, 1, 17],
+					"cubes": [
+						{
+							"origin": [-0.5, 1, -14],
+							"size": [1, 2, 12],
+							"uv": {
+								"north": {"uv": [80, 22], "uv_size": [1, 2]},
+								"east": {"uv": [72, 62], "uv_size": [12, 2]},
+								"south": {"uv": [23, 80], "uv_size": [1, 2]},
+								"west": {"uv": [72, 72], "uv_size": [12, 2]},
+								"up": {"uv": [0, 80], "uv_size": [1, 12]},
+								"down": {"uv": [1, 92], "uv_size": [1, -12]}
+							}
+						},
+						{
+							"origin": [-0.5, 1, -16],
+							"size": [1, 16, 2],
+							"uv": {
+								"north": {"uv": [74, 4], "uv_size": [1, 16]},
+								"east": {"uv": [68, 0], "uv_size": [2, 16]},
+								"south": {"uv": [74, 20], "uv_size": [1, 16]},
+								"west": {"uv": [68, 16], "uv_size": [2, 16]},
+								"up": {"uv": [80, 18], "uv_size": [1, 2]},
+								"down": {"uv": [19, 82], "uv_size": [1, -2]}
+							}
+						},
+						{
+							"origin": [-0.5, 3, -14],
+							"size": [1, 14, 12],
+							"uv": {
+								"north": {"uv": [78, 74], "uv_size": [1, 14]},
+								"east": {"uv": [48, 0], "uv_size": [12, 14]},
+								"south": {"uv": [79, 4], "uv_size": [1, 14]},
+								"west": {"uv": [48, 14], "uv_size": [12, 14]},
+								"up": {"uv": [2, 80], "uv_size": [1, 12]},
+								"down": {"uv": [3, 92], "uv_size": [1, -12]}
+							}
+						},
+						{
+							"origin": [-0.5, 1, -2],
+							"size": [1, 16, 2],
+							"uv": {
+								"north": {"uv": [76, 74], "uv_size": [1, 16]},
+								"east": {"uv": [54, 70], "uv_size": [2, 16]},
+								"south": {"uv": [77, 4], "uv_size": [1, 16]},
+								"west": {"uv": [56, 70], "uv_size": [2, 16]},
+								"up": {"uv": [24, 80], "uv_size": [1, 2]},
+								"down": {"uv": [80, 26], "uv_size": [1, -2]}
+							}
+						},
+						{
+							"origin": [-0.5, 17, -16],
+							"size": [1, 2, 16],
+							"uv": {
+								"north": {"uv": [21, 80], "uv_size": [1, 2]},
+								"east": {"uv": [70, 64], "uv_size": [16, 2]},
+								"south": {"uv": [22, 80], "uv_size": [1, 2]},
+								"west": {"uv": [70, 66], "uv_size": [16, 2]},
+								"up": {"uv": [66, 76], "uv_size": [1, 16]},
+								"down": {"uv": [67, 92], "uv_size": [1, -16]}
+							}
+						}
+					]
+				}
+			]
+		}
+	]
+}

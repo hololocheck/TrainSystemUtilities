@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    "BMB",
+    " I "
+  ],
+  "key": {
+    "S": { "item": "create:empty_schematic" },
+    "B": { "item": "create:brass_sheet" },
+    "M": { "item": "create:precision_mechanism" },
+    "I": { "item": "minecraft:iron_ingot" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:train_preset_tool"
+  }
+}

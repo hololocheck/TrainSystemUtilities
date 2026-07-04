@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IGI",
+    " D ",
+    "IEI"
+  ],
+  "key": {
+    "I": { "item": "create:iron_sheet" },
+    "G": { "item": "minecraft:glass_pane" },
+    "D": { "item": "create:display_link" },
+    "E": { "item": "create:electron_tube" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:transit_terminal"
+  }
+}

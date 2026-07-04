@@ -1,0 +1,37 @@
+/* ===== 路線記号編集ポップアップ ===== */
+@keyframes popup-open { 0% { opacity: 0; margin-top: 30px; } 100% { opacity: 1; margin-top: 0px; } }
+.sym-editor {
+    @apply popup-base-lg;
+    width: 190px;
+}
+.sym-editor.popup-opening {
+    @apply popup-open-anim;
+}
+.sym-preview { display: flex; align-items: center; justify-content: center; padding: 4px; }
+.sym-badge {
+    width: 40px; height: 40px;
+    border-width: 3px; border-style: solid; background: #ffffff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0px;
+}
+.sym-letters { color: #000; font-weight: bold; font-size: 10px; white-space: nowrap; }
+.sym-divider { width: 24px; height: 1px; }
+.sym-number { color: #000; font-weight: bold; font-size: 10px; white-space: nowrap; }
+.sym-field-row { display: flex; align-items: center; gap: 4px; }
+.sym-field-label { @apply info-label-style; width: 40px; }
+.sym-field-val {
+    padding: 2px 8px; background: rgba(79,195,247,0.1);
+    border: 1px solid #4fc3f7; border-radius: 3px;
+    color: #4fc3f7; white-space: nowrap; font-weight: bold;
+}
+.sym-field-val:hover { background: rgba(79,195,247,0.25); border-color: #80deea; }
+.sched-edit-hint { color: #555; white-space: nowrap; }
+.sym-palette { display: flex; flex-direction: column; gap: 3px; padding-top: 4px; border-top: 1px solid #333; }
+.sym-pal-row { display: flex; gap: 3px; }
+.sym-chip { width: 16px; height: 16px; border-radius: 2px; border: 1px solid #555; }
+.sym-chip:hover { border-color: #fff; }
+.sym-chip-selected { width: 16px; height: 16px; border-radius: 2px; border: 2px solid #fff; }
+.sym-custom-btn {
+    padding: 2px 6px; background: rgba(79,195,247,0.1); border: 1px solid #4fc3f7;
+    border-radius: 3px; color: #4fc3f7; white-space: nowrap; margin-top: 2px;
+}
+.sym-custom-btn:hover { background: rgba(79,195,247,0.25); }

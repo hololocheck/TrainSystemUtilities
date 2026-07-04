@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "trainsystemutilities:memory_card" },
+    { "item": "minecraft:observer" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:train_detection_card"
+  }
+}

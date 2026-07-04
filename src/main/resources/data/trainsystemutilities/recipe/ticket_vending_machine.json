@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SPS",
+    "SLS",
+    "BCB"
+  ],
+  "key": {
+    "S": { "item": "create:sturdy_sheet" },
+    "P": { "item": "minecraft:paper" },
+    "L": { "item": "create:display_link" },
+    "B": { "item": "create:brass_sheet" },
+    "C": { "item": "create:brass_casing" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:ticket_vending_machine"
+  }
+}

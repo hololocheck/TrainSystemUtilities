@@ -1,0 +1,57 @@
+{
+  "tag": "col",
+  "classes": [
+    "panel",
+    "signal-count"
+  ],
+  "dynamicW": "pw",
+  "dynamicH": "ph",
+  "children": [
+    {
+      "tag": "span",
+      "classes": [
+        "panel-title",
+        "signal-title"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "colorKey": "panelTitle",
+      "fontScaleKey": "fsScale",
+      "fontWeight": "bold"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "stat-large",
+        "signal-total"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "valueH",
+      "colorKey": "statValue",
+      "fontScaleKey": "valueScale",
+      "fontWeight": "bold"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "signal-green"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "colorKey": "signalGreen",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "signal_green_visible"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "signal-red"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "colorKey": "signalRed",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "signal_red_visible"
+    }
+  ]
+}

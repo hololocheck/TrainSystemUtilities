@@ -1,0 +1,16 @@
+{
+  "parent": "minecraft:builtin/entity",
+  "gui_light": "side",
+  "textures": {
+    "particle": "trainsystemutilities:block/platform_fence_3m"
+  },
+  "display": {
+    "gui":                   { "rotation": [30, 45, 0],  "translation": [0, 0, 0], "scale": [0.21, 0.21, 0.21] },
+    "ground":                { "rotation": [0, 0, 0],    "translation": [0, 3, 0], "scale": [0.10, 0.10, 0.10] },
+    "fixed":                 { "rotation": [0, 0, 0],    "translation": [0, 0, 0], "scale": [0.17, 0.17, 0.17] },
+    "thirdperson_righthand": { "rotation": [75, 225, 0], "translation": [0, 2.5, 0], "scale": [0.13, 0.13, 0.13] },
+    "thirdperson_lefthand":  { "rotation": [75, 225, 0], "translation": [0, 2.5, 0], "scale": [0.13, 0.13, 0.13] },
+    "firstperson_righthand": { "rotation": [0, 225, 0],  "translation": [0, 0, 0],   "scale": [0.14, 0.14, 0.14] },
+    "firstperson_lefthand":  { "rotation": [0, 225, 0],  "translation": [0, 0, 0],   "scale": [0.14, 0.14, 0.14] }
+  }
+}

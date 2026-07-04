@@ -1,0 +1,193 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev' version '7.0.165'
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/accesstransformer.cfg')
+
+// Open-core public build: the Preset Place online layer (presetplace/*, online screens) is proprietary
+// and is not part of these sources. The mod builds and runs fully without it; online sharing features
+// are simply absent in a build from this repository (see README).
+runs {
+    configureEach {
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        modSource project.sourceSets.main
+    }
+
+    client {
+        systemProperty 'forge.enabledGameTestNamespaces', mod_id
+    }
+
+    server {
+        systemProperty 'forge.enabledGameTestNamespaces', mod_id
+        programArgument '--nogui'
+    }
+
+    data {
+        // MCSS-09: NeoGradle で deprecated な programArguments (getProgramArguments) を arguments (getArguments) に置換。
+        arguments.addAll '--mod', mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
+    }
+}
+
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+repositories {
+    maven {
+        name = 'CreateMod'
+        url = 'https://maven.createmod.net'
+    }
+    maven {
+        name = 'Registrate'
+        url = 'https://maven.ithundxr.dev/snapshots'
+    }
+    maven {
+        name = 'JEI'
+        url = 'https://maven.blamejared.com'
+    }
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neo_version}"
+
+    // Create: 6.0.10 以降は CreateMod Maven の slim build が見つからないので libs/ ローカル jar 参照を優先する。
+    // 候補:
+    //   1. libs/ にユーザーが置いた jar (ポータブル)
+    //   2. PrismLauncher mods folder (実行環境に同梱)
+    //   3. Maven (Maven artifact が利用可能なバージョン用にフォールバック)
+    def createCandidates = [
+            file("${rootDir}/libs/create-${minecraft_version}-${create_version}.jar"),
+            file("${System.properties['user.home']}/AppData/Roaming/PrismLauncher/instances/1.21.1(1)/minecraft/mods/create-${minecraft_version}-${create_version}.jar"),
+    ]
+    def createJar = createCandidates.find { it.exists() }
+    if (createJar != null) {
+        logger.lifecycle "Create integration: using local jar ${createJar}"
+        compileOnly files(createJar)
+        runtimeOnly files(createJar)
+    } else {
+        // フォールバック: Maven の slim build を試す (古い 6.0.9 等で利用可能)
+        logger.lifecycle "Create integration: falling back to Maven slim build (${create_version})"
+        compileOnly "com.simibubi.create:create-${minecraft_version}:${create_version}:slim"
+        runtimeOnly "com.simibubi.create:create-${minecraft_version}:${create_version}:slim"
+    }
+    implementation "net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}"
+    compileOnly "dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}"
+    runtimeOnly "dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}"
+    implementation "com.tterrag.registrate:Registrate:${registrate_version}"
+
+    // Manta library - compile against original (full generics/signatures)
+    compileOnly files("../manta/build/libs/manta-1.0.0.jar")
+
+    // Spatial Audio System (optional integration). API は belugalab.sas.api.* のみ参照。
+    // 実行時は SAS が未導入でも SasIntegration の soft-dep ガードで no-op になる。
+    compileOnly files("../SpatialAudioSystem/build/libs/spatialaudiosystem-1.0.4.jar")
+
+    // JEI API (optional, for exclusion areas)
+    compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:19.27.0.340"
+
+    // Geckolib API/runtime (Phase 21 FE 電化のパンタアニメ用、必須)。
+    // libs/ → PrismLauncher mods/ の順で探索。
+    def geckolibCandidates = [
+            file("${rootDir}/libs/geckolib-neoforge-${minecraft_version}-4.8.4.jar"),
+            file("${System.properties['user.home']}/AppData/Roaming/PrismLauncher/instances/1.21.1(1)/minecraft/mods/geckolib-neoforge-${minecraft_version}-4.8.4.jar"),
+    ]
+    def geckolibJar = geckolibCandidates.find { it.exists() }
+    if (geckolibJar != null) {
+        logger.lifecycle "Geckolib integration: using ${geckolibJar}"
+        compileOnly files(geckolibJar)
+        runtimeOnly files(geckolibJar)
+    } else {
+        throw new GradleException(
+                "Geckolib jar (geckolib-neoforge-1.21.1-4.8.4.jar) not found.\n" +
+                "Searched:\n" + geckolibCandidates.collect { "  - ${it}" }.join('\n'))
+    }
+
+    // AE2 API/runtime (optional integration only; classes are not bundled).
+    // 環境ごとに AE2 jar の置き場所が違うため、複数候補を順に探索する。
+    //   1. libs/ にユーザーが置いた jar (任意の PC で動く一番ポータブルな方法)
+    //   2. ~/.gradle Gradle 依存キャッシュ (メイン PC で過去に Maven 解決した場合に存在)
+    //   3. PrismLauncher 1.21.1 mods フォルダ (実行環境に同梱されている jar を流用)
+    def ae2Candidates = [
+            file("${rootDir}/libs/appliedenergistics2-19.2.17.jar"),
+            file("${System.properties['user.home']}/.gradle/caches/modules-2/files-2.1/org.appliedenergistics/appliedenergistics2/19.2.17/49c18d6a4af487957d7e5a6ad5dcbf71090b8e14/appliedenergistics2-19.2.17.jar"),
+            file("${System.properties['user.home']}/AppData/Roaming/PrismLauncher/instances/1.21.1/minecraft/mods/appliedenergistics2-19.2.17.jar"),
+    ]
+    def ae2Jar = ae2Candidates.find { it.exists() }
+    if (ae2Jar != null) {
+        logger.lifecycle "AE2 integration: using ${ae2Jar}"
+        compileOnly files(ae2Jar)
+    } else {
+        throw new GradleException(
+                "AE2 jar (appliedenergistics2-19.2.17.jar) not found. " +
+                "Drop it at libs/appliedenergistics2-19.2.17.jar to enable the AE2 integration.\n" +
+                "Searched:\n" + ae2Candidates.collect { "  - ${it}" }.join('\n'))
+    }
+
+    // B4: TSU 初の unit test 用 (純 Java の eta math を検証、 Minecraft は test classpath に載らない)。
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'
+    testRuntimeOnly    'org.junit.platform:junit-platform-launcher:1.10.2'
+}
+
+test {
+    useJUnitPlatform()
+    testLogging { events 'passed', 'skipped', 'failed' }
+}
+
+// TrainPresetImportPayload は TrainPreset.importedFromPresetId と
+// TrainPresetStorage.save(server, preset, UUID) の 3 引数版に依存する。
+// メイン PC ではこれらが (未コミットで) 存在するが、OneDrive 同期遅延で
+// 別 PC にこのファイルだけが先に到着している場合があるため、
+// 依存シンボルが見つからない時は自動でコンパイル対象から外す。
+def trainPresetSrc = file('src/main/java/com/trainsystemutilities/preset/TrainPreset.java')
+if (trainPresetSrc.exists() && !trainPresetSrc.text.contains('importedFromPresetId')) {
+    logger.warn "TrainPresetImportPayload.java excluded: " +
+            "TrainPreset.importedFromPresetId not in source (OneDrive sync pending?)"
+    sourceSets.main.java.exclude 'com/trainsystemutilities/network/TrainPresetImportPayload.java'
+}
+
+// Manta は別 mod として配布される (PR #4 で proprietary 化)。
+// 以前は obfuscated jar をここに同梱していたが、今は外部依存として参照のみ。
+// 利用者は MCSS jar を mods フォルダに別途配置する必要がある。
+
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties + [project: project]
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url "file:///${project.projectDir}/repo"
+        }
+    }
+}

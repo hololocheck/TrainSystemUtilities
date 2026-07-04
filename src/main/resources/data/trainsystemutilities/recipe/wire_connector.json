@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "RC",
+    "S "
+  ],
+  "key": {
+    "R": { "item": "create:redstone_link" },
+    "C": { "item": "create:copper_sheet" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:wire_connector"
+  }
+}

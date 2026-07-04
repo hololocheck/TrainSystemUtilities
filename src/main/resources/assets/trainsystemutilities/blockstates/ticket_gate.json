@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,open=false": { "model": "trainsystemutilities:block/ticket_gate" },
+    "facing=north,open=true":  { "model": "trainsystemutilities:block/ticket_gate" },
+    "facing=south,open=false": { "model": "trainsystemutilities:block/ticket_gate" },
+    "facing=south,open=true":  { "model": "trainsystemutilities:block/ticket_gate" },
+    "facing=east,open=false":  { "model": "trainsystemutilities:block/ticket_gate" },
+    "facing=east,open=true":   { "model": "trainsystemutilities:block/ticket_gate" },
+    "facing=west,open=false":  { "model": "trainsystemutilities:block/ticket_gate" },
+    "facing=west,open=true":   { "model": "trainsystemutilities:block/ticket_gate" }
+  }
+}

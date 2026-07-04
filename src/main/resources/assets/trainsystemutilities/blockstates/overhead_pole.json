@@ -1,0 +1,13 @@
+{
+  "_comment": "OverheadPoleBlock — 縦柱なので 8 angle 全てで同一 model (= 視覚上 rotation 不要)。 Minecraft blockstate JSON の y rotation は 0/90/180/270 のみ対応のため、 diagonal は近接 cardinal を再利用 (placeholder)。",
+  "variants": {
+    "angle_8=0": { "model": "trainsystemutilities:block/overhead_pole" },
+    "angle_8=1": { "model": "trainsystemutilities:block/overhead_pole" },
+    "angle_8=2": { "model": "trainsystemutilities:block/overhead_pole" },
+    "angle_8=3": { "model": "trainsystemutilities:block/overhead_pole" },
+    "angle_8=4": { "model": "trainsystemutilities:block/overhead_pole" },
+    "angle_8=5": { "model": "trainsystemutilities:block/overhead_pole" },
+    "angle_8=6": { "model": "trainsystemutilities:block/overhead_pole" },
+    "angle_8=7": { "model": "trainsystemutilities:block/overhead_pole" }
+  }
+}

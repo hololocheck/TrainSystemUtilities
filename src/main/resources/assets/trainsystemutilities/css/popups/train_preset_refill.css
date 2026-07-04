@@ -1,0 +1,84 @@
+/* ===== 列車プリセット 粘着剤補充 =====
+ * BrowseScreen 等と class 衝突しないよう、すべて refill- プレフィックスで保護する。
+ * (manifest 経由でグローバルにパースされる可能性があるため、generic な名前は避ける) */
+.refill-dialog {
+    width: 200px; height: auto;
+    @apply popup-base-md;
+    @apply popup-open-anim;
+}
+
+.refill-body {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 4px 0;
+}
+
+.refill-tank-row {
+    display: flex; flex-direction: row; align-items: center; gap: 4px;
+    padding: 3px 6px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #555;
+    border-radius: 4px;
+}
+.refill-tank-label {
+    color: #80deea;
+    white-space: nowrap;
+    width: 80px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 80px;
+}
+.refill-tank-bar {
+    flex-grow: 1;
+    flex-shrink: 1;
+    height: 10px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #333;
+    border-radius: 2px;
+    overflow: hidden;
+    padding: 0;
+}
+.refill-tank-fill {
+    height: 10px;
+    background: #66bb6a;
+    margin: 0;
+    padding: 0;
+}
+.refill-dump-btn {
+    padding: 1px 5px;
+    background: rgba(244,67,54,0.1);
+    border: 1px solid #ef5350;
+    border-radius: 3px;
+    color: #ef5350;
+    white-space: nowrap;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+.refill-dump-btn:hover { background: rgba(244,67,54,0.25); border-color: #ff8a80; }
+
+.refill-hint {
+    color: #888;
+    text-align: center;
+    white-space: nowrap;
+    margin-bottom: 2px;
+}
+
+/* ===== 汎用インベントリスロット (refill 専用に scope) ===== */
+.refill-inv-slot {
+    width: 18px;
+    height: 18px;
+    background: rgba(0,0,0,0.55);
+    border: 1px solid #2a2a3a;
+    border-radius: 1px;
+}
+.refill-inv-slot:hover { background: rgba(79,195,247,0.15); border-color: #4fc3f7; }
+
+.refill-slot-row {
+    display: flex; flex-direction: row; gap: 1px;
+    justify-content: center;
+}
+.refill-hotbar-row { margin-top: 4px; }
+.refill-slot-input-row {
+    display: flex; flex-direction: row;
+    justify-content: center;
+    margin-bottom: 6px;
+}

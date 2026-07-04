@@ -1,0 +1,30 @@
+/* ===== 列車詳細ポップアップ ===== */
+.popup {
+    background: #1a1a2e; border: 2px solid #4fc3f7;
+    border-radius: 8px; padding: 6px;
+    display: flex; flex-direction: column; gap: 2px;
+    font-family: "minecraft:uniform";
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+/* popup-header/title/close は UIComponents.getComponentCSS() で提供 */
+.info-section { display: flex; flex-direction: column; gap: 1px; }
+.info-label { @apply info-label-style; }
+.info-value { @apply info-value-style; }
+.schedule-header {
+    color: #4fc3f7; font-weight: bold; white-space: nowrap;
+    border-top: 1px solid #333; padding-top: 2px; margin-top: 2px;
+}
+.schedule-list { display: flex; flex-direction: column; gap: 1px; }
+.sched-item { color: #666; white-space: nowrap; padding: 1px 2px; }
+.sched-current {
+    color: #4caf50; white-space: nowrap; padding: 1px 2px;
+    background: rgba(76,175,80,0.1); border-radius: 2px;
+}
+.sched-none { @apply empty-text-style; }
+.model-space {
+    height: 60px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+    margin-top: 2px;
+}

@@ -1,0 +1,56 @@
+/* ===== 時刻表編集ポップアップ ===== */
+@keyframes popup-open { 0% { opacity: 0; margin-top: 30px; } 100% { opacity: 1; margin-top: 0px; } }
+@keyframes dropdown-open { 0% { opacity: 0; margin-top: -8px; } 100% { opacity: 1; margin-top: 2px; } }
+.sched-scroll-hint { color: #555; white-space: nowrap; padding: 1px 4px; }
+.cond-dropdown-wrap { display: flex; flex-direction: row; gap: 2px; }
+/* edit-scrollbar は UIComponents.getComponentCSS() の mc-scrollbar で提供 */
+.sched-editor {
+    @apply popup-base-lg;
+    width: 220px;
+    gap: 3px;
+}
+.sched-editor-body {
+    display: flex; flex-direction: row; flex: 1; gap: 4px;
+}
+.sched-editor-content {
+    display: flex; flex-direction: column; gap: 2px; flex: 1;
+    font-family: "minecraft:uniform";
+}
+.sched-editor.popup-opening {
+    @apply popup-open-anim;
+}
+/* popup-header/title/close, dropdown-menu/dd-item, toggle は UIComponents.getComponentCSS() で提供 */
+
+.sched-edit-row {
+    display: flex; align-items: center; gap: 3px; padding: 3px 4px;
+    background: rgba(79,195,247,0.05); border: 1px solid #333; border-radius: 4px;
+}
+.sched-edit-icon { white-space: nowrap; }
+.sched-edit-label { color: #80deea; white-space: nowrap; flex: 1; }
+.sched-edit-btns { display: flex; gap: 2px; }
+.sched-edit-btn {
+    padding: 1px 4px; background: rgba(79,195,247,0.1); border: 1px solid #555;
+    border-radius: 2px; color: #80deea; white-space: nowrap;
+}
+.sched-edit-btn:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.2); }
+.sched-edit-btn-del {
+    padding: 1px 4px; background: rgba(244,67,54,0.1); border: 1px solid #555;
+    border-radius: 2px; color: #f44336; white-space: nowrap;
+}
+.sched-edit-btn-del:hover { border-color: #f44336; background: rgba(244,67,54,0.3); }
+.sched-edit-cond {
+    display: flex; align-items: center; gap: 3px; padding: 2px 6px;
+    color: #888; white-space: nowrap;
+    border: 1px solid #333; border-radius: 3px; margin-left: 8px;
+    background: rgba(0,0,0,0.2);
+}
+.sched-edit-cond:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.1); }
+.sched-edit-add-cond { padding: 1px 8px; color: #4fc3f7; white-space: nowrap; }
+.sched-edit-add-cond:hover { color: #80deea; }
+.sched-edit-add {
+    padding: 3px 6px; background: rgba(79,195,247,0.1); border: 1px solid #4fc3f7;
+    border-radius: 4px; color: #4fc3f7; white-space: nowrap; margin-top: 4px;
+}
+.sched-edit-add:hover { background: rgba(79,195,247,0.2); }
+.sched-edit-cycle { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+/* sched-edit-actions/apply/cancel は UIComponents.getComponentCSS() で提供 */

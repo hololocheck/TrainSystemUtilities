@@ -1,0 +1,126 @@
+@keyframes popup-open {
+    0% { opacity: 0; margin-top: 30px; }
+    100% { opacity: 1; margin-top: 0px; }
+}
+
+.dialog {
+    width: 580px; height: 420px;
+    background: #1a1a2e; border: 2px solid #4fc3f7;
+    border-radius: 10px; padding: 6px;
+    padding-bottom: 6px;
+    display: flex; flex-direction: column; gap: 3px;
+    font-family: "minecraft:uniform";
+    overflow: hidden;
+    @apply popup-open-anim;
+}
+
+/* ヘッダ */
+.upload-header {
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #4fc3f7;
+    padding-bottom: 3px;
+}
+.upload-title { color: #4fc3f7; font-weight: bold; white-space: nowrap; }
+.upload-close {
+    width: 16px; height: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #aaa;
+    text-align: center;
+    cursor: pointer;
+}
+.upload-close:hover { border-color: #f44; color: #f44; }
+
+/* ギャラリー (大画像 + サイドバー) */
+.upload-gallery {
+    display: flex; flex-direction: row; gap: 6px;
+    height: 140px;
+    flex-shrink: 0;
+}
+.upload-main-image {
+    width: 410px;
+    height: 140px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #333;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.upload-sidebar {
+    flex-grow: 1;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 6px;
+    display: flex; flex-direction: column; gap: 3px;
+}
+.sb-stat {
+    color: #80deea;
+    white-space: nowrap;
+    padding: 2px 5px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 3px;
+}
+.sb-meta { color: #888; white-space: nowrap; }
+.sb-mode-badge {
+    margin-top: auto;
+    color: #ffcc80;
+    background: rgba(255,204,128,0.12);
+    border: 1px solid #ffcc80;
+    border-radius: 3px;
+    padding: 2px 5px;
+    white-space: nowrap;
+    text-align: center;
+}
+
+/* サムネイル列 */
+.upload-thumbs {
+    height: 38px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #222;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+/* MD ヘッダ (ラベル + 規格品プレビュートグル) */
+.upload-md-header {
+    display: flex; flex-direction: row; align-items: center; justify-content: space-between;
+    padding-top: 2px;
+    flex-shrink: 0;
+}
+.field-label { color: #80deea; white-space: nowrap; }
+.upload-preview-toggle { gap: 4px; }
+
+/* MD エディタ (固定高さ + 余白吸収を min-height で抑制 — flex-grow を MCSS が確実に
+   押し下げるとは限らないため、固定 130px にして dialog 余白で確実に納める) */
+.upload-desc-editor {
+    width: 100%;
+    height: 130px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #333;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.upload-desc-editor.focused {
+    border-color: #4fc3f7;
+    background: rgba(79,195,247,0.08);
+}
+.upload-desc-editor.preview-mode {
+    background: rgba(0,0,0,0.6);
+    border-color: #80deea;
+}
+
+.upload-hint { color: #555; white-space: nowrap; flex-shrink: 0; }
+.upload-actions { margin-top: 0px; flex-shrink: 0; }
+.upload-state { flex-shrink: 0; }
+
+.upload-state { white-space: nowrap; padding: 2px 4px; border-radius: 3px; }
+.state-info  { color: #80deea; }
+.state-ok    { color: #66bb6a; }
+.state-error { color: #ef5350; }
+
+/* primary ボタン disabled (validation 不通過時) */
+.mc-btn-primary.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

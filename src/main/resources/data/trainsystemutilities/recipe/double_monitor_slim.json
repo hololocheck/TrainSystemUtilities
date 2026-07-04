@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "trainsystemutilities:monitor_slim" },
+    { "item": "trainsystemutilities:monitor_slim" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:double_monitor_slim"
+  }
+}

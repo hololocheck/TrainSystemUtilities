@@ -1,0 +1,22 @@
+{
+  "tag": "col",
+  "classes": [
+    "panel",
+    "clock-panel"
+  ],
+  "dynamicW": "pw",
+  "dynamicH": "ph",
+  "children": [
+    {
+      "tag": "span",
+      "classes": [
+        "clock-text"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "clockFs",
+      "colorKey": "clock",
+      "fontScaleKey": "clockScale",
+      "fontWeight": "bold"
+    }
+  ]
+}

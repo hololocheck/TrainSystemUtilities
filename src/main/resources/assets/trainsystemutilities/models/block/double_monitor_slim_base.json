@@ -1,0 +1,17 @@
+{
+  "parent": "minecraft:block/block",
+  "elements": [
+    {
+      "from": [0, 0, 6],
+      "to": [16, 16, 10],
+      "faces": {
+        "down":  {"texture": "#down", "uv": [0, 6, 16, 10]},
+        "up":    {"texture": "#up", "uv": [0, 6, 16, 10]},
+        "north": {"texture": "#north"},
+        "south": {"texture": "#south"},
+        "west":  {"texture": "#west", "uv": [6, 0, 10, 16]},
+        "east":  {"texture": "#east", "uv": [6, 0, 10, 16]}
+      }
+    }
+  ]
+}

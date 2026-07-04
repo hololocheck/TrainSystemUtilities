@@ -1,0 +1,264 @@
+{
+  "classes": [
+    "popup"
+  ],
+  "w": 180,
+  "h": 188,
+  "bg": "#1a1a2e",
+  "borderColor": "#4fc3f7",
+  "borderWidth": 2,
+  "borderRadius": 10,
+  "children": [
+    {
+      "tag": "col",
+      "w": 180,
+      "h": 188,
+      "gap": 3,
+      "padding": 6,
+      "children": [
+        {
+          "tag": "col",
+          "classes": [
+            "mc-popup-header",
+            "popup-header"
+          ],
+          "w": 168,
+          "h": 18,
+          "children": [
+            {
+              "tag": "row",
+              "w": 180,
+              "h": 14,
+              "gap": 4,
+              "justify": "space-between",
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "mc-popup-title",
+                    "popup-title"
+                  ],
+                  "w": 120,
+                  "h": 14,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "レイアウト編集"
+                },
+                {
+                  "classes": [
+                    "mc-popup-close",
+                    "popup-close",
+                    "tsu-close-button"
+                  ],
+                  "w": 16,
+                  "h": 12,
+                  "bg": "#0dffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "w": 16,
+                      "h": 12,
+                      "color": "#aaaaaa",
+                      "fontWeight": "bold",
+                      "textAlign": "center",
+                      "text": "×"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "w": 180,
+              "h": 1
+            },
+            {
+              "w": 180,
+              "h": 1,
+              "bg": "#4fc3f7"
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "layout-main"
+          ],
+          "w": 168,
+          "h": 130,
+          "gap": 6,
+          "children": [
+            {
+              "tag": "col",
+              "classes": [
+                "tile-palette"
+              ],
+              "w": 75,
+              "h": 130,
+              "gap": 3,
+              "children": [
+                {
+                  "classes": [
+                    "tile-item"
+                  ],
+                  "w": 75,
+                  "h": 16,
+                  "bg": "#0d4fc3f7",
+                  "borderColor": "#333333",
+                  "borderWidth": 1,
+                  "borderRadius": 4,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 3,
+                      "w": 63,
+                      "h": 10,
+                      "color": "#80deca",
+                      "text": "時計"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "tile-item"
+                  ],
+                  "w": 75,
+                  "h": 16,
+                  "bg": "#0d4fc3f7",
+                  "borderColor": "#333333",
+                  "borderWidth": 1,
+                  "borderRadius": 4,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 3,
+                      "w": 63,
+                      "h": 10,
+                      "color": "#80deca",
+                      "text": "列車到着"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "tile-item"
+                  ],
+                  "w": 75,
+                  "h": 16,
+                  "bg": "#0d4fc3f7",
+                  "borderColor": "#333333",
+                  "borderWidth": 1,
+                  "borderRadius": 4,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 3,
+                      "w": 63,
+                      "h": 10,
+                      "color": "#80deca",
+                      "text": "路線記号"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "tile-item"
+                  ],
+                  "w": 75,
+                  "h": 16,
+                  "bg": "#0d4fc3f7",
+                  "borderColor": "#333333",
+                  "borderWidth": 1,
+                  "borderRadius": 4,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 3,
+                      "w": 63,
+                      "h": 10,
+                      "color": "#80deca",
+                      "text": "番線"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "tile-item"
+                  ],
+                  "w": 75,
+                  "h": 16,
+                  "bg": "#0d4fc3f7",
+                  "borderColor": "#333333",
+                  "borderWidth": 1,
+                  "borderRadius": 4,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 3,
+                      "w": 63,
+                      "h": 10,
+                      "color": "#80deca",
+                      "text": "テキスト"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "classes": [
+                "monitor-preview-space"
+              ],
+              "w": 87,
+              "h": 130,
+              "bg": "#4d000000",
+              "borderColor": "#333333",
+              "borderWidth": 1,
+              "borderRadius": 4,
+              "flex": 1
+            }
+          ]
+        },
+        {
+          "classes": [
+            "tile-item"
+          ],
+          "w": 168,
+          "h": 16,
+          "bg": "#0d4fc3f7",
+          "borderColor": "#333333",
+          "borderWidth": 1,
+          "borderRadius": 4,
+          "children": [
+            {
+              "tag": "span",
+              "x": 6,
+              "y": 3,
+              "w": 156,
+              "h": 10,
+              "color": "#80deca",
+              "text": "✨ おすすめ配置"
+            }
+          ]
+        },
+        {
+          "tag": "span",
+          "classes": [
+            "layout-info"
+          ],
+          "w": 168,
+          "h": 12,
+          "color": "#888888",
+          "text": "8x4 / 3パネル"
+        }
+      ]
+    }
+  ]
+}

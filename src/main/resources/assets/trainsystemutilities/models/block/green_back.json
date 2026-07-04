@@ -1,0 +1,24 @@
+{
+  "parent": "minecraft:block/block",
+  "_comment": "Green back — pure #00FF00 chroma key block. shade/AO disabled for uniform color.",
+  "ambientocclusion": false,
+  "textures": {
+    "particle": "trainsystemutilities:block/green_back",
+    "all":      "trainsystemutilities:block/green_back"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to":   [16, 16, 16],
+      "shade": false,
+      "faces": {
+        "north": { "texture": "#all", "cullface": "north" },
+        "south": { "texture": "#all", "cullface": "south" },
+        "east":  { "texture": "#all", "cullface": "east"  },
+        "west":  { "texture": "#all", "cullface": "west"  },
+        "up":    { "texture": "#all", "cullface": "up"    },
+        "down":  { "texture": "#all", "cullface": "down"  }
+      }
+    }
+  ]
+}

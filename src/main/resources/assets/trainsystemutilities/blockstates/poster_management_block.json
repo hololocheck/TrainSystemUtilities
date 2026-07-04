@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "trainsystemutilities:block/poster_management_block" },
+    "facing=south": { "model": "trainsystemutilities:block/poster_management_block", "y": 180 },
+    "facing=west": { "model": "trainsystemutilities:block/poster_management_block", "y": 270 },
+    "facing=east": { "model": "trainsystemutilities:block/poster_management_block", "y": 90 }
+  }
+}

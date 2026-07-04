@@ -1,0 +1,517 @@
+{
+  "classes": [
+    "dialog"
+  ],
+  "w": 340,
+  "h": 332,
+  "bg": "#1a1a2e",
+  "borderColor": "#4fc3f7",
+  "borderWidth": 2,
+  "borderRadius": 10,
+  "children": [
+    {
+      "tag": "col",
+      "w": 340,
+      "h": 332,
+      "padding": 12,
+      "children": [
+        {
+          "tag": "row",
+          "classes": [
+            "header"
+          ],
+          "w": 316,
+          "h": 12,
+          "gap": 4,
+          "justify": "space-between",
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "header-title"
+              ],
+              "w": 110,
+              "h": 12,
+              "color": "#4fc3f7",
+              "fontWeight": "bold",
+              "text": "列車管理システム"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "header-right"
+              ],
+              "w": 110,
+              "h": 12,
+              "gap": 6,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "row",
+                  "classes": [
+                    "mc-toggle-row"
+                  ],
+                  "w": 65,
+                  "h": 12,
+                  "gap": 3,
+                  "align": "center",
+                  "children": [
+                    {
+                      "classes": [
+                        "mc-toggle-btn"
+                      ],
+                      "w": 22,
+                      "h": 12,
+                      "children": [
+                        {
+                          "classes": [
+                            "mc-toggle-track-on"
+                          ],
+                          "x": 2,
+                          "y": 2,
+                          "w": 18,
+                          "h": 8,
+                          "bg": "#4caf50",
+                          "borderRadius": 4,
+                          "children": [
+                            {
+                              "classes": [
+                                "mc-toggle-knob-on"
+                              ],
+                              "x": 8,
+                              "y": 2,
+                              "w": 8,
+                              "h": 8,
+                              "bg": "#ffffff",
+                              "borderRadius": 4
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "mc-toggle-label"
+                      ],
+                      "w": 40,
+                      "h": 12,
+                      "color": "#555555",
+                      "text": "ヒント"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "header-badge"
+                  ],
+                  "w": 48,
+                  "h": 12,
+                  "bg": "#4fc3f7",
+                  "borderRadius": 4,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 1,
+                      "w": 36,
+                      "h": 10,
+                      "color": "#000000",
+                      "fontWeight": "bold",
+                      "text": "v0.1.0"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "w": 316,
+          "h": 4
+        },
+        {
+          "classes": [
+            "h-sep"
+          ],
+          "w": 316,
+          "h": 1,
+          "bg": "#4fc3f7"
+        },
+        {
+          "w": 316,
+          "h": 4
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "main-area"
+          ],
+          "w": 316,
+          "flex": 1,
+          "children": [
+            {
+              "tag": "col",
+              "classes": [
+                "left-col"
+              ],
+              "w": 90,
+              "gap": 4,
+              "children": [
+                {
+                  "tag": "row",
+                  "classes": [
+                    "mc-toggle-row"
+                  ],
+                  "w": 65,
+                  "h": 12,
+                  "gap": 3,
+                  "align": "center",
+                  "children": [
+                    {
+                      "classes": [
+                        "mc-toggle-btn"
+                      ],
+                      "w": 22,
+                      "h": 12,
+                      "children": [
+                        {
+                          "classes": [
+                            "mc-toggle-track-on"
+                          ],
+                          "x": 2,
+                          "y": 2,
+                          "w": 18,
+                          "h": 8,
+                          "bg": "#4caf50",
+                          "borderRadius": 4,
+                          "children": [
+                            {
+                              "classes": [
+                                "mc-toggle-knob-on"
+                              ],
+                              "x": 8,
+                              "y": 2,
+                              "w": 8,
+                              "h": 8,
+                              "bg": "#ffffff",
+                              "borderRadius": 4
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "mc-toggle-label"
+                      ],
+                      "w": 40,
+                      "h": 12,
+                      "color": "#555555",
+                      "text": "モニター"
+                    }
+                  ]
+                },
+                {
+                  "tag": "row",
+                  "classes": [
+                    "dropdown"
+                  ],
+                  "w": 90,
+                  "h": 16,
+                  "bg": "#144fc3f7",
+                  "borderColor": "#4fc3f7",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "gap": 4,
+                  "justify": "space-between",
+                  "align": "center",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 2,
+                      "w": 66,
+                      "h": 12,
+                      "color": "#ffffff",
+                      "text": "路線マップ"
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "dropdown-arrow"
+                      ],
+                      "y": 2,
+                      "w": 10,
+                      "h": 12,
+                      "color": "#4fc3f7",
+                      "text": "▼"
+                    }
+                  ]
+                },
+                {
+                  "w": 90,
+                  "flex": 1
+                },
+                {
+                  "tag": "col",
+                  "classes": [
+                    "footer"
+                  ],
+                  "w": 90,
+                  "h": 40,
+                  "gap": 2,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "footer-stat"
+                      ],
+                      "w": 90,
+                      "h": 12,
+                      "color": "#888888",
+                      "text": "駅: 4"
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "footer-stat"
+                      ],
+                      "w": 90,
+                      "h": 12,
+                      "color": "#888888",
+                      "text": "列車: 2"
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "footer-stat"
+                      ],
+                      "w": 90,
+                      "h": 12,
+                      "color": "#888888",
+                      "text": "信号: 3"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "classes": [
+                "v-sep-gap"
+              ],
+              "w": 8
+            },
+            {
+              "classes": [
+                "v-sep"
+              ],
+              "w": 1,
+              "bg": "#333333"
+            },
+            {
+              "tag": "col",
+              "classes": [
+                "right-content"
+              ],
+              "w": 217,
+              "flex": 1,
+              "children": [
+                {
+                  "classes": [
+                    "right-pad"
+                  ],
+                  "w": 8
+                },
+                {
+                  "tag": "col",
+                  "classes": [
+                    "content"
+                  ],
+                  "w": 209,
+                  "gap": 3,
+                  "flex": 1,
+                  "children": [
+                    {
+                      "tag": "canvas",
+                      "classes": [
+                        "map-placeholder"
+                      ],
+                      "w": 209,
+                      "canvasKey": "routeMap",
+                      "flex": 1
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "w": 316,
+          "h": 3
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "monitor-section"
+          ],
+          "w": 316,
+          "h": 20,
+          "gap": 2,
+          "children": [
+            {
+              "tag": "row",
+              "classes": [
+                "monitor-slot-row"
+              ],
+              "w": 316,
+              "h": 20,
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "classes": [
+                    "mc-inventory-slot",
+                    "card-slot"
+                  ],
+                  "w": 20,
+                  "h": 20,
+                  "bg": "#1a4fc3f7",
+                  "borderColor": "#4fc3f7",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "image-spacer"
+                  ],
+                  "h": 20,
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-avatar-box",
+                    "owner-face",
+                    "owner-public"
+                  ],
+                  "w": 20,
+                  "h": 20,
+                  "bg": "#3a4f6e",
+                  "borderColor": "#4caf50",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "w": 316,
+          "h": 3
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "inv-header"
+          ],
+          "w": 316,
+          "h": 14,
+          "gap": 8,
+          "align": "center",
+          "children": [
+            {
+              "tag": "row",
+              "classes": [
+                "inv-btn-column"
+              ],
+              "w": 180,
+              "h": 14,
+              "gap": 4,
+              "children": [
+                {
+                  "classes": [
+                    "layout-edit-btn"
+                  ],
+                  "w": 58,
+                  "h": 14,
+                  "bg": "#144fc3f7",
+                  "borderColor": "#4fc3f7",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 2,
+                      "w": 46,
+                      "h": 12,
+                      "color": "#4fc3f7",
+                      "text": "▨ レイアウト"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "symbol-edit-btn"
+                  ],
+                  "w": 40,
+                  "h": 14,
+                  "bg": "#144fc3f7",
+                  "borderColor": "#4fc3f7",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 2,
+                      "w": 28,
+                      "h": 12,
+                      "color": "#4fc3f7",
+                      "text": "◎ 記号"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "color-edit-btn"
+                  ],
+                  "w": 40,
+                  "h": 14,
+                  "bg": "#144fc3f7",
+                  "borderColor": "#4fc3f7",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 2,
+                      "w": 28,
+                      "h": 12,
+                      "color": "#4fc3f7",
+                      "text": "▣ 色"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "inv-label"
+              ],
+              "w": 80,
+              "h": 12,
+              "color": "#888888",
+              "text": "インベントリ"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

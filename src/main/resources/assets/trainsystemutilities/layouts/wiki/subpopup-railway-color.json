@@ -1,0 +1,600 @@
+{
+  "classes": [
+    "color-popup"
+  ],
+  "w": 180,
+  "h": 260,
+  "bg": "#1a1a2e",
+  "borderColor": "#4fc3f7",
+  "borderWidth": 2,
+  "borderRadius": 8,
+  "children": [
+    {
+      "tag": "col",
+      "w": 180,
+      "h": 260,
+      "gap": 3,
+      "padding": 6,
+      "children": [
+        {
+          "tag": "col",
+          "classes": [
+            "mc-popup-header",
+            "popup-header"
+          ],
+          "w": 168,
+          "h": 18,
+          "children": [
+            {
+              "tag": "row",
+              "w": 180,
+              "h": 14,
+              "gap": 4,
+              "justify": "space-between",
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "mc-popup-title",
+                    "popup-title"
+                  ],
+                  "w": 120,
+                  "h": 14,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "色設定"
+                },
+                {
+                  "classes": [
+                    "mc-popup-close",
+                    "popup-close",
+                    "tsu-close-button"
+                  ],
+                  "w": 16,
+                  "h": 12,
+                  "bg": "#0dffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "w": 16,
+                      "h": 12,
+                      "color": "#aaaaaa",
+                      "fontWeight": "bold",
+                      "textAlign": "center",
+                      "text": "×"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "w": 180,
+              "h": 1
+            },
+            {
+              "w": 180,
+              "h": 1,
+              "bg": "#4fc3f7"
+            }
+          ]
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "color-content"
+          ],
+          "w": 168,
+          "h": 110,
+          "gap": 2,
+          "children": [
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "◼"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "背景",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#101015",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "✍"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "文字",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#ffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "classes": [
+                "color-row",
+                "color-row-selected"
+              ],
+              "w": 168,
+              "h": 14,
+              "bg": "#264fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "row",
+                  "w": 168,
+                  "h": 14,
+                  "gap": 4,
+                  "padding": 2,
+                  "align": "center",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "color-icon"
+                      ],
+                      "w": 10,
+                      "h": 12,
+                      "color": "#4fc3f7",
+                      "text": "⚡"
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "color-label"
+                      ],
+                      "w": 80,
+                      "h": 12,
+                      "color": "#80deca",
+                      "text": "アクセント",
+                      "flex": 1
+                    },
+                    {
+                      "classes": [
+                        "mc-color-swatch"
+                      ],
+                      "w": 12,
+                      "h": 12,
+                      "bg": "#4fc3f7",
+                      "borderColor": "#555555",
+                      "borderWidth": 1,
+                      "borderRadius": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "□"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "枠",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#4fc3f7",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "●"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "信号赤",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#ef5350",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "●"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "信号黄",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#ffeb3b",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "●"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "信号緑",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#66bb6a",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "color-presets"
+          ],
+          "w": 168,
+          "h": 40,
+          "gap": 3,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "color-preset-label"
+              ],
+              "w": 168,
+              "h": 12,
+              "color": "#4fc3f7",
+              "text": "プリセット"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-preset-grid"
+              ],
+              "w": 168,
+              "h": 16,
+              "gap": 3,
+              "children": [
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 14,
+                  "h": 14,
+                  "bg": "#4fc3f7",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 14,
+                  "h": 14,
+                  "bg": "#ff8a65",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 14,
+                  "h": 14,
+                  "bg": "#66bb6a",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 14,
+                  "h": 14,
+                  "bg": "#ffc107",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 14,
+                  "h": 14,
+                  "bg": "#ab47bc",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 14,
+                  "h": 14,
+                  "bg": "#ffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 14,
+                  "h": 14,
+                  "bg": "#888888",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 14,
+                  "h": 14,
+                  "bg": "#444444",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "color-reset-row"
+          ],
+          "w": 168,
+          "h": 16,
+          "gap": 4,
+          "children": [
+            {
+              "classes": [
+                "color-reset-btn"
+              ],
+              "w": 60,
+              "h": 14,
+              "borderColor": "#333333",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "flex": 1,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 4,
+                  "y": 2,
+                  "w": 52,
+                  "h": 10,
+                  "color": "#888888",
+                  "text": "↻ リセット"
+                }
+              ]
+            },
+            {
+              "classes": [
+                "color-reset-btn"
+              ],
+              "w": 60,
+              "h": 14,
+              "borderColor": "#333333",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "flex": 1,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 4,
+                  "y": 2,
+                  "w": 52,
+                  "h": 10,
+                  "color": "#888888",
+                  "text": "↻ 全リセット"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

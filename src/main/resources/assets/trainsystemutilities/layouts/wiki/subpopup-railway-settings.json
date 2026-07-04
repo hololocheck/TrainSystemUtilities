@@ -1,0 +1,449 @@
+{
+  "classes": [
+    "popup"
+  ],
+  "w": 180,
+  "h": 260,
+  "bg": "#1a1a2e",
+  "borderColor": "#4fc3f7",
+  "borderWidth": 2,
+  "borderRadius": 10,
+  "children": [
+    {
+      "tag": "col",
+      "w": 180,
+      "h": 260,
+      "gap": 3,
+      "padding": 6,
+      "children": [
+        {
+          "tag": "col",
+          "classes": [
+            "mc-popup-header",
+            "popup-header"
+          ],
+          "w": 168,
+          "h": 18,
+          "children": [
+            {
+              "tag": "row",
+              "w": 180,
+              "h": 14,
+              "gap": 4,
+              "justify": "space-between",
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "mc-popup-title",
+                    "popup-title"
+                  ],
+                  "w": 120,
+                  "h": 14,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "モニター設定"
+                },
+                {
+                  "classes": [
+                    "mc-popup-close",
+                    "popup-close",
+                    "tsu-close-button"
+                  ],
+                  "w": 16,
+                  "h": 12,
+                  "bg": "#0dffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "w": 16,
+                      "h": 12,
+                      "color": "#aaaaaa",
+                      "fontWeight": "bold",
+                      "textAlign": "center",
+                      "text": "×"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "w": 180,
+              "h": 1
+            },
+            {
+              "w": 180,
+              "h": 1,
+              "bg": "#4fc3f7"
+            }
+          ]
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "settings-content"
+          ],
+          "w": 168,
+          "h": 78,
+          "gap": 2,
+          "children": [
+            {
+              "tag": "row",
+              "classes": [
+                "settings-item"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-label"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "番線"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-value"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#4fc3f7",
+                  "text": "上",
+                  "flex": 1
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "settings-item"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-label"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "フォント"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-value"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#4fc3f7",
+                  "text": "12",
+                  "flex": 1
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "settings-item"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-label"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "位置"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-value"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#4fc3f7",
+                  "text": "中央",
+                  "flex": 1
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "settings-item"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-label"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "時計"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-value"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#4fc3f7",
+                  "text": "ON",
+                  "flex": 1
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "settings-item"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 4,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-label"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "時計サイズ"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "settings-value"
+                  ],
+                  "w": 60,
+                  "h": 12,
+                  "color": "#4fc3f7",
+                  "text": "10",
+                  "flex": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "classes": [
+            "preview-box"
+          ],
+          "w": 168,
+          "h": 90,
+          "bg": "#111111",
+          "borderColor": "#333333",
+          "borderWidth": 1,
+          "borderRadius": 3,
+          "children": [
+            {
+              "tag": "col",
+              "w": 168,
+              "h": 90,
+              "gap": 2,
+              "padding": 3,
+              "children": [
+                {
+                  "tag": "row",
+                  "classes": [
+                    "preview-info"
+                  ],
+                  "w": 162,
+                  "h": 14,
+                  "gap": 4,
+                  "align": "center",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "preview-dims"
+                      ],
+                      "w": 24,
+                      "h": 12,
+                      "color": "#4fc3f7",
+                      "text": "8x4"
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "preview-face"
+                      ],
+                      "w": 40,
+                      "h": 12,
+                      "color": "#666666",
+                      "text": "North",
+                      "flex": 1
+                    },
+                    {
+                      "classes": [
+                        "preview-flip"
+                      ],
+                      "w": 16,
+                      "h": 12,
+                      "bg": "#1a4fc3f7",
+                      "borderColor": "#4fc3f7",
+                      "borderWidth": 1,
+                      "borderRadius": 2,
+                      "children": [
+                        {
+                          "tag": "span",
+                          "x": 3,
+                          "y": 1,
+                          "w": 10,
+                          "h": 10,
+                          "color": "#4fc3f7",
+                          "text": "⇋"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "preview-monitor"
+                  ],
+                  "w": 162,
+                  "h": 68,
+                  "bg": "#0a0a14",
+                  "borderColor": "#222222",
+                  "borderWidth": 1,
+                  "borderRadius": 2,
+                  "children": [
+                    {
+                      "tag": "col",
+                      "w": 162,
+                      "h": 68,
+                      "gap": 1,
+                      "padding": 3,
+                      "children": [
+                        {
+                          "tag": "row",
+                          "classes": [
+                            "time-bar"
+                          ],
+                          "w": 156,
+                          "h": 12,
+                          "children": [
+                            {
+                              "tag": "span",
+                              "classes": [
+                                "mc-time"
+                              ],
+                              "w": 30,
+                              "h": 12,
+                              "color": "#ffc107",
+                              "text": "12:34"
+                            }
+                          ]
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "section-title"
+                          ],
+                          "w": 156,
+                          "h": 12,
+                          "color": "#4fc3f7",
+                          "text": "停車中"
+                        },
+                        {
+                          "w": 156,
+                          "h": 1,
+                          "bg": "#333333"
+                        },
+                        {
+                          "classes": [
+                            "train-row"
+                          ],
+                          "w": 156,
+                          "h": 14,
+                          "bg": "#144fc3f7",
+                          "borderColor": "#333333",
+                          "borderWidth": 1,
+                          "borderRadius": 2,
+                          "children": [
+                            {
+                              "tag": "row",
+                              "classes": [
+                                "line1"
+                              ],
+                              "w": 156,
+                              "h": 14,
+                              "gap": 3,
+                              "padding": 1,
+                              "children": [
+                                {
+                                  "tag": "span",
+                                  "classes": [
+                                    "train-name"
+                                  ],
+                                  "w": 60,
+                                  "h": 12,
+                                  "color": "#4fc3f7",
+                                  "text": "無名の列車",
+                                  "flex": 1
+                                },
+                                {
+                                  "tag": "span",
+                                  "classes": [
+                                    "detail"
+                                  ],
+                                  "w": 20,
+                                  "h": 12,
+                                  "color": "#888888",
+                                  "text": "8両"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

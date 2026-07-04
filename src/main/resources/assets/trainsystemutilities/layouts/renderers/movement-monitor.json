@@ -1,0 +1,409 @@
+{
+  "classes": [
+    "monitor"
+  ],
+  "dynamicW": "cssW",
+  "dynamicH": "cssH",
+  "children": [
+    {
+      "tag": "col",
+      "dynamicW": "cssW",
+      "dynamicH": "cssH",
+      "gap": 2,
+      "padding": 18,
+      "children": [
+        {
+          "tag": "row",
+          "classes": [
+            "header"
+          ],
+          "h": 12,
+          "dynamicW": "contentW",
+          "gap": 6,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "mc-time"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#ffc107",
+              "textKey": "clockText"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "badge-local",
+                "trainType_local"
+              ],
+              "w": 30,
+              "h": 12,
+              "color": "#66bb6a",
+              "borderColor": "#66bb6a",
+              "borderWidth": 1,
+              "fontWeight": "bold",
+              "textKey": "trainType_local",
+              "visibleKey": "trainType_local_visible"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "badge-rapid",
+                "trainType_rapid"
+              ],
+              "w": 30,
+              "h": 12,
+              "color": "#ff8a65",
+              "borderColor": "#ff8a65",
+              "borderWidth": 1,
+              "fontWeight": "bold",
+              "textKey": "trainType_rapid",
+              "visibleKey": "trainType_rapid_visible"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "badge-express",
+                "trainType_express"
+              ],
+              "w": 30,
+              "h": 12,
+              "color": "#ef5350",
+              "borderColor": "#ef5350",
+              "borderWidth": 1,
+              "fontWeight": "bold",
+              "textKey": "trainType_express",
+              "visibleKey": "trainType_express_visible"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "route-type",
+                "routeType"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#555555",
+              "textKey": "routeType",
+              "visibleKey": "routeType_visible"
+            }
+          ]
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "section-wrapper",
+            "current-section"
+          ],
+          "dynamicW": "contentW",
+          "dynamicH": "sectionH",
+          "flex": 1,
+          "children": [
+            {
+              "classes": [
+                "section-title"
+              ],
+              "h": 12,
+              "dynamicW": "contentW",
+              "color": "#4fc3f7",
+              "fontWeight": "bold",
+              "text": "次の停車駅"
+            },
+            {
+              "classes": [
+                "current-empty"
+              ],
+              "h": 12,
+              "dynamicW": "contentW",
+              "color": "#555555",
+              "textAlign": "center",
+              "text": "---",
+              "visibleKey": "current_empty_visible"
+            },
+            {
+              "classes": [
+                "train-row",
+                "current-row",
+                "anim-slide-in"
+              ],
+              "h": 28,
+              "dynamicW": "contentW",
+              "bg": "#144fc3f7",
+              "borderColor": "#333333",
+              "borderWidth": 1,
+              "borderRadius": 4,
+              "visibleKey": "current_row_visible",
+              "animationKey": "current_anim",
+              "children": [
+                {
+                  "tag": "col",
+                  "h": 28,
+                  "dynamicW": "contentW",
+                  "gap": 2,
+                  "padding": 2,
+                  "children": [
+                    {
+                      "tag": "row",
+                      "classes": [
+                        "line1"
+                      ],
+                      "h": 12,
+                      "dynamicW": "contentW",
+                      "gap": 6,
+                      "align": "center",
+                      "children": [
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "station-name",
+                            "current_name"
+                          ],
+                          "w": 120,
+                          "h": 12,
+                          "color": "#ffffff",
+                          "fontWeight": "bold",
+                          "textKey": "current_name"
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "row",
+                      "classes": [
+                        "line2"
+                      ],
+                      "h": 12,
+                      "dynamicW": "contentW",
+                      "gap": 6,
+                      "align": "center",
+                      "children": [
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "badge-coupling"
+                          ],
+                          "w": 40,
+                          "h": 12,
+                          "color": "#42a5f5",
+                          "borderColor": "#42a5f5",
+                          "borderWidth": 1,
+                          "fontWeight": "bold",
+                          "text": "連結",
+                          "visibleKey": "current_coupling_visible"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "badge-decoupling"
+                          ],
+                          "w": 40,
+                          "h": 12,
+                          "color": "#ab47bc",
+                          "borderColor": "#ab47bc",
+                          "borderWidth": 1,
+                          "fontWeight": "bold",
+                          "text": "連結",
+                          "visibleKey": "current_decoupling_visible"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "coupling-partner",
+                            "current_partner"
+                          ],
+                          "w": 80,
+                          "h": 12,
+                          "color": "#b0bec5",
+                          "textKey": "current_partner",
+                          "visibleKey": "current_partner_visible"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "stop-info"
+                          ],
+                          "w": 60,
+                          "h": 12,
+                          "color": "#ffc107",
+                          "text": "停車中",
+                          "visibleKey": "current_stopinfo_visible"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "arr-time",
+                            "current_arr"
+                          ],
+                          "w": 70,
+                          "h": 12,
+                          "color": "#80deea",
+                          "textKey": "current_arr",
+                          "visibleKey": "current_arr_visible"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "dep-time",
+                            "current_dep"
+                          ],
+                          "w": 70,
+                          "h": 12,
+                          "color": "#ff8a65",
+                          "textKey": "current_dep",
+                          "visibleKey": "current_dep_visible"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "stop-sec",
+                            "current_stopsec"
+                          ],
+                          "w": 60,
+                          "h": 12,
+                          "color": "#444444",
+                          "textKey": "current_stopsec",
+                          "visibleKey": "current_stopsec_visible"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "section-wrapper",
+            "next-section"
+          ],
+          "dynamicW": "contentW",
+          "dynamicH": "sectionH",
+          "flex": 1,
+          "children": [
+            {
+              "classes": [
+                "section-title"
+              ],
+              "h": 12,
+              "dynamicW": "contentW",
+              "color": "#4fc3f7",
+              "fontWeight": "bold",
+              "text": "その次"
+            },
+            {
+              "classes": [
+                "next-empty"
+              ],
+              "h": 12,
+              "dynamicW": "contentW",
+              "color": "#555555",
+              "textAlign": "center",
+              "text": "---",
+              "visibleKey": "next_empty_visible"
+            },
+            {
+              "classes": [
+                "next-row",
+                "next-row",
+                "anim-slide-in"
+              ],
+              "h": 28,
+              "dynamicW": "contentW",
+              "bg": "#08ffffff",
+              "borderColor": "#222222",
+              "borderWidth": 1,
+              "borderRadius": 4,
+              "visibleKey": "next_row_visible",
+              "animationKey": "next_anim",
+              "children": [
+                {
+                  "tag": "col",
+                  "h": 28,
+                  "dynamicW": "contentW",
+                  "gap": 2,
+                  "padding": 2,
+                  "children": [
+                    {
+                      "tag": "row",
+                      "classes": [
+                        "line1"
+                      ],
+                      "h": 12,
+                      "dynamicW": "contentW",
+                      "gap": 6,
+                      "align": "center",
+                      "children": [
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "next-name",
+                            "next_name"
+                          ],
+                          "w": 120,
+                          "h": 12,
+                          "color": "#888888",
+                          "textKey": "next_name"
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "row",
+                      "classes": [
+                        "line2"
+                      ],
+                      "h": 12,
+                      "dynamicW": "contentW",
+                      "gap": 6,
+                      "align": "center",
+                      "children": [
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "arr-time",
+                            "next_arr"
+                          ],
+                          "w": 70,
+                          "h": 12,
+                          "color": "#80deea",
+                          "textKey": "next_arr",
+                          "visibleKey": "next_arr_visible"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "dep-time",
+                            "next_dep"
+                          ],
+                          "w": 70,
+                          "h": 12,
+                          "color": "#ff8a65",
+                          "textKey": "next_dep",
+                          "visibleKey": "next_dep_visible"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "stop-sec",
+                            "next_stopsec"
+                          ],
+                          "w": 60,
+                          "h": 12,
+                          "color": "#444444",
+                          "textKey": "next_stopsec",
+                          "visibleKey": "next_stopsec_visible"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

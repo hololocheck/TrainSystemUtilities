@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SLS",
+    "SBS",
+    "SSS"
+  ],
+  "key": {
+    "S": { "item": "create:sturdy_sheet" },
+    "L": { "item": "create:display_link" },
+    "B": { "item": "create:display_board" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:monitor"
+  }
+}

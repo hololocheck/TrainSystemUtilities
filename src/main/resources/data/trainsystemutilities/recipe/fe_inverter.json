@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "GPG",
+    "RLR"
+  ],
+  "key": {
+    "S": { "item": "create:sturdy_sheet" },
+    "G": { "item": "create:golden_sheet" },
+    "P": { "item": "create:propeller" },
+    "R": { "item": "create:precision_mechanism" },
+    "L": { "item": "create:powered_toggle_latch" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:fe_inverter"
+  }
+}

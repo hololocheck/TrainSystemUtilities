@@ -1,0 +1,58 @@
+@keyframes popup-open {
+    0% { opacity: 0; margin-top: 30px; }
+    100% { opacity: 1; margin-top: 0px; }
+}
+
+.dialog {
+    width: 240px;
+    height: 120px;
+    overflow: hidden;
+    @apply popup-base-md;
+    @apply popup-open-anim;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 4px 6px 0 6px;
+}
+
+.field-label {
+    color: #b0b0c0;
+    white-space: nowrap;
+}
+
+.dialog > .mc-popup-header > .mc-popup-close {
+    min-width: 18px;
+    min-height: 18px;
+    padding: 2px 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.save-name-input.focused {
+    border-color: var(--color-primary);
+    background: rgba(79,195,247,0.12);
+}
+
+.hint {
+    color: #777;
+    text-align: right;
+    white-space: nowrap;
+    margin-bottom: 1px;
+}
+
+/* btn-row は MCSS の .mc-action-bar を使うため、固有スタイルは最小限に。 */
+.btn-row {
+    /* alias: 後方互換のため残しつつ、mc-action-bar と同じ挙動にする */
+    display: flex; flex-direction: row; gap: 6px; margin-top: 3px; align-items: stretch;
+}
+.btn-row > .mc-btn-primary,
+.btn-row > .mc-btn-secondary {
+    flex-grow: 1; flex-shrink: 1; flex-basis: 0;
+    min-width: 0; min-height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; padding: 0;
+}

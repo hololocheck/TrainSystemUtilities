@@ -1,0 +1,361 @@
+{
+  "classes": [
+    "popup"
+  ],
+  "w": 180,
+  "h": 220,
+  "bg": "#1a1a2e",
+  "borderColor": "#4fc3f7",
+  "borderWidth": 2,
+  "borderRadius": 10,
+  "children": [
+    {
+      "tag": "col",
+      "w": 180,
+      "h": 220,
+      "gap": 4,
+      "padding": 6,
+      "children": [
+        {
+          "tag": "col",
+          "classes": [
+            "mc-popup-header",
+            "popup-header"
+          ],
+          "w": 168,
+          "h": 18,
+          "children": [
+            {
+              "tag": "row",
+              "w": 180,
+              "h": 14,
+              "gap": 4,
+              "justify": "space-between",
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "mc-popup-title",
+                    "popup-title"
+                  ],
+                  "w": 120,
+                  "h": 14,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "アニメーション設定"
+                },
+                {
+                  "classes": [
+                    "mc-popup-close",
+                    "popup-close",
+                    "tsu-close-button"
+                  ],
+                  "w": 16,
+                  "h": 12,
+                  "bg": "#0dffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "w": 16,
+                      "h": 12,
+                      "color": "#aaaaaa",
+                      "fontWeight": "bold",
+                      "textAlign": "center",
+                      "text": "×"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "w": 180,
+              "h": 1
+            },
+            {
+              "w": 180,
+              "h": 1,
+              "bg": "#4fc3f7"
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "anim-type-row"
+          ],
+          "w": 168,
+          "h": 14,
+          "gap": 4,
+          "children": [
+            {
+              "classes": [
+                "mc-option-chip selected"
+              ],
+              "w": 36,
+              "h": 14,
+              "bg": "#404fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "flex": 1,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 3,
+                  "w": 24,
+                  "h": 8,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "Fade"
+                }
+              ]
+            },
+            {
+              "classes": [
+                "mc-option-chip"
+              ],
+              "w": 54,
+              "h": 14,
+              "bg": "#0d4fc3f7",
+              "borderColor": "#555555",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "flex": 1,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 3,
+                  "w": 42,
+                  "h": 8,
+                  "color": "#aaaaaa",
+                  "text": "Slide-L"
+                }
+              ]
+            },
+            {
+              "classes": [
+                "mc-option-chip"
+              ],
+              "w": 54,
+              "h": 14,
+              "bg": "#0d4fc3f7",
+              "borderColor": "#555555",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "flex": 1,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 3,
+                  "w": 42,
+                  "h": 8,
+                  "color": "#aaaaaa",
+                  "text": "Slide-R"
+                }
+              ]
+            },
+            {
+              "classes": [
+                "mc-option-chip"
+              ],
+              "w": 48,
+              "h": 14,
+              "bg": "#0d4fc3f7",
+              "borderColor": "#555555",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "flex": 1,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 3,
+                  "w": 36,
+                  "h": 8,
+                  "color": "#aaaaaa",
+                  "text": "Static"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "mc-kv-row",
+            "anim-item"
+          ],
+          "w": 168,
+          "h": 14,
+          "gap": 6,
+          "padding": 2,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "mc-kv-label"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#80deea",
+              "text": "切替間隔"
+            },
+            {
+              "classes": [
+                "mc-value-pill"
+              ],
+              "w": 28,
+              "h": 12,
+              "bg": "#144fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 2,
+                  "w": 16,
+                  "h": 8,
+                  "color": "#4fc3f7",
+                  "text": "5秒"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "mc-kv-row",
+            "anim-item"
+          ],
+          "w": 168,
+          "h": 14,
+          "gap": 6,
+          "padding": 2,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "mc-kv-label"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#80deea",
+              "text": "表示時間"
+            },
+            {
+              "classes": [
+                "mc-value-pill"
+              ],
+              "w": 28,
+              "h": 12,
+              "bg": "#144fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 2,
+                  "w": 16,
+                  "h": 8,
+                  "color": "#4fc3f7",
+                  "text": "5秒"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "mc-kv-row",
+            "anim-item"
+          ],
+          "w": 168,
+          "h": 14,
+          "gap": 6,
+          "padding": 2,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "mc-kv-label"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#80deea",
+              "text": "フェード"
+            },
+            {
+              "classes": [
+                "mc-value-pill"
+              ],
+              "w": 36,
+              "h": 12,
+              "bg": "#144fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 2,
+                  "w": 24,
+                  "h": 8,
+                  "color": "#4fc3f7",
+                  "text": "0.5秒"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "classes": [
+            "mc-preview-panel",
+            "anim-preview"
+          ],
+          "w": 168,
+          "h": 40,
+          "bg": "#0a0a14",
+          "borderColor": "#333333",
+          "borderWidth": 1,
+          "borderRadius": 3,
+          "children": [
+            {
+              "tag": "row",
+              "w": 168,
+              "h": 40,
+              "padding": 4,
+              "justify": "center",
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "w": 160,
+                  "h": 12,
+                  "color": "#4fc3f7",
+                  "text": "▶ Fade 5秒 切替"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "trainsystemutilities:block/double_monitor_slim_base",
+  "textures": {
+    "north": "trainsystemutilities:block/monitor_screen_cu_cd_cl_cr",
+    "south": "trainsystemutilities:block/monitor_screen_cu_cd_cl_cr",
+    "east": "trainsystemutilities:block/monitor_top",
+    "west": "trainsystemutilities:block/monitor_top",
+    "up": "trainsystemutilities:block/monitor_top",
+    "down": "trainsystemutilities:block/monitor_top",
+    "particle": "trainsystemutilities:block/monitor_top"
+  }
+}

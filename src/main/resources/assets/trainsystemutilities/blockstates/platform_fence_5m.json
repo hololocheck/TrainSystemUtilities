@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "trainsystemutilities:block/platform_fence_5m" },
+    "facing=south": { "model": "trainsystemutilities:block/platform_fence_5m" },
+    "facing=west":  { "model": "trainsystemutilities:block/platform_fence_5m" },
+    "facing=east":  { "model": "trainsystemutilities:block/platform_fence_5m" }
+  }
+}

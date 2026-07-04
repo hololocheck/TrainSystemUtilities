@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SLS",
+    "IRI",
+    "BCB"
+  ],
+  "key": {
+    "S": { "item": "create:sturdy_sheet" },
+    "L": { "item": "create:display_link" },
+    "I": { "item": "minecraft:iron_ingot" },
+    "R": { "item": "minecraft:redstone" },
+    "B": { "item": "create:brass_sheet" },
+    "C": { "item": "create:brass_casing" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:ticket_gate"
+  }
+}

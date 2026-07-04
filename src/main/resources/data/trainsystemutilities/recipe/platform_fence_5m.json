@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "trainsystemutilities:platform_fence_1m" },
+    { "item": "trainsystemutilities:platform_fence_1m" },
+    { "item": "trainsystemutilities:platform_fence_1m" },
+    { "item": "trainsystemutilities:platform_fence_1m" },
+    { "item": "trainsystemutilities:platform_fence_1m" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:platform_fence_5m"
+  }
+}

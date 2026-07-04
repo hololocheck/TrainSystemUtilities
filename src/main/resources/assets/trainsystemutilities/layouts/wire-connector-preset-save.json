@@ -1,0 +1,48 @@
+{
+	"bg": "#1a1a2e",
+	"color": "",
+	"borderColor": "#A5D6A7",
+	"borderWidth": 2,
+	"borderRadius": 8,
+	"children": [
+		{ "tag": "span", "classes": ["confirm-title"], "color": "#A5D6A7", "fontWeight": "bold",
+		  "x": 12, "y": 12, "w": 220, "h": 14,
+		  "translatableKey": "tsu.wire_connector.custom_save_title" },
+		{ "tag": "div", "classes": ["confirm-sep"], "bg": "#A5D6A7",
+		  "x": 10, "y": 28, "w": 224, "h": 1 },
+
+		{ "tag": "span", "classes": ["preset-name-label"], "color": "#e0e0e0",
+		  "translatableKey": "tsu.wire_connector.custom_save_placeholder",
+		  "x": 14, "y": 38, "w": 216, "h": 11 },
+
+		{ "tag": "div", "classes": ["preset-name-input"],
+		  "bg": "rgba(0,0,0,0.5)",
+		  "borderColor": "#A5D6A7", "borderWidth": 1, "borderRadius": 3,
+		  "x": 14, "y": 52, "w": 216, "h": 18,
+		  "clickable": true,
+		  "children": [
+			{ "tag": "span", "classes": ["preset-name-input-value"], "textKey": "preset-name-input-value",
+			  "color": "#FFFFFF",
+			  "x": 18, "y": 56, "w": 208, "h": 11 },
+			{ "tag": "canvas", "classes": ["preset-name-input-caret"], "canvasKey": "preset-name-input-caret",
+			  "x": 14, "y": 52, "w": 216, "h": 18 }
+		  ] },
+
+		{ "tag": "div", "classes": ["preset-save-ok"],
+		  "bg": "rgba(165,214,167,0.20)", "color": "#A5D6A7",
+		  "borderColor": "#A5D6A7", "borderWidth": 1, "borderRadius": 3, "fontWeight": "bold",
+		  "x": 14, "y": 80, "w": 102, "h": 22, "textAlign": "center",
+		  "translatableKey": "tsu.wire_connector.custom_save_ok",
+		  "hoverBg": "rgba(165,214,167,0.40)", "hoverColor": "#fff", "clickable": true },
+		{ "tag": "div", "classes": ["preset-save-cancel"],
+		  "bg": "rgba(255,255,255,0.05)", "color": "#aaa",
+		  "borderColor": "#555", "borderWidth": 1, "borderRadius": 3,
+		  "x": 128, "y": 80, "w": 102, "h": 22, "textAlign": "center",
+		  "translatableKey": "tsu.wire_connector.custom_save_cancel",
+		  "hoverBg": "rgba(255,255,255,0.10)", "hoverColor": "#fff", "clickable": true }
+	],
+	"tag": "div",
+	"classes": ["dialog", "preset-save-dialog"],
+	"animationKey": "dialog-open",
+	"x": 0, "y": 0, "w": 244, "h": 116
+}

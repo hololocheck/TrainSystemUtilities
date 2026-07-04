@@ -1,0 +1,31 @@
+{
+	"bg": "#12122a",
+	"color": "",
+	"borderColor": "#4fc3f7",
+	"borderWidth": 1,
+	"borderRadius": 4,
+	"fontWeight": "",
+	"isSlot": false,
+	"text": "",
+	"children": [
+		{ "tag": "div", "classes": ["mc-dd-item", "filter-option-0"],
+		  "bg": "", "color": "#80deea",
+		  "x": 2, "y": 2, "w": 92, "h": 14,
+		  "textAlign": "center", "translatableKey": "tsu.wire_connector.filter_all",
+		  "hoverBg": "rgba(79,195,247,0.15)", "hoverColor": "#e0f7fa", "clickable": true },
+		{ "tag": "div", "classes": ["mc-dd-item", "filter-option-1"],
+		  "bg": "", "color": "#80deea",
+		  "x": 2, "y": 16, "w": 92, "h": 14,
+		  "textAlign": "center", "translatableKey": "tsu.wire_connector.filter_basic",
+		  "hoverBg": "rgba(79,195,247,0.15)", "hoverColor": "#e0f7fa", "clickable": true },
+		{ "tag": "div", "classes": ["mc-dd-item", "filter-option-2"],
+		  "bg": "", "color": "#80deea",
+		  "x": 2, "y": 30, "w": 92, "h": 14,
+		  "textAlign": "center", "translatableKey": "tsu.wire_connector.filter_custom",
+		  "hoverBg": "rgba(79,195,247,0.15)", "hoverColor": "#e0f7fa", "clickable": true }
+	],
+	"tag": "div",
+	"classes": ["filter-dropdown-menu"],
+	"animationKey": "filter-menu-open",
+	"x": 0, "y": 0, "w": 96, "h": 46
+}

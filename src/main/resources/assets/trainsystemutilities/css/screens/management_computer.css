@@ -1,0 +1,321 @@
+/* ===== 管理コンピューター画面 メイン CSS ===== */
+@keyframes popup-in {
+    0% { opacity: 0; margin-top: 30px; }
+    100% { opacity: 1; margin-top: 0px; }
+}
+@keyframes popup-out {
+    0% { opacity: 1; margin-top: 0px; }
+    100% { opacity: 0; margin-top: 30px; }
+}
+@keyframes slide-in {
+    0% { opacity: 0; margin-left: 20px; }
+    100% { opacity: 1; margin-left: 0px; }
+}
+.sched-detail-anim {
+    animation-name: slide-in; animation-duration: 0.25s;
+    animation-timing-function: ease-out; animation-fill-mode: forwards;
+}
+.dialog {
+    width: 340px; height: 332px;
+    background: #1a1a2e; border: 2px solid #4fc3f7;
+    border-radius: 10px; padding: 12px;
+    display: flex; flex-direction: column;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    font-family: "minecraft:uniform";
+    overflow: hidden;
+}
+.dialog.anim-open { animation: popup-in 0.25s ease-out; }
+.dialog.anim-close { animation: popup-out 0.5s ease-out both; }
+
+.header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 4px; margin-bottom: 4px;
+}
+.header-right { display: flex; align-items: center; gap: 6px; }
+.header-title { color: #4fc3f7; font-weight: bold; white-space: nowrap; }
+.header-badge {
+    background: #4fc3f7; color: #000;
+    padding: 2px 8px; border-radius: 4px; white-space: nowrap; font-weight: bold;
+}
+.h-sep { width: 100%; height: 1px; background: #4fc3f7; margin-bottom: 4px; }
+
+.main-area { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+
+.left-col {
+    width: 90px; display: flex; flex-direction: column;
+    padding-top: 4px; gap: 3px; justify-content: space-between;
+}
+.sidebar { display: flex; flex-direction: column; gap: 4px; flex: 1; overflow: hidden; min-height: 0px; }
+.footer { display: flex; flex-direction: column; gap: 2px; padding-bottom: 2px; }
+.footer-stat {
+    background: rgba(79,195,247,0.1); padding: 2px 6px;
+    border-radius: 4px; border: 1px solid #333; color: #4fc3f7; white-space: nowrap;
+}
+.toggle-row { display: flex; align-items: center; gap: 3px; }
+.toggle-btn { padding: 2px; }
+.toggle-btn:hover { opacity: 0.8; }
+@keyframes toggle-on { 0% { margin-left: 0px; } 100% { margin-left: 6.1px; } }
+@keyframes toggle-off { 0% { margin-left: 6.1px; } 100% { margin-left: 0px; } }
+.toggle-track-on {
+    width: 18px; height: 8px; border-radius: 4px;
+    background: #4caf50;
+    display: flex; align-items: center;
+}
+.toggle-track-off {
+    width: 18px; height: 8px; border-radius: 4px;
+    background: #555;
+    display: flex; align-items: center;
+}
+.toggle-knob-on {
+    width: 8px; height: 8px; background: #fff; border-radius: 4px;
+    margin-left: 6.1px;
+    animation-name: toggle-on; animation-duration: 0.15s; animation-timing-function: ease-out; animation-fill-mode: forwards;
+}
+.toggle-knob-off {
+    width: 8px; height: 8px; background: #aaa; border-radius: 4px;
+    margin-left: 0px;
+    animation-name: toggle-off; animation-duration: 0.15s; animation-timing-function: ease-out; animation-fill-mode: forwards;
+}
+.toggle-label { color: #555; white-space: nowrap; }
+
+.dropdown {
+    background: rgba(0,0,0,0.3); border: 1px solid #555; border-radius: 4px;
+    padding: 3px 6px; color: #80deea; display: flex;
+    align-items: center; white-space: nowrap; width: 82px;
+}
+.dropdown:hover { border-color: #4fc3f7; color: #e0f7fa; }
+.dropdown-arrow { color: #555; margin-left: 4px; }
+@keyframes dropdown-open {
+    0% { max-height: 0px; opacity: 0; }
+    100% { max-height: 100px; opacity: 1; }
+}
+.dropdown-menu {
+    background: #12122a; border: 1px solid #4fc3f7; border-radius: 4px;
+    display: flex; flex-direction: column; margin-top: 2px;
+    overflow: hidden;
+    animation-name: dropdown-open; animation-duration: 0.2s;
+    animation-timing-function: ease-out; animation-fill-mode: forwards;
+}
+.dd-item { padding: 3px 6px; color: #80deea; white-space: nowrap; }
+.dd-item:hover { background: rgba(79,195,247,0.15); color: #e0f7fa; }
+.dd-item.selected { color: #4fc3f7; }
+
+.v-sep { width: 1px; background: #333; margin-left: 8px; }
+
+.right-content {
+    display: flex; flex-direction: column; flex: 1; padding-left: 8px;
+}
+.content { display: flex; flex-direction: column; flex: 1; gap: 3px; overflow: hidden; }
+.map-placeholder { flex: 1; }
+.empty { color: #555; text-align: center; padding-top: 4px; padding-bottom: 4px; white-space: nowrap; }
+.empty.hint { color: #4fc3f7; }
+
+.station-row {
+    display: flex; gap: 4px; align-items: center;
+    padding: 3px 4px; border-radius: 3px; background: rgba(0,0,0,0.15);
+    position: relative;
+}
+/* 駅 → 路線記号割当ドロップダウン: スタイルは Java インラインで指定 (CSS 競合回避) */
+.station-row:hover { background: rgba(79,195,247,0.1); }
+.station-sym-space { width: 24px; height: 24px; }
+.station-name { color: #80deea; white-space: nowrap; flex: 1; }
+.station-pos { color: #555; white-space: nowrap; }
+.station-assign-btn {
+    padding: 1px 4px; background: rgba(79,195,247,0.1);
+    border: 1px solid #555; border-radius: 2px; color: #4fc3f7; white-space: nowrap;
+}
+.station-assign-btn:hover { background: rgba(79,195,247,0.25); border-color: #4fc3f7; }
+.station-linked { color: #4caf50; white-space: nowrap; }
+.station-unlinked { color: #ef5350; white-space: nowrap; font-weight: bold; }
+
+.sym-grid-wrap { display: flex; gap: 4px; }
+.sym-grid { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 0; flex: 1; }
+.sym-tile {
+    width: 40px; height: 40px;
+    background: rgba(0,0,0,0.2); border: 1px solid #333; border-radius: 4px;
+    padding: 4px;
+}
+.sym-tile:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.1); }
+.sym-tile-icon {
+    width: 36px; height: 36px;
+    border-width: 2px; border-style: solid; background: #ffffff;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0px;
+}
+.sym-tile-letters { color: #000; font-weight: bold; white-space: nowrap; }
+.sym-tile-divider { width: 22px; height: 1px; }
+.sym-tile-number { color: #000; font-weight: bold; white-space: nowrap; }
+
+.sched-table {
+    display: flex; flex-direction: column; gap: 1px; flex: 1; overflow: hidden;
+}
+.sched-scroll-hint { color: #555; white-space: nowrap; padding: 1px 4px; }
+.sched-scrollbar {
+    width: 3px; background: #222; border-radius: 2px; align-self: stretch;
+    position: relative; overflow: hidden;
+}
+.sched-scrollbar-thumb {
+    width: 3px; background: #4fc3f7; border-radius: 2px;
+    position: absolute; left: 0; top: 0;
+}
+.sched-scroll-wrap { display: flex; gap: 2px; flex: 1; }
+.sched-row {
+    display: flex; gap: 4px; align-items: center;
+    padding: 2px 4px; border-radius: 3px;
+    background: rgba(0,0,0,0.15);
+}
+.sched-row-current {
+    display: flex; gap: 4px; align-items: center;
+    padding: 2px 4px; border-radius: 3px;
+    background: rgba(76,175,80,0.12); border: 1px solid rgba(76,175,80,0.3);
+}
+.sched-num { color: #555; white-space: nowrap; width: 12px; }
+.sched-dest { color: #80deea; white-space: nowrap; }
+.sched-dest-current { color: #4caf50; white-space: nowrap; font-weight: bold; }
+.sched-cond { color: #666; white-space: nowrap; }
+.sched-cond-row { display: flex; flex-direction: column; gap: 1px; }
+.ctrl-stop {
+    padding: 2px 8px; border: 1px solid #f44336; border-radius: 3px;
+    color: #f44336; white-space: nowrap; background: rgba(244,67,54,0.1);
+}
+.ctrl-stop:hover { background: rgba(244,67,54,0.3); }
+.ctrl-stop:active { background: rgba(244,67,54,0.5); }
+.ctrl-resume {
+    padding: 2px 8px; border: 1px solid #4caf50; border-radius: 3px;
+    color: #4caf50; white-space: nowrap; background: rgba(76,175,80,0.1);
+}
+.ctrl-resume:hover { background: rgba(76,175,80,0.3); }
+.ctrl-resume:active { background: rgba(76,175,80,0.5); }
+.ctrl-paused { color: #f44336; white-space: nowrap; }
+.sched-back {
+    padding: 1px 6px; border: 1px solid #555; border-radius: 3px;
+    color: #888; white-space: nowrap; background: rgba(0,0,0,0.2);
+    margin-right: 4px;
+}
+.sched-back:hover { border-color: #4fc3f7; color: #4fc3f7; }
+.sched-cycle { color: #555; white-space: nowrap; margin-top: 2px; }
+.sched-edit-area { display: flex; flex-direction: column; gap: 2px; margin-top: 4px; border-top: 1px solid #4fc3f7; padding-top: 4px; }
+.sched-edit-title { color: #4fc3f7; white-space: nowrap; font-weight: bold; }
+.sched-edit-row {
+    display: flex; align-items: center; gap: 3px; padding: 3px 4px;
+    background: rgba(79,195,247,0.05); border: 1px solid #333; border-radius: 4px;
+}
+.sched-edit-icon { white-space: nowrap; }
+.sched-edit-label { color: #80deea; white-space: nowrap; flex: 1; }
+.sched-edit-btns { display: flex; gap: 2px; }
+.sched-edit-btn {
+    padding: 1px 4px; background: rgba(79,195,247,0.1); border: 1px solid #555;
+    border-radius: 2px; color: #80deea; white-space: nowrap;
+}
+.sched-edit-btn:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.2); }
+.sched-edit-btn-del {
+    padding: 1px 4px; background: rgba(244,67,54,0.1); border: 1px solid #555;
+    border-radius: 2px; color: #f44336; white-space: nowrap;
+}
+.sched-edit-btn-del:hover { border-color: #f44336; background: rgba(244,67,54,0.3); }
+.sched-edit-cond {
+    display: flex; align-items: center; gap: 3px; padding: 2px 6px;
+    color: #888; white-space: nowrap;
+    border: 1px solid #333; border-radius: 3px; margin-left: 8px;
+    background: rgba(0,0,0,0.2);
+}
+.sched-edit-cond:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.1); }
+.sched-edit-hint { color: #555; white-space: nowrap; margin-left: 2px; }
+.sched-edit-add-cond {
+    padding: 1px 8px; color: #4fc3f7; white-space: nowrap;
+}
+.sched-edit-add-cond:hover { color: #80deea; }
+.sched-edit-add {
+    padding: 3px 6px; background: rgba(79,195,247,0.1); border: 1px solid #4fc3f7;
+    border-radius: 4px; color: #4fc3f7; white-space: nowrap; margin-top: 4px;
+}
+.sched-edit-add:hover { background: rgba(79,195,247,0.2); }
+.sched-edit-cycle { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+.sched-edit-actions { display: flex; gap: 6px; margin-top: 6px; }
+.sched-edit-apply {
+    padding: 3px 10px; background: #4caf50; border-radius: 4px;
+    color: #fff; white-space: nowrap; font-weight: bold;
+}
+.sched-edit-apply:hover { background: #66bb6a; }
+.sched-edit-cancel {
+    padding: 3px 10px; background: #333; border: 1px solid #555;
+    border-radius: 4px; color: #aaa; white-space: nowrap;
+}
+.sched-edit-cancel:hover { background: #444; }
+
+.train-list { display: flex; flex-direction: column; gap: 2px; flex: 1; overflow: hidden; }
+.train-row {
+    display: flex; flex-direction: column; gap: 1px;
+    background: rgba(79,195,247,0.05); padding: 3px 6px;
+    border: 1px solid #333; border-radius: 4px;
+}
+.train-row:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.12); }
+.train-name { color: #4fc3f7; font-weight: bold; white-space: nowrap; }
+.train-status { color: #80deea; white-space: nowrap; }
+.train-detail { display: flex; gap: 6px; }
+.train-info-text { color: #666; white-space: nowrap; }
+.train-dest { color: #ffc107; white-space: nowrap; }
+
+.layout-edit-btn {
+    padding: 2px 6px; background: rgba(79,195,247,0.1);
+    border: 1px solid #4fc3f7; border-radius: 3px;
+    color: #4fc3f7; white-space: nowrap;
+}
+.layout-edit-btn:hover { background: rgba(79,195,247,0.25); border-color: #80deea; }
+.color-edit-btn {
+    padding: 3px 8px; background: rgba(255,193,7,0.1);
+    border: 1px solid #ffc107; border-radius: 4px;
+    color: #ffc107; white-space: nowrap; font-weight: bold;
+}
+.color-edit-btn:hover { background: rgba(255,193,7,0.25); border-color: #ffd54f; }
+.symbol-edit-btn {
+    padding: 3px 8px; background: rgba(76,175,80,0.1);
+    border: 1px solid #4caf50; border-radius: 4px;
+    color: #4caf50; white-space: nowrap; font-weight: bold;
+}
+.symbol-edit-btn:hover { background: rgba(76,175,80,0.25); border-color: #66bb6a; }
+
+/* ボタン縦並びコラム (レイアウト/記号/色) - absolute で通常フローから外す。
+ * inv-header の左端に配置、インベントリ左余白 (63px) に重なって下に伸びる。
+ * 主軸 auto + absolute → FlexLayout が indefinite main と判定し shrink 無効化される。 */
+.inv-btn-column {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 55px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.monitor-section {
+    display: flex; flex-direction: column; gap: 2px;
+    border-top: 1px solid #333; padding-top: 3px; margin-top: 3px;
+}
+.monitor-slot-row { display: flex; align-items: center; gap: 4px; }
+.card-slot {
+    width: 20px; height: 20px; background: rgba(79,195,247,0.1);
+    border: 1px solid #4fc3f7; border-radius: 2px;
+}
+.owner-face {
+    width: 20px; height: 20px; border-radius: 2px;
+}
+.owner-public { border: 1px solid #4caf50; }
+.owner-private { border: 1px solid #f44336; }
+.owner-face:hover { opacity: 0.8; }
+.image-spacer { flex: 1; }
+
+.inv-sep { height: 1px; background: #333; margin-top: 3px; margin-bottom: 3px; }
+.inv-header { display: flex; flex-direction: row; align-items: center; gap: 4px; margin-bottom: 2px; position: relative; }
+.inv-label { color: #555; white-space: nowrap; margin-left: 60px; }
+.player-inventory { display: flex; flex-direction: column; gap: 2px; }
+.inv-row { display: flex; gap: 2px; margin-left: 63px; }
+.inv-hotbar {
+    display: flex; gap: 2px; margin-top: 2px; padding-top: 2px;
+    border-top: 1px solid #333; margin-left: 63px;
+}
+.mc-slot {
+    width: 20px; height: 20px; background: rgba(0,0,0,0.4);
+    border: 1px solid #555; border-radius: 2px;
+}
+.mc-slot:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.15); }

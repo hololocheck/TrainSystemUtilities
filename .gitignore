@@ -1,0 +1,38 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+
+# Build output
+build/
+out/
+
+# Gradle
+.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.classpath
+.project
+*.launch
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Runtime data
+run/
+runs/
+logs/
+
+# Dependency JARs (referenced locally, not committed)
+*.jar
+!gradle/wrapper/gradle-wrapper.jar

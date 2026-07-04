@@ -1,0 +1,36 @@
+/* ===== レイアウト編集ポップアップ ===== */
+@keyframes popup-open {
+    0% { opacity: 0; margin-top: 30px; }
+    100% { opacity: 1; margin-top: 0px; }
+}
+.popup {
+    @apply popup-base-lg;
+    width: 300px;
+    gap: 3px;
+    overflow: visible;
+}
+.popup-opening {
+    @apply popup-base-lg;
+    width: 300px;
+    gap: 3px;
+    overflow: visible;
+    @apply popup-open-anim;
+    animation-duration: 0.25s;
+}
+/* popup-header/title/close は UIComponents.getComponentCSS() で提供 */
+.info-label { @apply info-label-style; }
+.layout-info { @apply info-value-style; }
+.layout-main { display: flex; gap: 6px; flex: 1; }
+.tile-palette { display: flex; flex-direction: column; gap: 3px; width: 75px; overflow: hidden; }
+.tile-item {
+    padding: 6px 6px; background: rgba(79,195,247,0.05);
+    border: 1px solid #333; border-radius: 4px;
+    color: #80deea; white-space: nowrap;
+}
+.tile-item:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.15); color: #4fc3f7; }
+.monitor-preview-space {
+    flex: 1; background: rgba(0,0,0,0.3);
+    border: 1px solid #333; border-radius: 4px;
+    min-height: 120px;
+}
+.sched-none { @apply empty-text-style; }

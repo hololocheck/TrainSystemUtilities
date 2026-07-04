@@ -1,0 +1,13 @@
+{
+  "_comment": "OverheadTrussBlock — beam (= 16x3x2px) を model 内で E-W (X 軸) 向き baseline で配置。 cardinal は厳密 90° 刻み rotation、 diagonal (NE/SE/SW/NW) は最近隣 cardinal の rotation を再利用 (= placeholder、 BlockBench 後で 8 model 化予定)。",
+  "variants": {
+    "angle_8=0": { "model": "trainsystemutilities:block/overhead_truss",            "y": 0 },
+    "angle_8=1": { "model": "trainsystemutilities:block/overhead_truss",            "y": 90 },
+    "angle_8=2": { "model": "trainsystemutilities:block/overhead_truss",            "y": 90 },
+    "angle_8=3": { "model": "trainsystemutilities:block/overhead_truss",            "y": 90 },
+    "angle_8=4": { "model": "trainsystemutilities:block/overhead_truss",            "y": 180 },
+    "angle_8=5": { "model": "trainsystemutilities:block/overhead_truss",            "y": 270 },
+    "angle_8=6": { "model": "trainsystemutilities:block/overhead_truss",            "y": 270 },
+    "angle_8=7": { "model": "trainsystemutilities:block/overhead_truss",            "y": 270 }
+  }
+}

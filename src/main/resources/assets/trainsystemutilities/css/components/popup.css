@@ -1,0 +1,13 @@
+/* ===== ポップアップコンポーネント ===== */
+
+.popup {
+    @apply panel-base;
+}
+
+.popup-header {
+    @apply popup-header;
+}
+
+.popup-body {
+    padding: 8px;
+}

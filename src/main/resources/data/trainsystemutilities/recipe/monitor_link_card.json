@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "trainsystemutilities:memory_card" },
+    { "item": "create:display_link" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:monitor_link_card"
+  }
+}

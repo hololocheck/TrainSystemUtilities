@@ -1,0 +1,27 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.trainsystemutilities.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "trainsystemutilities.refmap.json",
+  "mixins": [
+    "ConductorInteractionMixin",
+    "ScheduleRuntimeMixin",
+    "TrainMixin",
+    "SignalBlockEntityMixin",
+    "StationBlockEntityMixin",
+    "NavigationMixin"
+  ],
+  "client": [
+    "NixieTubeRendererMixin",
+    "SignalRendererMixin",
+    "CarriageCouplingRendererMixin",
+    "flywheel.CarriageContraptionVisualMixin",
+    "flywheel.StandardBogeyVisualMixin",
+    "flywheel.StandardBogeyVisualSmallMixin",
+    "flywheel.StandardBogeyVisualLargeMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

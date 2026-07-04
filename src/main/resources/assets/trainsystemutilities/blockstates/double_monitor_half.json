@@ -1,0 +1,244 @@
+{
+  "variants": {
+    "down=false,facing=north,left=false,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half"
+    },
+    "down=false,facing=south,left=false,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half",
+      "y": 270
+    },
+    "down=false,facing=east,left=false,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half",
+      "y": 90
+    },
+    "down=false,facing=north,left=false,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu"
+    },
+    "down=false,facing=south,left=false,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu",
+      "y": 270
+    },
+    "down=false,facing=east,left=false,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu",
+      "y": 90
+    },
+    "down=true,facing=north,left=false,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd"
+    },
+    "down=true,facing=south,left=false,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd",
+      "y": 270
+    },
+    "down=true,facing=east,left=false,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd",
+      "y": 90
+    },
+    "down=false,facing=north,left=true,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cl"
+    },
+    "down=false,facing=south,left=true,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cl",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cl",
+      "y": 270
+    },
+    "down=false,facing=east,left=true,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cl",
+      "y": 90
+    },
+    "down=false,facing=north,left=false,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cr"
+    },
+    "down=false,facing=south,left=false,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cr",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cr",
+      "y": 270
+    },
+    "down=false,facing=east,left=false,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cr",
+      "y": 90
+    },
+    "down=true,facing=north,left=false,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd"
+    },
+    "down=true,facing=south,left=false,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd",
+      "y": 270
+    },
+    "down=true,facing=east,left=false,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd",
+      "y": 90
+    },
+    "down=false,facing=north,left=true,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cl"
+    },
+    "down=false,facing=south,left=true,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cl",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cl",
+      "y": 270
+    },
+    "down=false,facing=east,left=true,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cl",
+      "y": 90
+    },
+    "down=false,facing=north,left=false,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cr"
+    },
+    "down=false,facing=south,left=false,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cr",
+      "y": 180
+    },
+    "down=false,facing=west,left=false,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cr",
+      "y": 270
+    },
+    "down=false,facing=east,left=false,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cr",
+      "y": 90
+    },
+    "down=true,facing=north,left=true,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cl"
+    },
+    "down=true,facing=south,left=true,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cl",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cl",
+      "y": 270
+    },
+    "down=true,facing=east,left=true,right=false,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cl",
+      "y": 90
+    },
+    "down=true,facing=north,left=false,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cr"
+    },
+    "down=true,facing=south,left=false,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cr",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cr",
+      "y": 270
+    },
+    "down=true,facing=east,left=false,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cr",
+      "y": 90
+    },
+    "down=false,facing=north,left=true,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cl_cr"
+    },
+    "down=false,facing=south,left=true,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cl_cr",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cl_cr",
+      "y": 270
+    },
+    "down=false,facing=east,left=true,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cl_cr",
+      "y": 90
+    },
+    "down=true,facing=north,left=true,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cl"
+    },
+    "down=true,facing=south,left=true,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cl",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cl",
+      "y": 270
+    },
+    "down=true,facing=east,left=true,right=false,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cl",
+      "y": 90
+    },
+    "down=true,facing=north,left=false,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cr"
+    },
+    "down=true,facing=south,left=false,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cr",
+      "y": 180
+    },
+    "down=true,facing=west,left=false,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cr",
+      "y": 270
+    },
+    "down=true,facing=east,left=false,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cr",
+      "y": 90
+    },
+    "down=false,facing=north,left=true,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cl_cr"
+    },
+    "down=false,facing=south,left=true,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cl_cr",
+      "y": 180
+    },
+    "down=false,facing=west,left=true,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cl_cr",
+      "y": 270
+    },
+    "down=false,facing=east,left=true,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cl_cr",
+      "y": 90
+    },
+    "down=true,facing=north,left=true,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cl_cr"
+    },
+    "down=true,facing=south,left=true,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cl_cr",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cl_cr",
+      "y": 270
+    },
+    "down=true,facing=east,left=true,right=true,up=false": {
+      "model": "trainsystemutilities:block/double_monitor_half_cd_cl_cr",
+      "y": 90
+    },
+    "down=true,facing=north,left=true,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cl_cr"
+    },
+    "down=true,facing=south,left=true,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cl_cr",
+      "y": 180
+    },
+    "down=true,facing=west,left=true,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cl_cr",
+      "y": 270
+    },
+    "down=true,facing=east,left=true,right=true,up=true": {
+      "model": "trainsystemutilities:block/double_monitor_half_cu_cd_cl_cr",
+      "y": 90
+    }
+  }
+}

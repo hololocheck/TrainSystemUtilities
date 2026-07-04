@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "trainsystemutilities:block/railway_management_block_top",
+    "front": "trainsystemutilities:block/railway_management_block_front",
+    "side": "trainsystemutilities:block/railway_management_block_side"
+  }
+}

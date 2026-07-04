@@ -1,0 +1,105 @@
+/* ===== プリセットプレイス: 詳細ページ ===== */
+
+@keyframes popup-open {
+    0% { opacity: 0; margin-top: 30px; }
+    100% { opacity: 1; margin-top: 0px; }
+}
+
+.dialog {
+    width: 580px; height: 440px;
+    background: #1a1a2e; border: 2px solid #4fc3f7;
+    border-radius: 10px; padding: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    font-family: "minecraft:uniform";
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    @apply popup-open-anim;
+}
+
+.detail-header {
+    display: flex; flex-direction: row; justify-content: space-between;
+    align-items: center;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #4fc3f7;
+}
+.detail-title { color: #4fc3f7; font-weight: bold; white-space: nowrap; }
+
+.header-btn {
+    padding: 1px 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #aaa;
+    white-space: nowrap;
+}
+.header-close:hover { border-color: #f44; color: #f44; }
+
+/* ギャラリー (大画像 + サイドバー) */
+.detail-gallery {
+    display: flex; flex-direction: row; gap: 6px;
+    height: 180px;
+    flex-shrink: 0;
+}
+.detail-main-image {
+    width: 410px;
+    height: 180px;
+    background: rgba(0,0,0,0.6);
+    border: 1px solid #333;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.detail-sidebar {
+    flex-grow: 1;
+    flex-shrink: 1;
+    height: 170px;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 4px;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+}
+.sb-area {
+    flex-grow: 1;
+    width: 100%;
+    height: 162px;
+}
+
+/* サムネイル列 */
+.detail-thumbs {
+    height: 38px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #222;
+    border-radius: 4px;
+}
+
+/* メタ + mod 行 */
+.detail-meta-row {
+    display: flex; flex-direction: row; flex-wrap: wrap; gap: 4px;
+    align-items: center;
+}
+.detail-meta { color: #b0b0c0; white-space: nowrap; }
+.mods-label { color: #888; white-space: nowrap; margin-left: 6px; }
+.mod-chip {
+    padding: 1px 5px;
+    background: rgba(79,195,247,0.10);
+    border: 1px solid #4fc3f7;
+    border-radius: 3px;
+    color: #80deea;
+    white-space: nowrap;
+}
+.mod-more { color: #888; white-space: nowrap; }
+
+/* 説明エリア (markdown スクロール) */
+.detail-desc {
+    flex-grow: 1;
+    flex-shrink: 1;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #222;
+    border-radius: 4px;
+    overflow: hidden;
+    min-height: 60px;
+}
+
+.error { color: #ef5350; padding: 20px; text-align: center; }

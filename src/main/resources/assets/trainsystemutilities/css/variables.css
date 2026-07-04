@@ -1,0 +1,33 @@
+/* ===== TrainSystemUtilities CSS変数 ===== */
+:root {
+    --color-primary: #4fc3f7;
+    --color-primary-dark: #0288d1;
+    --color-success: #66bb6a;
+    --color-danger: #d32f2f;
+    --color-danger-hover: #e53935;
+    --color-warning: #ffa726;
+    --color-bg-base: #101015;
+    --color-bg-panel: #1a1a25;
+    --color-bg-elevated: #22222e;
+    --color-bg-hover: #2a3540;
+    --color-text-primary: #ffffff;
+    --color-text-secondary: #b0b0c0;
+    --color-text-muted: #888888;
+    --color-border: #333348;
+    --color-border-active: #4fc3f7;
+
+    --space-xs: 2px;
+    --space-sm: 4px;
+    --space-md: 8px;
+    --space-lg: 12px;
+    --space-xl: 16px;
+
+    --radius-sm: 2px;
+    --radius-md: 4px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+
+    --font-size-sm: 8px;
+    --font-size-md: 9px;
+    --font-size-lg: 11px;
+}

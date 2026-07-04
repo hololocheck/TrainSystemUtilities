@@ -1,0 +1,130 @@
+{
+  "tag": "div",
+  "classes": ["panel-settings-popup"],
+  "animationKey": "popup-pop",
+  "x": 0, "y": 0, "w": 200, "h": 138,
+  "bg": "#12122a",
+  "borderColor": "#4fc3f7", "borderWidth": 1, "borderRadius": 6,
+  "children": [
+    {
+      "tag": "span", "classes": ["pset-title"],
+      "x": 8, "y": 8, "w": 184, "h": 11,
+      "color": "#4fc3f7", "fontWeight": "bold",
+      "textKey": "pset-title"
+    },
+    {
+      "tag": "span", "classes": ["pset-hint"],
+      "x": 8, "y": 21, "w": 184, "h": 10,
+      "color": "#888888",
+      "translatableKey": "tsu.mc.pset_hint"
+    },
+
+    {
+      "tag": "span", "classes": ["pset-font-label"],
+      "x": 8, "y": 38, "w": 100, "h": 11,
+      "color": "#e0e0e0",
+      "translatableKey": "tsu.mc.pset_font",
+      "visibleKey": "pset-font-visible"
+    },
+    {
+      "tag": "div", "classes": ["pset-font-val"],
+      "x": 112, "y": 36, "w": 80, "h": 14,
+      "bg": "rgba(0,0,0,0.3)", "color": "#ffffff",
+      "borderColor": "#555555", "borderWidth": 1, "borderRadius": 3,
+      "textAlign": "center",
+      "hoverBg": "rgba(79,195,247,0.15)", "hoverBorderColor": "#4fc3f7",
+      "textKey": "pset-font-val", "wheelKey": "pset-font-val",
+      "visibleKey": "pset-font-visible"
+    },
+
+    {
+      "tag": "span", "classes": ["pset-maptext-label"],
+      "x": 8, "y": 38, "w": 100, "h": 11,
+      "color": "#e0e0e0",
+      "translatableKey": "tsu.mc.pset_maptext",
+      "visibleKey": "pset-map-visible"
+    },
+    {
+      "tag": "div", "classes": ["pset-maptext-val"],
+      "x": 112, "y": 36, "w": 80, "h": 14,
+      "bg": "rgba(0,0,0,0.3)", "color": "#ffffff",
+      "borderColor": "#555555", "borderWidth": 1, "borderRadius": 3,
+      "textAlign": "center",
+      "hoverBg": "rgba(79,195,247,0.15)", "hoverBorderColor": "#4fc3f7",
+      "textKey": "pset-maptext-val", "wheelKey": "pset-maptext-val",
+      "visibleKey": "pset-map-visible"
+    },
+    {
+      "tag": "span", "classes": ["pset-trainicon-label"],
+      "x": 8, "y": 56, "w": 100, "h": 11,
+      "color": "#e0e0e0",
+      "translatableKey": "tsu.mc.pset_trainicon",
+      "visibleKey": "pset-map-visible"
+    },
+    {
+      "tag": "div", "classes": ["pset-trainicon-val"],
+      "x": 112, "y": 54, "w": 80, "h": 14,
+      "bg": "rgba(0,0,0,0.3)", "color": "#ffffff",
+      "borderColor": "#555555", "borderWidth": 1, "borderRadius": 3,
+      "textAlign": "center",
+      "hoverBg": "rgba(79,195,247,0.15)", "hoverBorderColor": "#4fc3f7",
+      "textKey": "pset-trainicon-val", "wheelKey": "pset-trainicon-val",
+      "visibleKey": "pset-map-visible"
+    },
+    {
+      "tag": "span", "classes": ["pset-stationicon-label"],
+      "x": 8, "y": 74, "w": 100, "h": 11,
+      "color": "#e0e0e0",
+      "translatableKey": "tsu.mc.pset_stationicon",
+      "visibleKey": "pset-map-visible"
+    },
+    {
+      "tag": "div", "classes": ["pset-stationicon-val"],
+      "x": 112, "y": 72, "w": 80, "h": 14,
+      "bg": "rgba(0,0,0,0.3)", "color": "#ffffff",
+      "borderColor": "#555555", "borderWidth": 1, "borderRadius": 3,
+      "textAlign": "center",
+      "hoverBg": "rgba(79,195,247,0.15)", "hoverBorderColor": "#4fc3f7",
+      "textKey": "pset-stationicon-val", "wheelKey": "pset-stationicon-val",
+      "visibleKey": "pset-map-visible"
+    },
+    {
+      "tag": "span", "classes": ["pset-signalicon-label"],
+      "x": 8, "y": 92, "w": 100, "h": 11,
+      "color": "#e0e0e0",
+      "translatableKey": "tsu.mc.pset_signalicon",
+      "visibleKey": "pset-map-visible"
+    },
+    {
+      "tag": "div", "classes": ["pset-signalicon-val"],
+      "x": 112, "y": 90, "w": 80, "h": 14,
+      "bg": "rgba(0,0,0,0.3)", "color": "#ffffff",
+      "borderColor": "#555555", "borderWidth": 1, "borderRadius": 3,
+      "textAlign": "center",
+      "hoverBg": "rgba(79,195,247,0.15)", "hoverBorderColor": "#4fc3f7",
+      "textKey": "pset-signalicon-val", "wheelKey": "pset-signalicon-val",
+      "visibleKey": "pset-map-visible"
+    },
+
+    {
+      "tag": "div", "classes": ["pset-auto-btn"],
+      "x": 8, "y": 112, "w": 110, "h": 18,
+      "bg": "#1a3a4e", "color": "#80deea",
+      "borderColor": "#4fc3f7", "borderWidth": 1, "borderRadius": 2,
+      "textAlign": "center",
+      "hoverBg": "#2a4a5e", "hoverColor": "#ffffff",
+      "translatableKey": "tsu.mc.pset_auto_btn",
+      "clickable": true
+    },
+    {
+      "tag": "div", "classes": ["pset-close-btn"],
+      "x": 124, "y": 112, "w": 68, "h": 18,
+      "bg": "rgba(0,0,0,0.3)", "color": "#aaaaaa",
+      "borderColor": "#555555", "borderWidth": 1, "borderRadius": 2,
+      "textAlign": "center",
+      "hoverBg": "rgba(255,255,255,0.08)", "hoverColor": "#ffffff", "hoverBorderColor": "#888888",
+      "translatableKey": "tsu.mc.pset_close",
+      "clickable": true
+    }
+  ]
+}

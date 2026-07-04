@@ -1,0 +1,6 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "trainsystemutilities:block/platform_fence_1m"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "trainsystemutilities:block/pantograph" },
+    "facing=south": { "model": "trainsystemutilities:block/pantograph", "y": 180 },
+    "facing=west":  { "model": "trainsystemutilities:block/pantograph", "y": 270 },
+    "facing=east":  { "model": "trainsystemutilities:block/pantograph", "y": 90 }
+  }
+}

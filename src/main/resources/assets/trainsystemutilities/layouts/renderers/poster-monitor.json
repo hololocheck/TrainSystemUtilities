@@ -1,0 +1,27 @@
+{
+  "classes": ["poster-outer"],
+  "dynamicW": "cssW",
+  "dynamicH": "cssH",
+  "children": [
+    {
+      "classes": ["poster-clip"],
+      "dynamicX": "pad",
+      "dynamicY": "pad",
+      "dynamicW": "contentW",
+      "dynamicH": "contentH",
+      "scissor": true,
+      "children": [
+        {
+          "classes": ["poster-image"],
+          "dynamicX": "pad",
+          "dynamicY": "pad",
+          "dynamicW": "contentW",
+          "dynamicH": "contentH",
+          "bgImageKey": "posterImg",
+          "animationKey": "posterAnim",
+          "visibleKey": "posterVisible"
+        }
+      ]
+    }
+  ]
+}

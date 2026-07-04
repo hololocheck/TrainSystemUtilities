@@ -1,0 +1,22 @@
+{
+  "_comment": "OverheadPoleBlock placeholder model — 中央 2x16x2px 縦柱。 全 6 面に同一 texture を貼る。",
+  "parent": "block/block",
+  "textures": {
+    "particle": "trainsystemutilities:block/overhead_pole",
+    "all":      "trainsystemutilities:block/overhead_pole"
+  },
+  "elements": [
+    {
+      "from": [7, 0, 7],
+      "to":   [9, 16, 9],
+      "faces": {
+        "north": { "texture": "#all" },
+        "south": { "texture": "#all" },
+        "east":  { "texture": "#all" },
+        "west":  { "texture": "#all" },
+        "up":    { "texture": "#all" },
+        "down":  { "texture": "#all" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I",
+    "S",
+    "A"
+  ],
+  "key": {
+    "I": { "item": "trainsystemutilities:insulator" },
+    "S": { "item": "create:shaft" },
+    "A": { "item": "create:andesite_alloy" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:overhead_pole"
+  }
+}

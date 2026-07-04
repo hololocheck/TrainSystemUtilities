@@ -1,0 +1,1571 @@
+{
+  "tag": "col",
+  "classes": [
+    "panel",
+    "train-list-panel"
+  ],
+  "dynamicW": "pw",
+  "dynamicH": "ph",
+  "children": [
+    {
+      "tag": "span",
+      "classes": [
+        "panel-title",
+        "train-list-title"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "colorKey": "panelTitle",
+      "fontScaleKey": "fsScale",
+      "fontWeight": "bold"
+    },
+    {
+      "classes": [
+        "train-row",
+        "train0",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train0_visible",
+      "animationKey": "train0_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train0_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train0_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train0_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train0_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train0_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train0_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train0_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train1",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train1_visible",
+      "animationKey": "train1_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train1_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train1_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train1_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train1_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train1_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train1_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train1_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train2",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train2_visible",
+      "animationKey": "train2_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train2_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train2_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train2_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train2_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train2_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train2_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train2_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train3",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train3_visible",
+      "animationKey": "train3_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train3_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train3_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train3_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train3_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train3_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train3_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train3_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train4",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train4_visible",
+      "animationKey": "train4_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train4_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train4_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train4_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train4_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train4_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train4_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train4_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train5",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train5_visible",
+      "animationKey": "train5_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train5_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train5_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train5_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train5_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train5_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train5_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train5_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train6",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train6_visible",
+      "animationKey": "train6_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train6_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train6_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train6_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train6_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train6_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train6_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train6_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train7",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train7_visible",
+      "animationKey": "train7_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train7_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train7_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train7_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train7_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train7_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train7_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train7_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train8",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train8_visible",
+      "animationKey": "train8_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train8_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train8_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train8_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train8_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train8_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train8_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train8_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train9",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train9_visible",
+      "animationKey": "train9_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train9_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train9_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train9_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train9_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train9_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train9_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train9_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train10",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train10_visible",
+      "animationKey": "train10_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train10_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train10_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train10_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train10_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train10_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train10_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train10_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train11",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train11_visible",
+      "animationKey": "train11_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train11_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train11_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train11_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train11_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train11_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train11_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train11_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train12",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train12_visible",
+      "animationKey": "train12_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train12_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train12_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train12_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train12_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train12_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train12_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train12_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train13",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train13_visible",
+      "animationKey": "train13_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train13_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train13_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train13_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train13_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train13_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train13_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train13_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train14",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train14_visible",
+      "animationKey": "train14_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train14_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train14_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train14_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train14_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train14_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train14_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train14_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "classes": [
+        "train-row",
+        "train15",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "cardH",
+      "bg": "#144fc3f7",
+      "borderColor": "#333333",
+      "borderWidth": 1,
+      "borderRadius": 4,
+      "visibleKey": "train15_visible",
+      "animationKey": "train15_anim",
+      "children": [
+        {
+          "tag": "col",
+          "dynamicW": "contentW",
+          "dynamicH": "cardH",
+          "gap": 2,
+          "padding": 4,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "train-name",
+                "train15_name"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainName",
+              "fontScaleKey": "fsScale",
+              "fontWeight": "bold"
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "train-status",
+                "train15_status"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "colorKey": "trainStatus",
+              "fontScaleKey": "fsScale"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "train-detail"
+              ],
+              "dynamicW": "contentW",
+              "dynamicH": "titleH",
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-info-text",
+                    "train15_cars"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "color": "#666666",
+                  "fontScaleKey": "fsScale"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "train-dest",
+                    "train15_dest"
+                  ],
+                  "w": 70,
+                  "dynamicH": "titleH",
+                  "colorKey": "trainDest",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train15_dest_visible"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "signal-red",
+                    "train15_paused"
+                  ],
+                  "w": 50,
+                  "dynamicH": "titleH",
+                  "colorKey": "signalRed",
+                  "fontScaleKey": "fsScale",
+                  "visibleKey": "train15_paused_visible"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "train-info-text",
+        "train-list-page"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "trainListPage_visible"
+    }
+  ]
+}

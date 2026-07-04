@@ -1,0 +1,6 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "trainsystemutilities:block/ticket_vending_machine"
+  }
+}

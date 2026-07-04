@@ -1,0 +1,35 @@
+{
+	"bg": "#1a1a2e",
+	"color": "",
+	"borderColor": "#EF5350",
+	"borderWidth": 2,
+	"borderRadius": 8,
+	"children": [
+		{ "tag": "span", "classes": ["confirm-title"], "color": "#EF5350", "fontWeight": "bold",
+		  "x": 12, "y": 12, "w": 220, "h": 14,
+		  "translatableKey": "tsu.wire_connector.preset_delete_title" },
+		{ "tag": "div", "classes": ["confirm-sep"], "bg": "#EF5350",
+		  "x": 10, "y": 28, "w": 224, "h": 1 },
+
+		{ "tag": "span", "classes": ["preset-delete-name"], "color": "#e0e0e0", "fontWeight": "bold",
+		  "x": 14, "y": 46, "w": 216, "h": 14, "textAlign": "center",
+		  "textKey": "preset-delete-name" },
+
+		{ "tag": "div", "classes": ["preset-delete-ok"],
+		  "bg": "rgba(239,83,80,0.20)", "color": "#EF5350",
+		  "borderColor": "#EF5350", "borderWidth": 1, "borderRadius": 3, "fontWeight": "bold",
+		  "x": 14, "y": 76, "w": 102, "h": 22, "textAlign": "center",
+		  "translatableKey": "tsu.wire_connector.preset_delete_ok",
+		  "hoverBg": "rgba(239,83,80,0.40)", "hoverColor": "#fff", "clickable": true },
+		{ "tag": "div", "classes": ["preset-delete-cancel"],
+		  "bg": "rgba(255,255,255,0.05)", "color": "#aaa",
+		  "borderColor": "#555", "borderWidth": 1, "borderRadius": 3,
+		  "x": 128, "y": 76, "w": 102, "h": 22, "textAlign": "center",
+		  "translatableKey": "tsu.wire_connector.preset_delete_cancel",
+		  "hoverBg": "rgba(255,255,255,0.10)", "hoverColor": "#fff", "clickable": true }
+	],
+	"tag": "div",
+	"classes": ["dialog", "preset-delete-dialog"],
+	"animationKey": "dialog-open",
+	"x": 0, "y": 0, "w": 244, "h": 108
+}

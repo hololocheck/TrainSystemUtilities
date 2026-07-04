@@ -1,0 +1,471 @@
+/* ===== 列車プリセットブラウズ画面 ===== */
+
+@keyframes popup-open {
+    0% { opacity: 0; margin-top: 30px; }
+    100% { opacity: 1; margin-top: 0px; }
+}
+
+/* 管理コンピューターと同じ dropdown 開閉アニメ */
+@keyframes dropdown-open {
+    0% { max-height: 0px; opacity: 0; }
+    100% { max-height: 240px; opacity: 1; }
+}
+
+.dialog {
+    width: 540px; height: 360px;
+    background: #1a1a2e; border: 2px solid #4fc3f7;
+    border-radius: 10px; padding: 8px;
+    display: flex; flex-direction: column; gap: 4px;
+    font-family: "minecraft:uniform";
+    overflow: hidden;
+    position: relative; /* materials-popup の position:absolute の起点 */
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    @apply popup-open-anim;
+}
+
+/* ===== ヘッダー ===== */
+.header {
+    display: flex; flex-direction: row; justify-content: space-between;
+    align-items: center;
+    padding-bottom: 4px; margin-bottom: 2px;
+    border-bottom: 1px solid #4fc3f7;
+    position: relative;
+}
+.header-left {
+    display: flex; flex-direction: row; align-items: center;
+    position: relative;
+    gap: 6px;
+}
+.header-right { display: flex; flex-direction: row; gap: 4px; }
+
+.header-btn {
+    padding: 1px 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #aaa;
+    white-space: nowrap;
+}
+.header-btn:hover { border-color: #4fc3f7; color: #4fc3f7; }
+.header-btn:active { background: rgba(79,195,247,0.2); }
+.header-close:hover { border-color: #f44; color: #f44; }
+.header-close:active { background: rgba(255,68,68,0.3); }
+
+/* ===== モード dropdown =====
+ * 管理コンピューターと同じ要素 (.dropdown / .mc-dropdown / .mc-dd-item) をそのまま流用。
+ * .mc-dropdown / .mc-dd-item の本体は UIComponents.getComponentCSS() 側に定義済み。
+ * ここでは「幅 240px」と「ヘッダー左の絶対配置」だけ追加する。 */
+.dropdown {
+    width: 240px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #555;
+    border-radius: 4px;
+    padding: 3px 6px;
+    color: #80deea;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+}
+.dropdown:hover { border-color: #4fc3f7; color: #e0f7fa; }
+.dropdown-arrow { color: #555; margin-left: auto; }
+
+/* trigger の直下にメニューをオーバーレイ。
+ * mc-dropdown 自体の display: flex / flex-direction: column はそのまま (UIComponents 側)、
+ * ここで position と width だけオーバーライドする。 */
+.preset-mode-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 2px;
+    z-index: 100;
+    width: 240px;
+}
+
+/* ===== ボディ: 左タイル / 縦区切り / 右設置ビュー ===== */
+.body {
+    display: flex; flex-direction: row; flex-grow: 1; overflow: hidden;
+}
+
+.tiles-panel {
+    width: 240px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 240px;
+    display: flex; flex-direction: column; gap: 4px;
+    overflow: hidden;
+}
+.panel-title {
+    color: #4fc3f7;
+    white-space: nowrap;
+    font-weight: bold;
+    border-bottom: 1px solid #333;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+}
+
+/* タイルグリッド: 横 2 × 縦 3 = 6 タイル可視、超過分はマウスホイールでスクロール
+ * 高さは固定 (3 行 × 88px + 2 × 4px gap = 272px)、overflow: hidden で 7 個目以降はクリップ。
+ * Java 側で windowing して可視 6 タイルだけを子要素として add する。 */
+.tile-grid {
+    width: 100%;
+    height: 272px;
+    display: flex; flex-direction: row; flex-wrap: wrap;
+    gap: 4px;
+    overflow: hidden;
+    padding-right: 6px;
+}
+.preset-tile {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 110px;
+    width: 110px; height: 88px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 3px;
+    display: flex; flex-direction: column; gap: 1px;
+    overflow: hidden;
+}
+.preset-tile:hover {
+    border-color: #4fc3f7;
+    background: rgba(79,195,247,0.1);
+}
+.preset-tile.selected {
+    border-color: #4fc3f7;
+    background: rgba(79,195,247,0.18);
+}
+.preset-tile.dragging {
+    border-color: #ffc107;
+    background: rgba(255,193,7,0.2);
+    opacity: 0.7;
+}
+.tile-thumb {
+    height: 36px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #222;
+    border-radius: 2px;
+    margin-bottom: 1px;
+}
+.tile-name {
+    color: #4fc3f7;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.tile-sub {
+    color: #b0b0c0;
+    white-space: nowrap;
+}
+.tile-author {
+    color: #80deea;
+    white-space: nowrap;
+}
+
+.empty {
+    color: #555;
+    white-space: nowrap;
+    text-align: center;
+    padding: 20px;
+}
+
+/* 縦区切り線 (シアン) */
+.vsep {
+    width: 1px;
+    background: #4fc3f7;
+    opacity: 0.5;
+    margin: 0 8px;
+}
+
+/* ===== 右パネル ===== */
+.right-panel {
+    flex-grow: 1;
+    display: flex; flex-direction: column; gap: 4px;
+    overflow: hidden;
+}
+.right-title {
+    color: #4fc3f7;
+    white-space: nowrap;
+    font-weight: bold;
+    border-bottom: 1px solid #333;
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+}
+/* drop-target ハイライトは右パネル全体ではなく drop-hint のみに適用 (.drop-hint.active 側で処理)。
+ * ここで右パネル自体には何も足さない (旧: 緑枠が広すぎた問題の修正)。 */
+
+/* 粘着剤タンク行 (右パネル上部) */
+.glue-tank-row {
+    display: flex; flex-direction: row; align-items: center; gap: 4px;
+    padding: 4px 6px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid #555;
+    border-radius: 4px;
+    overflow: hidden;
+}
+/* ラベルは固定幅 (左寄せ。数値の桁数が変わってもバーが動かない) */
+.glue-tank-label {
+    color: #80deea;
+    white-space: nowrap;
+    width: 110px;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 110px;
+}
+/* バー: MCSS .mc-tank-bar / .mc-tank-fill と同じ仕様。
+ * ここでは alias として残しつつ、共通定義を再宣言 (CSS は順序依存なので互換のため最小限を保持)。 */
+.glue-tank-bar {
+    flex-grow: 1; flex-shrink: 1;
+    height: 10px; background: rgba(0,0,0,0.5);
+    border: 1px solid #333; border-radius: 2px;
+    overflow: hidden; padding: 0;
+}
+.glue-tank-fill { height: 10px; background: #66bb6a; margin: 0; padding: 0; }
+.glue-tank-refill {
+    padding: 2px 6px;
+    background: rgba(102,187,106,0.15);
+    border: 1px solid #66bb6a;
+    border-radius: 3px;
+    color: #66bb6a;
+    white-space: nowrap;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+.glue-tank-refill:hover { background: rgba(102,187,106,0.3); border-color: #80deea; }
+.glue-tank-dump {
+    padding: 2px 6px;
+    background: rgba(244,67,54,0.1);
+    border: 1px solid #ef5350;
+    border-radius: 3px;
+    color: #ef5350;
+    white-space: nowrap;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+.glue-tank-dump:hover { background: rgba(244,67,54,0.25); border-color: #ff8a80; }
+
+.drop-hint {
+    color: #888;
+    white-space: nowrap;
+    text-align: center;
+    padding: 12px;
+    background: rgba(0,0,0,0.2);
+    border: 1px dashed #555;
+    border-radius: 4px;
+    margin: 4px 0;
+}
+.drop-hint.active {
+    color: #4caf50;
+    border-color: #4caf50;
+    background: rgba(76,175,80,0.18);
+    border-width: 2px;
+    border-style: dashed;
+}
+
+.detail-title { color: #4fc3f7; font-weight: bold; white-space: nowrap; }
+.detail-row { display: flex; flex-direction: row; gap: 6px; }
+.detail-label { color: #888; white-space: nowrap; }
+.detail-value { color: #4fc3f7; white-space: nowrap; }
+.detail-value-shortage { color: #ef5350; white-space: nowrap; font-weight: bold; }
+.detail-glue-row { margin-top: 1px; }
+
+.detail-preview-3d {
+    flex-grow: 1;
+    background: rgba(0,0,0,0.4);
+    border: 1px solid #222;
+    border-radius: 4px;
+    margin-top: 2px;
+    min-height: 100px;
+}
+
+.detail-loading {
+    color: #888;
+    white-space: nowrap;
+    text-align: center;
+    padding: 30px;
+}
+.detail-empty {
+    color: #555;
+    white-space: nowrap;
+    text-align: center;
+    padding: 40px 0;
+}
+
+.detail-actions {
+    display: flex; flex-direction: row; gap: 4px;
+    margin-top: 4px;
+}
+.detail-actions > .mc-btn-danger {
+    flex-basis: 60px;
+    text-align: center;
+}
+
+.material-source-row {
+    display: flex; flex-direction: row; align-items: center; gap: 4px;
+    padding: 3px 6px;
+    background: rgba(0,0,0,0.24);
+    border: 1px solid #333;
+    border-radius: 4px;
+    overflow: hidden;
+}
+.material-source-label {
+    color: #80deea;
+    white-space: nowrap;
+    width: 30px;
+}
+.material-source-pill {
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+.material-source-value {
+    color: #b0b0c0;
+    white-space: nowrap;
+    flex-grow: 1;
+}
+.material-source-hint {
+    color: #555;
+    white-space: nowrap;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+.source-pill-cyclable:hover {
+    border-color: #4fc3f7;
+    color: #4fc3f7;
+    background: rgba(79,195,247,0.15);
+}
+.material-source-row:hover {
+    border-color: #4fc3f7;
+}
+
+/* 資材一覧ボタン: 確実にクリックできる最小サイズ */
+.detail-actions > .mc-btn-accent {
+    min-width: 80px;
+    text-align: center;
+    padding: 4px 10px;
+}
+
+/* 設置ビュー (右パネル) を覆うように被せる。dialog の右端 ~8px 余白で配置。 */
+.materials-popup {
+    position: absolute;
+    left: 270px;
+    top: 36px;
+    width: 262px;
+    height: 316px;
+    z-index: 150;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+.materials-mode-row {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-bottom: 3px;
+}
+.materials-source-chip {
+    min-width: 42px;
+}
+.materials-clear-btn {
+    padding: 3px 6px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid #555;
+    border-radius: 3px;
+    color: #aaa;
+    white-space: nowrap;
+}
+.materials-clear-btn:hover {
+    border-color: #4fc3f7;
+    color: #80deea;
+}
+.materials-source-status {
+    color: #80deea;
+    white-space: nowrap;
+    margin-bottom: 2px;
+}
+.materials-hint {
+    color: #777;
+    white-space: nowrap;
+    margin-bottom: 4px;
+}
+.materials-grid {
+    width: 100%;
+    height: 220px;
+    display: flex; flex-direction: row; flex-wrap: wrap;
+    gap: 4px;
+    overflow: hidden;
+    padding-right: 6px;
+}
+.materials-slot {
+    width: 20px;
+    height: 20px;
+}
+.materials-source-chip.disabled,
+.materials-clear-btn.disabled {
+    opacity: 0.45;
+}
+
+/* ===== プリセットプレイス アカウントバッジ ===== */
+.account-btn {
+    display: flex; flex-direction: row; align-items: center; gap: 4px;
+}
+.acct-face-slot {
+    width: 12px; height: 12px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #333;
+}
+
+/* ===== プリセットプレイス: タイルパネル全幅展開 (4 列 × 3 行) ===== */
+.tiles-panel-wide {
+    width: 100%;
+    flex-grow: 1;
+    flex-basis: auto;
+}
+.tile-grid-wide {
+    width: 100%;
+    /* 4 タイル × 110px + 3 gaps × 4px = 452 → 余白 + 枠で ~480。flex-wrap で 4 個ずつ折り返す */
+    height: 272px;
+}
+
+/* ===== プリセットプレイス: ヘッダー (sort + 検索) ===== */
+.public-header-row {
+    display: flex; flex-direction: row; align-items: center; gap: 6px;
+    margin-bottom: 4px;
+}
+.public-sort-row { display: flex; flex-direction: row; gap: 2px; }
+.public-sort-chip { padding: 1px 5px; }
+.public-sort-chip.selected {
+    border-color: #4fc3f7; color: #4fc3f7;
+    background: rgba(79,195,247,0.18);
+}
+.public-search-input { flex-grow: 1; min-width: 80px; max-width: 200px; }
+.public-search-input.focused { border-color: #4fc3f7; background: rgba(79,195,247,0.10); }
+
+/* ===== プリセットプレイス: タイル内 ===== */
+.public-tile-author-row {
+    display: flex; flex-direction: row; align-items: center; gap: 3px;
+}
+.public-tile-skin-slot {
+    width: 8px; height: 8px;
+    background: rgba(0,0,0,0.5);
+    border: 1px solid #333;
+}
+.public-tile-author { color: #80deea; white-space: nowrap; }
+
+.public-tile-mods {
+    display: flex; flex-direction: row; gap: 2px; flex-wrap: wrap;
+    margin-top: 1px;
+}
+.public-tile-mod-chip {
+    padding: 0px 3px;
+    background: rgba(79,195,247,0.10);
+    border: 1px solid #4fc3f7;
+    border-radius: 2px;
+    color: #80deea;
+    white-space: nowrap;
+}
+.public-tile-mod-more { color: #888; white-space: nowrap; }
+
+/* ===== プリセットプレイス: offline ヘルプ表示 ===== */
+.offline-help {
+    display: flex; flex-direction: column; gap: 4px;
+    padding: 12px; background: rgba(0,0,0,0.3);
+    border: 1px dashed #555; border-radius: 4px;
+    align-items: flex-start;
+}
+.offline-line { color: #b0b0c0; white-space: nowrap; }
+.offline-path { color: #80deea; white-space: nowrap; }
+.offline-code { color: #aaa; white-space: nowrap; padding: 2px 4px; background: rgba(0,0,0,0.4); border-radius: 2px; }

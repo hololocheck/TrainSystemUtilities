@@ -1,0 +1,33 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "minecraft:block/iron_block",
+    "post":     "minecraft:block/iron_block",
+    "cap":      "minecraft:block/cyan_terracotta"
+  },
+  "elements": [
+    {
+      "from": [6, 0, 6],
+      "to":   [10, 9, 10],
+      "faces": {
+        "north": { "uv": [6, 7, 10, 16], "texture": "#post" },
+        "south": { "uv": [6, 7, 10, 16], "texture": "#post" },
+        "east":  { "uv": [6, 7, 10, 16], "texture": "#post" },
+        "west":  { "uv": [6, 7, 10, 16], "texture": "#post" },
+        "down":  { "uv": [6, 6, 10, 10], "texture": "#post" }
+      }
+    },
+    {
+      "from": [5, 9, 5],
+      "to":   [11, 12, 11],
+      "faces": {
+        "north": { "uv": [5, 4, 11, 7], "texture": "#cap" },
+        "south": { "uv": [5, 4, 11, 7], "texture": "#cap" },
+        "east":  { "uv": [5, 4, 11, 7], "texture": "#cap" },
+        "west":  { "uv": [5, 4, 11, 7], "texture": "#cap" },
+        "up":    { "uv": [5, 5, 11, 11], "texture": "#cap" },
+        "down":  { "uv": [5, 5, 11, 11], "texture": "#cap" }
+      }
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "E",
+    "P",
+    "C"
+  ],
+  "key": {
+    "E": { "item": "create:electron_tube" },
+    "P": { "item": "minecraft:comparator" },
+    "C": { "item": "create:copper_sheet" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:power_checker"
+  }
+}

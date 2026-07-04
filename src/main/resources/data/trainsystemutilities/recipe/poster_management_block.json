@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SLS",
+    "SAS",
+    "PPP"
+  ],
+  "key": {
+    "S": { "item": "create:sturdy_sheet" },
+    "L": { "item": "create:display_link" },
+    "A": { "item": "minecraft:painting" },
+    "P": { "item": "create:precision_mechanism" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:poster_management_block"
+  }
+}

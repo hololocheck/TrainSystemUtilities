@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north,part=center": { "model": "trainsystemutilities:block/fe_inverter" },
+    "facing=south,part=center": { "model": "trainsystemutilities:block/fe_inverter", "y": 180 },
+    "facing=west,part=center":  { "model": "trainsystemutilities:block/fe_inverter", "y": 270 },
+    "facing=east,part=center":  { "model": "trainsystemutilities:block/fe_inverter", "y": 90 },
+    "facing=north,part=head":   { "model": "trainsystemutilities:block/fe_inverter_empty" },
+    "facing=south,part=head":   { "model": "trainsystemutilities:block/fe_inverter_empty" },
+    "facing=west,part=head":    { "model": "trainsystemutilities:block/fe_inverter_empty" },
+    "facing=east,part=head":    { "model": "trainsystemutilities:block/fe_inverter_empty" },
+    "facing=north,part=tail":   { "model": "trainsystemutilities:block/fe_inverter_empty" },
+    "facing=south,part=tail":   { "model": "trainsystemutilities:block/fe_inverter_empty" },
+    "facing=west,part=tail":    { "model": "trainsystemutilities:block/fe_inverter_empty" },
+    "facing=east,part=tail":    { "model": "trainsystemutilities:block/fe_inverter_empty" }
+  }
+}

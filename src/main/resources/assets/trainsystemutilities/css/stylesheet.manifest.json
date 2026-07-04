@@ -1,0 +1,27 @@
+{
+  "name": "trainsystem-utilities",
+  "entries": [
+    "variables.css",
+    "templates.css",
+    "components/button.css",
+    "components/popup.css",
+    "screens/management_computer.css",
+    "screens/railway_management.css",
+    "screens/poster_management.css",
+    "screens/train_preset_browse.css",
+    "screens/preset_place_detail.css",
+    "screens/preset_place_profile.css",
+    "popups/preset_place_upload.css",
+    "popups/layout.css",
+    "popups/train.css",
+    "popups/color_picker.css",
+    "popups/symbol_editor.css",
+    "popups/color.css",
+    "popups/schedule_editor.css",
+    "popups/railway_settings.css",
+    "popups/railway_color.css",
+    "popups/poster_anim.css",
+    "popups/train_preset_save.css",
+    "popups/train_preset_refill.css"
+  ]
+}

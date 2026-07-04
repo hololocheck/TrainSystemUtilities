@@ -1,0 +1,45 @@
+MIT License
+
+Copyright (c) 2026 BelugaLab
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+NOTICE — Preset Place online components are NOT covered by this MIT license
+================================================================================
+
+The MIT license above applies to the open-core source code published in this
+repository.
+
+The distributed mod binary (the released .jar) additionally bundles the
+"Preset Place" online components — the preset sharing service client, its
+authentication flow, and the associated online browsing/upload/profile user
+interfaces (the classes under `com.trainsystemutilities.presetplace.*` and the
+Preset Place online screens). These components are proprietary and are
+provided in obfuscated form only. Their source code is NOT published in this
+repository and is NOT licensed under MIT.
+
+You may run these proprietary components unmodified as part of the mod for
+personal gameplay. You may NOT redistribute them separately, reverse engineer,
+decompile, or create derivative works of them, except to the minimum extent
+such activity cannot be prohibited under applicable law.
+
+All local, offline functionality of the mod (railway management, wiring,
+electrification, routing, timetables, monitors, wiki, and local preset save /
+placement) is part of the MIT-licensed open core.

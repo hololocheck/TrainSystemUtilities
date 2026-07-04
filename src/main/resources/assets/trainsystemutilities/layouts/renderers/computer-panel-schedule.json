@@ -1,0 +1,218 @@
+{
+  "tag": "col",
+  "classes": [
+    "panel",
+    "schedule-panel"
+  ],
+  "dynamicW": "pw",
+  "dynamicH": "ph",
+  "children": [
+    {
+      "tag": "span",
+      "classes": [
+        "panel-title",
+        "schedule-title"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "colorKey": "panelTitle",
+      "fontScaleKey": "fsScale",
+      "fontWeight": "bold"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "train-name",
+        "schedule-train-name",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "colorKey": "trainName",
+      "fontScaleKey": "fsScale",
+      "fontWeight": "bold",
+      "visibleKey": "schedule_train_name_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched0",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched0_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched1",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched1_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched2",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched2_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched3",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched3_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched4",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched4_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched5",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched5_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched6",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched6_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched7",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched7_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched8",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched8_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched9",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched9_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched10",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched10_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "sched11",
+        "anim-slide-in"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "sched11_visible",
+      "animationKey": "schedule_anim"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "train-info-text",
+        "schedule-overflow"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "schedule_overflow_visible"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "train-info-text",
+        "schedule-page"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "color": "#666666",
+      "fontScaleKey": "fsScale",
+      "visibleKey": "schedule_page_visible"
+    }
+  ]
+}

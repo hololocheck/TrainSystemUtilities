@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "HHH",
+    "P P"
+  ],
+  "key": {
+    "H": { "item": "create:iron_sheet" },
+    "P": { "item": "trainsystemutilities:overhead_pole" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:overhead_truss"
+  }
+}

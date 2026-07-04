@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CCC",
+    "S S",
+    " A "
+  ],
+  "key": {
+    "C": { "item": "create:copper_sheet" },
+    "S": { "item": "create:shaft" },
+    "A": { "item": "create:andesite_alloy" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:pantograph"
+  }
+}

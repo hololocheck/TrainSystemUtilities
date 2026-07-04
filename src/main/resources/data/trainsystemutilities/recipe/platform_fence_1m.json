@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "III",
+    "A A"
+  ],
+  "key": {
+    "I": { "item": "minecraft:iron_bars" },
+    "A": { "item": "create:andesite_alloy" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:platform_fence_1m"
+  }
+}

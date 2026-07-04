@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "trainsystemutilities:monitor_half" },
+    { "item": "trainsystemutilities:monitor_half" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:double_monitor_half"
+  }
+}

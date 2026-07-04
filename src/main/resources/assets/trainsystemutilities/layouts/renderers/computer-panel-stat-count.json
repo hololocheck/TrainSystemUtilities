@@ -1,0 +1,34 @@
+{
+  "tag": "col",
+  "classes": [
+    "panel"
+  ],
+  "dynamicW": "pw",
+  "dynamicH": "ph",
+  "children": [
+    {
+      "tag": "span",
+      "classes": [
+        "panel-title",
+        "stat-label"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "titleH",
+      "colorKey": "panelTitle",
+      "fontScaleKey": "fsScale",
+      "fontWeight": "bold"
+    },
+    {
+      "tag": "span",
+      "classes": [
+        "stat-large",
+        "stat-value"
+      ],
+      "dynamicW": "contentW",
+      "dynamicH": "valueH",
+      "colorKey": "statValue",
+      "fontScaleKey": "valueScale",
+      "fontWeight": "bold"
+    }
+  ]
+}

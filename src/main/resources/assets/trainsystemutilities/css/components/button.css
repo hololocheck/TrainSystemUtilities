@@ -1,0 +1,13 @@
+/* ===== ボタンコンポーネント ===== */
+
+.btn {
+    @apply button-base;
+}
+
+.btn-primary {
+    @apply button-primary;
+}
+
+.btn-danger {
+    @apply button-danger;
+}

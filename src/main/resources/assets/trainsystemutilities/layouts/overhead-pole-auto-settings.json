@@ -1,0 +1,43 @@
+{"bg":"#1a1a2e","color":"","borderColor":"#4fc3f7","borderWidth":2,"borderRadius":10,"fontWeight":"","isSlot":false,"text":"","children":[
+  {"bg":"","color":"#4fc3f7","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"bold","isSlot":false,"text":"","translatableKey":"tsu.opas.title","children":[],"tag":"span","classes":["opas-title"],"x":12,"y":12,"w":348,"h":11},
+  {"bg":"","color":"#80deea","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"span","classes":["hint-toggle-label"],"x":366,"y":12,"w":30,"h":11,"translatableKey":"tsu.common.hint"},
+  {"bg":"#555","color":"","borderColor":"","borderWidth":0,"borderRadius":6,"fontWeight":"","isSlot":false,"text":"","children":[{"bg":"#aaa","color":"","borderColor":"","borderWidth":0,"borderRadius":4,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["hint-toggle-knob"],"x":402,"y":13,"w":8,"h":8,"bgKey":"hint-knob-bg","dynamicX":"hint-knob-x","transitionKey":"toggle-knob"}],"tag":"div","classes":["hint-toggle-track"],"x":400,"y":11,"w":24,"h":12,"bgKey":"hint-toggle-bg","clickable":true,"transitionKey":"toggle-bg"},
+  {"bg":"rgba(255,255,255,0.05)","color":"#80deea","borderColor":"#555","borderWidth":1,"borderRadius":3,"fontWeight":"","isSlot":false,"text":"📖","children":[],"tag":"div","classes":["wiki-btn"],"x":430,"y":10,"w":16,"h":14,"textAlign":"center","hoverColor":"#fff","hoverBorderColor":"#4fc3f7","clickable":true},
+  {"bg":"rgba(255,255,255,0.05)","color":"#aaa","borderColor":"#555","borderWidth":1,"borderRadius":3,"fontWeight":"","isSlot":false,"text":"×","children":[],"tag":"div","classes":["opas-close","mc-popup-close"],"x":452,"y":10,"w":16,"h":14,"hoverColor":"#f44","hoverBorderColor":"#f44","clickable":true,"textAlign":"center"},
+  {"bg":"#4fc3f7","color":"","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["opas-sep"],"x":12,"y":28,"w":456,"h":1},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.label_height","children":[],"tag":"span","classes":["opas-label"],"x":14,"y":42,"w":108,"h":11},
+  {"bg":"rgba(0,0,0,0.4)","color":"#ffd54f","borderColor":"#333","borderWidth":1,"borderRadius":3,"fontWeight":"bold","isSlot":false,"text":"3","children":[],"tag":"div","classes":["opas-value","opas-h-value"],"x":124,"y":38,"w":64,"h":20,"textAlign":"center","dynamicText":"opas-h-value","wheelKey":"opas-h-wheel","hoverBg":"rgba(255,213,79,0.10)","hoverBorderColor":"#ffd54f"},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.label_clearance","children":[],"tag":"span","classes":["opas-label"],"x":14,"y":70,"w":108,"h":11},
+  {"bg":"rgba(0,0,0,0.4)","color":"#ffd54f","borderColor":"#333","borderWidth":1,"borderRadius":3,"fontWeight":"bold","isSlot":false,"text":"1","children":[],"tag":"div","classes":["opas-value","opas-c-value"],"x":124,"y":66,"w":64,"h":20,"textAlign":"center","dynamicText":"opas-c-value","wheelKey":"opas-c-wheel","hoverBg":"rgba(255,213,79,0.10)","hoverBorderColor":"#ffd54f"},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.label_multi","children":[],"tag":"span","classes":["opas-label"],"x":14,"y":98,"w":108,"h":11},
+  {"bg":"rgba(0,0,0,0.4)","color":"#80deea","borderColor":"#333","borderWidth":1,"borderRadius":3,"fontWeight":"bold","isSlot":false,"text":"1","children":[],"tag":"div","classes":["opas-value","opas-m-value"],"x":124,"y":94,"w":64,"h":20,"textAlign":"center","dynamicText":"opas-m-value","wheelKey":"opas-m-wheel","hoverBg":"rgba(128,222,234,0.10)","hoverBorderColor":"#80deea"},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.label_cantilever","children":[],"tag":"span","classes":["opas-label"],"x":14,"y":126,"w":108,"h":11},
+  {"bg":"#555","color":"","borderColor":"","borderWidth":0,"borderRadius":6,"fontWeight":"","isSlot":false,"text":"","children":[
+    {"bg":"#aaa","color":"","borderColor":"","borderWidth":0,"borderRadius":4,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["opas-cant-knob"],"x":126,"y":124,"w":8,"h":8,"bgKey":"opas-cant-knob-bg","dynamicX":"opas-cant-knob-x","transitionKey":"toggle-knob"}
+  ],"tag":"div","classes":["opas-cant-track"],"x":124,"y":122,"w":24,"h":12,"bgKey":"opas-cant-track-bg","clickable":true,"transitionKey":"toggle-bg"},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.label_truss","children":[],"tag":"span","classes":["opas-label"],"x":14,"y":150,"w":108,"h":11},
+  {"bg":"#555","color":"","borderColor":"","borderWidth":0,"borderRadius":6,"fontWeight":"","isSlot":false,"text":"","children":[
+    {"bg":"#aaa","color":"","borderColor":"","borderWidth":0,"borderRadius":4,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["opas-truss-knob"],"x":126,"y":148,"w":8,"h":8,"bgKey":"opas-truss-knob-bg","dynamicX":"opas-truss-knob-x","transitionKey":"toggle-knob"}
+  ],"tag":"div","classes":["opas-truss-track"],"x":124,"y":146,"w":24,"h":12,"bgKey":"opas-truss-track-bg","clickable":true,"transitionKey":"toggle-bg"},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.label_insulator","children":[],"tag":"span","classes":["opas-label"],"x":14,"y":174,"w":108,"h":11},
+  {"bg":"#555","color":"","borderColor":"","borderWidth":0,"borderRadius":6,"fontWeight":"","isSlot":false,"text":"","children":[
+    {"bg":"#aaa","color":"","borderColor":"","borderWidth":0,"borderRadius":4,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["opas-ins-knob"],"x":126,"y":172,"w":8,"h":8,"bgKey":"opas-ins-knob-bg","dynamicX":"opas-ins-knob-x","transitionKey":"toggle-knob"}
+  ],"tag":"div","classes":["opas-ins-track"],"x":124,"y":170,"w":24,"h":12,"bgKey":"opas-ins-track-bg","clickable":true,"transitionKey":"toggle-bg"},
+
+  {"bg":"","color":"#4fc3f7","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"bold","isSlot":false,"text":"","translatableKey":"tsu.opas.storage_title","children":[],"tag":"span","classes":["opas-storage-title"],"x":14,"y":198,"w":186,"h":11},
+  {"bg":"","color":"#80deea","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"—","dynamicText":"opas-storage-chest","children":[],"tag":"span","classes":["opas-storage-chest"],"x":14,"y":212,"w":186,"h":11},
+  {"bg":"","color":"#80deea","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"—","dynamicText":"opas-storage-me","children":[],"tag":"span","classes":["opas-storage-me"],"x":14,"y":226,"w":186,"h":11},
+  {"bg":"#333344","color":"","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["opas-vsep"],"x":204,"y":36,"w":1,"h":234},
+
+  {"bg":"rgba(0,0,0,0.4)","color":"","borderColor":"#333","borderWidth":1,"borderRadius":3,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"canvas","classes":["opas-preview"],"canvasKey":"opas-preview","x":214,"y":38,"w":256,"h":230,"wheelKey":"opas-preview-zoom","dragKey":"opas-preview-rotate"},
+
+  {"bg":"#333344","color":"","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["opas-sep2"],"x":12,"y":272,"w":458,"h":1},
+
+  {"bg":"rgba(102,187,106,0.15)","color":"#66bb6a","borderColor":"#66bb6a","borderWidth":1,"borderRadius":3,"fontWeight":"bold","isSlot":false,"text":"","translatableKey":"tsu.opas.apply_btn","children":[],"tag":"div","classes":["opas-apply-btn"],"x":218,"y":280,"w":252,"h":18,"textAlign":"center","hoverBg":"rgba(102,187,106,0.30)","hoverColor":"#fff","clickable":true}
+],"tag":"div","classes":["dialog","opas-dialog"],"x":0,"y":0,"w":482,"h":302,"animationKey":"dialog-open"}

@@ -1,0 +1,48 @@
+/* ===== ポスター管理 アニメーション設定ポップアップ ===== */
+@keyframes popup-open {
+    0% { opacity: 0; margin-top: 30px; }
+    100% { opacity: 1; margin-top: 0px; }
+}
+.popup {
+    @apply popup-base-md;
+    width: 150px;
+}
+.popup-opening {
+    @apply popup-base-md;
+    width: 150px;
+    animation: popup-open 0.25s ease-out;
+}
+/* popup-header/title/close は UIComponents.getComponentCSS() で提供 */
+.settings-content { display: flex; flex-direction: column; gap: 2px; }
+.settings-item { display: flex; align-items: center; gap: 4px; padding: 2px 4px; }
+.settings-label { @apply info-label-style; }
+.settings-value { @apply info-value-style; }
+.settings-hint { color: #555; white-space: nowrap; }
+.track-display {
+    color: #4fc3f7; white-space: nowrap;
+    padding: 1px 6px; border: 1px solid #333; border-radius: 3px;
+    background: rgba(79,195,247,0.05);
+}
+.track-display:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.15); }
+.settings-value-btn {
+    color: #4fc3f7; white-space: nowrap;
+    padding: 1px 4px; border: 1px solid #555; border-radius: 2px;
+    background: rgba(79,195,247,0.1);
+}
+.settings-value-btn:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.25); }
+.settings-btn {
+    padding: 1px 6px; border: 1px solid #555; border-radius: 2px;
+    color: #4fc3f7; white-space: nowrap; background: rgba(79,195,247,0.05);
+}
+.settings-btn:hover { border-color: #4fc3f7; background: rgba(79,195,247,0.2); }
+.settings-btn:active { background: rgba(79,195,247,0.5); }
+.anim-type-item {
+    padding: 2px 4px; border-radius: 3px;
+    color: #888; white-space: nowrap; border: 1px solid transparent;
+}
+.anim-type-item:hover { color: #4fc3f7; border-color: #555; }
+.anim-type-selected {
+    padding: 2px 4px; border-radius: 3px;
+    color: #4fc3f7; font-weight: bold; white-space: nowrap;
+    border: 1px solid #4fc3f7; background: rgba(79,195,247,0.15);
+}

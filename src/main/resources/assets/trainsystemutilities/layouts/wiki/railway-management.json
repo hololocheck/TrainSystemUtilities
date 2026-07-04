@@ -1,0 +1,636 @@
+{
+  "classes": [
+    "dialog"
+  ],
+  "w": 236,
+  "h": 316,
+  "bg": "#1a1a2e",
+  "borderColor": "#4fc3f7",
+  "borderWidth": 2,
+  "borderRadius": 10,
+  "children": [
+    {
+      "tag": "col",
+      "w": 236,
+      "h": 316,
+      "padding": 10,
+      "children": [
+        {
+          "tag": "row",
+          "classes": [
+            "header"
+          ],
+          "w": 216,
+          "h": 12,
+          "gap": 4,
+          "justify": "space-between",
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "header-title"
+              ],
+              "w": 80,
+              "h": 12,
+              "color": "#4fc3f7",
+              "fontWeight": "bold",
+              "text": "鉄道管理"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "header-right"
+              ],
+              "w": 70,
+              "h": 12,
+              "gap": 6,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "row",
+                  "classes": [
+                    "mc-toggle-row"
+                  ],
+                  "w": 65,
+                  "h": 12,
+                  "gap": 3,
+                  "align": "center",
+                  "children": [
+                    {
+                      "classes": [
+                        "mc-toggle-btn"
+                      ],
+                      "w": 22,
+                      "h": 12,
+                      "children": [
+                        {
+                          "classes": [
+                            "mc-toggle-track-on"
+                          ],
+                          "x": 2,
+                          "y": 2,
+                          "w": 18,
+                          "h": 8,
+                          "bg": "#4caf50",
+                          "borderRadius": 4,
+                          "children": [
+                            {
+                              "classes": [
+                                "mc-toggle-knob-on"
+                              ],
+                              "x": 8,
+                              "y": 2,
+                              "w": 8,
+                              "h": 8,
+                              "bg": "#ffffff",
+                              "borderRadius": 4
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "mc-toggle-label"
+                      ],
+                      "w": 40,
+                      "h": 12,
+                      "color": "#555555",
+                      "text": "ヒント"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "w": 216,
+          "h": 4
+        },
+        {
+          "w": 216,
+          "h": 1,
+          "bg": "#4fc3f7"
+        },
+        {
+          "w": 216,
+          "h": 4
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "time-bar"
+          ],
+          "w": 216,
+          "h": 22,
+          "gap": 4,
+          "justify": "space-between",
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "mc-time"
+              ],
+              "w": 36,
+              "h": 22,
+              "color": "#ffc107",
+              "text": "12:34"
+            },
+            {
+              "tag": "canvas",
+              "classes": [
+                "header-sym-space"
+              ],
+              "w": 22,
+              "h": 22,
+              "canvasKey": "railwaySymbol"
+            },
+            {
+              "classes": [
+                "header-badge"
+              ],
+              "w": 28,
+              "h": 12,
+              "bg": "#4fc3f7",
+              "borderRadius": 4,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 1,
+                  "w": 16,
+                  "h": 10,
+                  "color": "#000000",
+                  "fontWeight": "bold",
+                  "text": "A駅"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "w": 216,
+          "h": 4
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "content"
+          ],
+          "w": 216,
+          "gap": 1,
+          "flex": 1,
+          "children": [
+            {
+              "tag": "col",
+              "classes": [
+                "section-title-wrap"
+              ],
+              "w": 216,
+              "h": 15,
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "section-title"
+                  ],
+                  "w": 216,
+                  "h": 12,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "停車中の列車"
+                },
+                {
+                  "w": 216,
+                  "h": 1
+                },
+                {
+                  "w": 216,
+                  "h": 1,
+                  "bg": "#333333"
+                },
+                {
+                  "w": 216,
+                  "h": 1
+                }
+              ]
+            },
+            {
+              "tag": "col",
+              "classes": [
+                "section-content",
+                "arrived-section-fixed"
+              ],
+              "w": 216,
+              "h": 28,
+              "gap": 1,
+              "children": [
+                {
+                  "classes": [
+                    "train-row"
+                  ],
+                  "w": 216,
+                  "h": 28,
+                  "bg": "#1a4fc3f7",
+                  "borderColor": "#333333",
+                  "borderWidth": 1,
+                  "borderRadius": 4,
+                  "children": [
+                    {
+                      "tag": "col",
+                      "w": 216,
+                      "h": 28,
+                      "gap": 1,
+                      "padding": 2,
+                      "children": [
+                        {
+                          "tag": "row",
+                          "classes": [
+                            "train-line1"
+                          ],
+                          "w": 212,
+                          "h": 12,
+                          "gap": 4,
+                          "align": "center",
+                          "children": [
+                            {
+                              "tag": "span",
+                              "classes": [
+                                "train-name"
+                              ],
+                              "w": 60,
+                              "h": 12,
+                              "color": "#4fc3f7",
+                              "text": "無名の列車"
+                            },
+                            {
+                              "tag": "span",
+                              "classes": [
+                                "train-detail"
+                              ],
+                              "w": 24,
+                              "h": 12,
+                              "color": "#888888",
+                              "text": "8両"
+                            },
+                            {
+                              "tag": "span",
+                              "classes": [
+                                "train-dest"
+                              ],
+                              "w": 50,
+                              "h": 12,
+                              "color": "#80deca",
+                              "text": "→ B駅"
+                            }
+                          ]
+                        },
+                        {
+                          "tag": "row",
+                          "classes": [
+                            "train-line2"
+                          ],
+                          "w": 212,
+                          "h": 12,
+                          "gap": 4,
+                          "align": "center",
+                          "children": [
+                            {
+                              "tag": "span",
+                              "classes": [
+                                "train-arr-time"
+                              ],
+                              "w": 50,
+                              "h": 12,
+                              "color": "#80deca",
+                              "text": "12:30着"
+                            },
+                            {
+                              "tag": "span",
+                              "classes": [
+                                "train-dep-time"
+                              ],
+                              "w": 50,
+                              "h": 12,
+                              "color": "#ffc107",
+                              "text": "12:35発"
+                            },
+                            {
+                              "tag": "span",
+                              "classes": [
+                                "train-time"
+                              ],
+                              "w": 50,
+                              "h": 12,
+                              "color": "#ffc107",
+                              "text": "30秒後"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "w": 216,
+              "h": 3
+            },
+            {
+              "tag": "col",
+              "classes": [
+                "section-title-row-wrap"
+              ],
+              "w": 216,
+              "h": 15,
+              "children": [
+                {
+                  "tag": "row",
+                  "classes": [
+                    "section-title-row"
+                  ],
+                  "w": 216,
+                  "h": 12,
+                  "gap": 4,
+                  "justify": "space-between",
+                  "align": "center",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "section-title-text"
+                      ],
+                      "w": 216,
+                      "h": 12,
+                      "color": "#4fc3f7",
+                      "fontWeight": "bold",
+                      "text": "次に停車する列車"
+                    }
+                  ]
+                },
+                {
+                  "w": 216,
+                  "h": 1
+                },
+                {
+                  "w": 216,
+                  "h": 1,
+                  "bg": "#333333"
+                },
+                {
+                  "w": 216,
+                  "h": 1
+                }
+              ]
+            },
+            {
+              "tag": "col",
+              "classes": [
+                "section-content",
+                "next-section-fixed"
+              ],
+              "w": 216,
+              "h": 58,
+              "gap": 1,
+              "children": [
+                {
+                  "classes": [
+                    "next-row"
+                  ],
+                  "w": 216,
+                  "h": 58,
+                  "bg": "#08ffffff",
+                  "borderColor": "#222222",
+                  "borderWidth": 1,
+                  "borderRadius": 4,
+                  "children": [
+                    {
+                      "tag": "col",
+                      "w": 216,
+                      "h": 58,
+                      "gap": 1,
+                      "padding": 2,
+                      "children": [
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "next-name"
+                          ],
+                          "w": 212,
+                          "h": 12,
+                          "color": "#555555",
+                          "text": "停止テスト"
+                        },
+                        {
+                          "tag": "span",
+                          "classes": [
+                            "next-detail"
+                          ],
+                          "w": 212,
+                          "h": 12,
+                          "color": "#444444",
+                          "text": "→ A駅  120秒後"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "w": 216,
+          "h": 3
+        },
+        {
+          "w": 216,
+          "h": 1,
+          "bg": "#333333"
+        },
+        {
+          "w": 216,
+          "h": 3
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "monitor-section"
+          ],
+          "w": 216,
+          "h": 48,
+          "gap": 2,
+          "children": [
+            {
+              "tag": "row",
+              "classes": [
+                "monitor-status-line"
+              ],
+              "w": 216,
+              "h": 12,
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "classes": [
+                    "monitor-indicator-on"
+                  ],
+                  "w": 6,
+                  "h": 6,
+                  "bg": "#4caf50",
+                  "borderRadius": 3
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "monitor-online"
+                  ],
+                  "w": 110,
+                  "h": 12,
+                  "color": "#4caf50",
+                  "text": "モニターオンライン"
+                },
+                {
+                  "classes": [
+                    "mc-toggle-btn"
+                  ],
+                  "w": 22,
+                  "h": 12,
+                  "children": [
+                    {
+                      "classes": [
+                        "mc-toggle-track-on"
+                      ],
+                      "x": 2,
+                      "y": 2,
+                      "w": 18,
+                      "h": 8,
+                      "bg": "#4caf50",
+                      "borderRadius": 4,
+                      "children": [
+                        {
+                          "classes": [
+                            "mc-toggle-knob-on"
+                          ],
+                          "x": 8,
+                          "y": 2,
+                          "w": 8,
+                          "h": 8,
+                          "bg": "#ffffff",
+                          "borderRadius": 4
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "monitor-info"
+              ],
+              "w": 216,
+              "h": 12,
+              "color": "#666666",
+              "text": "1グループのモニターがリンクされています"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "monitor-slot-row"
+              ],
+              "w": 216,
+              "h": 20,
+              "gap": 4,
+              "align": "center",
+              "children": [
+                {
+                  "classes": [
+                    "mc-inventory-slot",
+                    "monitor-slot"
+                  ],
+                  "w": 20,
+                  "h": 20,
+                  "bg": "#1a4fc3f7",
+                  "borderColor": "#4fc3f7",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "monitor-settings-btn"
+                  ],
+                  "w": 50,
+                  "h": 14,
+                  "bg": "#1a4fc3f7",
+                  "borderColor": "#4fc3f7",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 2,
+                      "w": 38,
+                      "h": 10,
+                      "color": "#4fc3f7",
+                      "text": "⚙ 設定"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "monitor-settings-btn"
+                  ],
+                  "w": 36,
+                  "h": 14,
+                  "bg": "#1a4fc3f7",
+                  "borderColor": "#4fc3f7",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "x": 6,
+                      "y": 2,
+                      "w": 24,
+                      "h": 10,
+                      "color": "#4fc3f7",
+                      "text": "▒ 色"
+                    }
+                  ]
+                },
+                {
+                  "classes": [
+                    "image-spacer"
+                  ],
+                  "h": 20,
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-avatar-box",
+                    "owner-face",
+                    "owner-public"
+                  ],
+                  "w": 20,
+                  "h": 20,
+                  "bg": "#3a4f6e",
+                  "borderColor": "#4caf50",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

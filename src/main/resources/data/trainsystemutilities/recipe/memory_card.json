@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "CEC"
+  ],
+  "key": {
+    "C": { "item": "create:copper_sheet" },
+    "E": { "item": "create:electron_tube" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:memory_card"
+  }
+}

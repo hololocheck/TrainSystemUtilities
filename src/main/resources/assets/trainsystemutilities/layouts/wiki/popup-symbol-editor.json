@@ -1,0 +1,639 @@
+{
+  "classes": [
+    "sym-editor"
+  ],
+  "w": 190,
+  "h": 286,
+  "bg": "#1a1a2e",
+  "borderColor": "#4fc3f7",
+  "borderWidth": 2,
+  "borderRadius": 10,
+  "children": [
+    {
+      "tag": "col",
+      "w": 190,
+      "h": 286,
+      "gap": 3,
+      "padding": 6,
+      "children": [
+        {
+          "tag": "col",
+          "classes": [
+            "mc-popup-header",
+            "popup-header"
+          ],
+          "w": 178,
+          "h": 18,
+          "children": [
+            {
+              "tag": "row",
+              "w": 180,
+              "h": 14,
+              "gap": 4,
+              "justify": "space-between",
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "mc-popup-title",
+                    "popup-title"
+                  ],
+                  "w": 120,
+                  "h": 14,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "記号エディタ"
+                },
+                {
+                  "classes": [
+                    "mc-popup-close",
+                    "popup-close",
+                    "tsu-close-button"
+                  ],
+                  "w": 16,
+                  "h": 12,
+                  "bg": "#0dffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "w": 16,
+                      "h": 12,
+                      "color": "#aaaaaa",
+                      "fontWeight": "bold",
+                      "textAlign": "center",
+                      "text": "×"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "w": 180,
+              "h": 1
+            },
+            {
+              "w": 180,
+              "h": 1,
+              "bg": "#4fc3f7"
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "sym-preview"
+          ],
+          "w": 178,
+          "h": 48,
+          "padding": 4,
+          "justify": "center",
+          "align": "center",
+          "children": [
+            {
+              "classes": [
+                "sym-badge"
+              ],
+              "w": 40,
+              "h": 40,
+              "bg": "#ffffff",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 3,
+              "borderRadius": 4,
+              "children": [
+                {
+                  "tag": "col",
+                  "w": 40,
+                  "h": 40,
+                  "justify": "center",
+                  "align": "center",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "sym-letters"
+                      ],
+                      "w": 40,
+                      "h": 14,
+                      "color": "#000000",
+                      "fontWeight": "bold",
+                      "text": "JA"
+                    },
+                    {
+                      "classes": [
+                        "sym-divider"
+                      ],
+                      "w": 24,
+                      "h": 1,
+                      "bg": "#4fc3f7"
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "sym-number"
+                      ],
+                      "w": 40,
+                      "h": 14,
+                      "color": "#000000",
+                      "fontWeight": "bold",
+                      "text": "01"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "sym-field-row"
+          ],
+          "w": 178,
+          "h": 14,
+          "gap": 4,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "sym-field-label"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#888888",
+              "text": "文字1:"
+            },
+            {
+              "classes": [
+                "sym-field-val"
+              ],
+              "w": 30,
+              "h": 14,
+              "bg": "#1a4fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 8,
+                  "y": 2,
+                  "w": 14,
+                  "h": 10,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "J"
+                }
+              ]
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "sched-edit-hint"
+              ],
+              "w": 14,
+              "h": 12,
+              "color": "#555555",
+              "text": "↑↓"
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "sym-field-row"
+          ],
+          "w": 178,
+          "h": 14,
+          "gap": 4,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "sym-field-label"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#888888",
+              "text": "文字2:"
+            },
+            {
+              "classes": [
+                "sym-field-val"
+              ],
+              "w": 30,
+              "h": 14,
+              "bg": "#1a4fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 8,
+                  "y": 2,
+                  "w": 14,
+                  "h": 10,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "A"
+                }
+              ]
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "sched-edit-hint"
+              ],
+              "w": 14,
+              "h": 12,
+              "color": "#555555",
+              "text": "↑↓"
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "sym-field-row"
+          ],
+          "w": 178,
+          "h": 14,
+          "gap": 4,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "sym-field-label"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#888888",
+              "text": "番号:"
+            },
+            {
+              "classes": [
+                "sym-field-val"
+              ],
+              "w": 30,
+              "h": 14,
+              "bg": "#1a4fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 8,
+                  "y": 2,
+                  "w": 14,
+                  "h": 10,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "01"
+                }
+              ]
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "sched-edit-hint"
+              ],
+              "w": 14,
+              "h": 12,
+              "color": "#555555",
+              "text": "↑↓"
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "sym-field-row"
+          ],
+          "w": 178,
+          "h": 14,
+          "gap": 4,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "sym-field-label"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#888888",
+              "text": "アール:"
+            },
+            {
+              "classes": [
+                "sym-field-val"
+              ],
+              "w": 30,
+              "h": 14,
+              "bg": "#1a4fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 8,
+                  "y": 2,
+                  "w": 14,
+                  "h": 10,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "8"
+                }
+              ]
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "sched-edit-hint"
+              ],
+              "w": 14,
+              "h": 12,
+              "color": "#555555",
+              "text": "↑↓"
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "sym-field-row"
+          ],
+          "w": 178,
+          "h": 14,
+          "gap": 4,
+          "align": "center",
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "sym-field-label"
+              ],
+              "w": 40,
+              "h": 12,
+              "color": "#888888",
+              "text": "枠色:"
+            },
+            {
+              "classes": [
+                "sym-field-val"
+              ],
+              "w": 58,
+              "h": 14,
+              "bg": "#1a4fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 8,
+                  "y": 2,
+                  "w": 42,
+                  "h": 10,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "#4fc3f7"
+                }
+              ]
+            },
+            {
+              "tag": "span",
+              "classes": [
+                "sched-edit-hint"
+              ],
+              "w": 14,
+              "h": 12,
+              "color": "#555555",
+              "text": "↑↓"
+            }
+          ]
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "sym-palette"
+          ],
+          "w": 178,
+          "h": 40,
+          "gap": 3,
+          "children": [
+            {
+              "tag": "row",
+              "classes": [
+                "sym-pal-row"
+              ],
+              "w": 178,
+              "h": 16,
+              "gap": 3,
+              "children": [
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#4fc3f7",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#ff5252",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#4caf50",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#ffc107",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#e91e63",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#9c27b0",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#ff9800",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#00bcd4",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#8bc34a",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#f44336",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "classes": [
+                "sym-custom-btn"
+              ],
+              "w": 178,
+              "h": 14,
+              "bg": "#1a4fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 2,
+                  "w": 166,
+                  "h": 10,
+                  "color": "#4fc3f7",
+                  "text": "▣ カラーピッカー"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "mc-btn-row"
+          ],
+          "w": 178,
+          "h": 20,
+          "gap": 6,
+          "align": "center",
+          "children": [
+            {
+              "classes": [
+                "mc-btn-primary"
+              ],
+              "w": 80,
+              "h": 18,
+              "bg": "#4caf50",
+              "borderRadius": 6,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 14,
+                  "y": 4,
+                  "w": 52,
+                  "h": 10,
+                  "color": "#ffffff",
+                  "fontWeight": "bold",
+                  "textAlign": "center",
+                  "text": "✓ 保存"
+                }
+              ]
+            },
+            {
+              "classes": [
+                "mc-btn-secondary"
+              ],
+              "w": 80,
+              "h": 18,
+              "bg": "#0dffffff",
+              "borderColor": "#555555",
+              "borderWidth": 1,
+              "borderRadius": 6,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 14,
+                  "y": 4,
+                  "w": 52,
+                  "h": 10,
+                  "color": "#aaaaaa",
+                  "textAlign": "center",
+                  "text": "× キャンセル"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+/* ===== カラーピッカーポップアップ ===== */
+@keyframes popup-open { 0% { opacity: 0; margin-top: 30px; } 100% { opacity: 1; margin-top: 0px; } }
+.cp-popup {
+    @apply popup-base-lg;
+    width: 170px;
+}
+.cp-popup.popup-opening {
+    @apply popup-open-anim;
+}
+.cp-hue-bar { width: 100%; height: 12px; border-radius: 2px; border: 1px solid #333; }
+.cp-sv-panel { width: 100%; height: 80px; border-radius: 2px; border: 1px solid #333; }
+.cp-preview-row { display: flex; align-items: center; gap: 6px; }
+.cp-preview { width: 20px; height: 14px; border-radius: 2px; border: 1px solid #555; }
+.cp-hex-display { color: #fff; white-space: nowrap; font-weight: bold; }
+.cp-palette { display: flex; flex-direction: column; gap: 3px; padding-top: 3px; border-top: 1px solid #333; }
+.cp-pal-row { display: flex; gap: 3px; }
+.cp-chip { width: 16px; height: 16px; border-radius: 2px; border: 1px solid #555; }
+.cp-chip:hover { border-color: #fff; }
+.cp-chip.selected { border: 2px solid #fff; }
+.cp-section-label { color: #666; white-space: nowrap; padding-top: 2px; }
+.cp-empty-hint { color: #555; white-space: nowrap; padding: 2px 0; }

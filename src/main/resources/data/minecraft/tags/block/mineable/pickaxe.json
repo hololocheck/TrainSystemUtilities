@@ -1,0 +1,28 @@
+{
+  "values": [
+    "trainsystemutilities:railway_management_block",
+    "trainsystemutilities:monitor",
+    "trainsystemutilities:double_monitor",
+    "trainsystemutilities:monitor_half",
+    "trainsystemutilities:double_monitor_half",
+    "trainsystemutilities:monitor_slim",
+    "trainsystemutilities:double_monitor_slim",
+    "trainsystemutilities:poster_management_block",
+    "trainsystemutilities:management_computer",
+    "trainsystemutilities:insulator",
+    "trainsystemutilities:substation",
+    "trainsystemutilities:substation_dummy",
+    "trainsystemutilities:fe_inverter",
+    "trainsystemutilities:fe_inverter_dummy",
+    "trainsystemutilities:pantograph",
+    "trainsystemutilities:platform_fence_1m",
+    "trainsystemutilities:platform_fence_3m",
+    "trainsystemutilities:platform_fence_5m",
+    "trainsystemutilities:platform_screen_door",
+    "trainsystemutilities:ticket_vending_machine",
+    "trainsystemutilities:ticket_gate",
+    "trainsystemutilities:overhead_pole",
+    "trainsystemutilities:overhead_truss",
+    "trainsystemutilities:green_back"
+  ]
+}

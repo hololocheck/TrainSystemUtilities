@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "  E",
+    " B ",
+    "S  "
+  ],
+  "key": {
+    "E": { "item": "create:electron_tube" },
+    "B": { "item": "create:brass_sheet" },
+    "S": { "item": "minecraft:stick" }
+  },
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:station_range_tool"
+  }
+}

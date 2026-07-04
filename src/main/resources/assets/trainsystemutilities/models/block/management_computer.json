@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "trainsystemutilities:block/management_computer_top",
+    "front": "trainsystemutilities:block/management_computer_front",
+    "side": "trainsystemutilities:block/management_computer_side"
+  }
+}

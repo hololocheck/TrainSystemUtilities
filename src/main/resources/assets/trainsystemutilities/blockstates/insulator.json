@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=up":    { "model": "trainsystemutilities:block/insulator" },
+    "facing=down":  { "model": "trainsystemutilities:block/insulator", "x": 180 },
+    "facing=north": { "model": "trainsystemutilities:block/insulator", "x": 90 },
+    "facing=south": { "model": "trainsystemutilities:block/insulator", "x": 90, "y": 180 },
+    "facing=east":  { "model": "trainsystemutilities:block/insulator", "x": 90, "y": 90 },
+    "facing=west":  { "model": "trainsystemutilities:block/insulator", "x": 90, "y": 270 }
+  }
+}

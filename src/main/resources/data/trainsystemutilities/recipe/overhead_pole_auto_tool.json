@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "trainsystemutilities:station_range_tool" },
+    { "item": "trainsystemutilities:overhead_pole" },
+    { "item": "create:precision_mechanism" }
+  ],
+  "result": {
+    "count": 1,
+    "id": "trainsystemutilities:overhead_pole_auto_tool"
+  }
+}

@@ -1,0 +1,734 @@
+{
+  "classes": [
+    "color-popup"
+  ],
+  "w": 180,
+  "h": 252,
+  "bg": "#1a1a2e",
+  "borderColor": "#4fc3f7",
+  "borderWidth": 2,
+  "borderRadius": 10,
+  "children": [
+    {
+      "tag": "col",
+      "w": 180,
+      "h": 252,
+      "gap": 3,
+      "padding": 6,
+      "children": [
+        {
+          "tag": "col",
+          "classes": [
+            "mc-popup-header",
+            "popup-header"
+          ],
+          "w": 168,
+          "h": 18,
+          "children": [
+            {
+              "tag": "row",
+              "w": 180,
+              "h": 14,
+              "gap": 4,
+              "justify": "space-between",
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "mc-popup-title",
+                    "popup-title"
+                  ],
+                  "w": 120,
+                  "h": 14,
+                  "color": "#4fc3f7",
+                  "fontWeight": "bold",
+                  "text": "色設定"
+                },
+                {
+                  "classes": [
+                    "mc-popup-close",
+                    "popup-close",
+                    "tsu-close-button"
+                  ],
+                  "w": 16,
+                  "h": 12,
+                  "bg": "#0dffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 3,
+                  "children": [
+                    {
+                      "tag": "span",
+                      "w": 16,
+                      "h": 12,
+                      "color": "#aaaaaa",
+                      "fontWeight": "bold",
+                      "textAlign": "center",
+                      "text": "×"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "w": 180,
+              "h": 1
+            },
+            {
+              "w": 180,
+              "h": 1,
+              "bg": "#4fc3f7"
+            }
+          ]
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "color-content"
+          ],
+          "w": 168,
+          "h": 134,
+          "gap": 1,
+          "children": [
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 3,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "◼"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "背景",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#101015",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 3,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "✍"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "文字",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#ffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "classes": [
+                "color-row",
+                "selected"
+              ],
+              "w": 168,
+              "h": 14,
+              "bg": "#264fc3f7",
+              "borderColor": "#4fc3f7",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "row",
+                  "w": 168,
+                  "h": 14,
+                  "gap": 3,
+                  "padding": 2,
+                  "align": "center",
+                  "children": [
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "color-icon"
+                      ],
+                      "w": 10,
+                      "h": 12,
+                      "color": "#4fc3f7",
+                      "text": "⚡"
+                    },
+                    {
+                      "tag": "span",
+                      "classes": [
+                        "color-label"
+                      ],
+                      "w": 80,
+                      "h": 12,
+                      "color": "#80deca",
+                      "text": "アクセント",
+                      "flex": 1
+                    },
+                    {
+                      "classes": [
+                        "mc-color-swatch"
+                      ],
+                      "w": 12,
+                      "h": 12,
+                      "bg": "#4fc3f7",
+                      "borderColor": "#555555",
+                      "borderWidth": 1,
+                      "borderRadius": 2
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 3,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "□"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "枠",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#4fc3f7",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 3,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "⚠"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "警告",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#ffa726",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 3,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "✓"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "成功",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#66bb6a",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 3,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "●"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "信号赤",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#ef5350",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 3,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "●"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "信号黄",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#ffeb3b",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-row"
+              ],
+              "w": 168,
+              "h": 14,
+              "gap": 3,
+              "padding": 2,
+              "align": "center",
+              "children": [
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-icon"
+                  ],
+                  "w": 10,
+                  "h": 12,
+                  "color": "#888888",
+                  "text": "●"
+                },
+                {
+                  "tag": "span",
+                  "classes": [
+                    "color-label"
+                  ],
+                  "w": 80,
+                  "h": 12,
+                  "color": "#80deca",
+                  "text": "信号緑",
+                  "flex": 1
+                },
+                {
+                  "classes": [
+                    "mc-color-swatch"
+                  ],
+                  "w": 12,
+                  "h": 12,
+                  "bg": "#66bb6a",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "col",
+          "classes": [
+            "color-presets"
+          ],
+          "w": 168,
+          "h": 50,
+          "gap": 3,
+          "children": [
+            {
+              "tag": "span",
+              "classes": [
+                "color-preset-label"
+              ],
+              "w": 168,
+              "h": 12,
+              "color": "#4fc3f7",
+              "text": "アクセント"
+            },
+            {
+              "tag": "row",
+              "classes": [
+                "color-preset-grid"
+              ],
+              "w": 168,
+              "h": 39,
+              "gap": 3,
+              "children": [
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#4fc3f7",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#80deea",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#ff8a65",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#ffc107",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#66bb6a",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#ef5350",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#ab47bc",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#ffffff",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#888888",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#555555",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#444444",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                },
+                {
+                  "classes": [
+                    "mc-color-chip"
+                  ],
+                  "w": 16,
+                  "h": 16,
+                  "bg": "#333333",
+                  "borderColor": "#555555",
+                  "borderWidth": 1,
+                  "borderRadius": 2
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "tag": "row",
+          "classes": [
+            "color-reset-row"
+          ],
+          "w": 168,
+          "h": 16,
+          "gap": 4,
+          "children": [
+            {
+              "classes": [
+                "color-reset-btn"
+              ],
+              "w": 60,
+              "h": 14,
+              "bg": "#1af44336",
+              "borderColor": "#f44336",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 2,
+                  "w": 48,
+                  "h": 10,
+                  "color": "#f44336",
+                  "text": "↺ リセット"
+                }
+              ]
+            },
+            {
+              "classes": [
+                "color-reset-btn"
+              ],
+              "w": 60,
+              "h": 14,
+              "bg": "#1af44336",
+              "borderColor": "#f44336",
+              "borderWidth": 1,
+              "borderRadius": 3,
+              "children": [
+                {
+                  "tag": "span",
+                  "x": 6,
+                  "y": 2,
+                  "w": 48,
+                  "h": 10,
+                  "color": "#f44336",
+                  "text": "↺ 全リセット"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

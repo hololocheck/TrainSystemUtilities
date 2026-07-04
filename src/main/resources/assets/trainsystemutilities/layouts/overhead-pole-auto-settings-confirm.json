@@ -1,0 +1,27 @@
+{"bg":"#1a1a2e","color":"","borderColor":"#66bb6a","borderWidth":2,"borderRadius":10,"fontWeight":"","isSlot":false,"text":"","children":[
+  {"bg":"","color":"#66bb6a","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"bold","isSlot":false,"text":"","translatableKey":"tsu.opas.conf_title","children":[],"tag":"span","classes":["opas-conf-title"],"x":12,"y":12,"w":276,"h":11},
+  {"bg":"rgba(255,255,255,0.05)","color":"#aaa","borderColor":"#555","borderWidth":1,"borderRadius":3,"fontWeight":"","isSlot":false,"text":"×","children":[],"tag":"div","classes":["opas-conf-close","opas-conf-cancel"],"x":294,"y":10,"w":16,"h":14,"hoverColor":"#f44","hoverBorderColor":"#f44","clickable":true,"textAlign":"center"},
+  {"bg":"#66bb6a","color":"","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["opas-conf-sep"],"x":12,"y":28,"w":300,"h":1},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.conf_prompt","children":[],"tag":"span","classes":["opas-conf-prompt"],"x":12,"y":38,"w":300,"h":11,"textAlign":"center"},
+
+  {"bg":"rgba(0,0,0,0.3)","color":"","borderColor":"#333","borderWidth":1,"borderRadius":3,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"div","classes":["opas-conf-summary-box"],"x":12,"y":54,"w":300,"h":110},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"span","classes":["opas-conf-item-1"],"x":24,"y":62,"w":276,"h":11,"dynamicText":"opas-conf-item-1"},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"span","classes":["opas-conf-item-2"],"x":24,"y":76,"w":276,"h":11,"dynamicText":"opas-conf-item-2"},
+
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","children":[],"tag":"span","classes":["opas-conf-item-3"],"x":24,"y":90,"w":276,"h":11,"dynamicText":"opas-conf-item-3"},
+
+  {"bg":"","color":"","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"bold","isSlot":false,"text":"","children":[],"tag":"span","classes":["opas-conf-cant-check"],"x":24,"y":110,"w":12,"h":11,"colorKey":"opas-conf-cant-color","dynamicText":"opas-conf-cant-mark"},
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.conf_cant_lbl","children":[],"tag":"span","classes":["opas-conf-cant-lbl"],"x":40,"y":110,"w":80,"h":11},
+
+  {"bg":"","color":"","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"bold","isSlot":false,"text":"","children":[],"tag":"span","classes":["opas-conf-truss-check"],"x":124,"y":110,"w":12,"h":11,"colorKey":"opas-conf-truss-color","dynamicText":"opas-conf-truss-mark"},
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.conf_truss_lbl","children":[],"tag":"span","classes":["opas-conf-truss-lbl"],"x":140,"y":110,"w":80,"h":11},
+
+  {"bg":"","color":"","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"bold","isSlot":false,"text":"","children":[],"tag":"span","classes":["opas-conf-ins-check"],"x":220,"y":110,"w":12,"h":11,"colorKey":"opas-conf-ins-color","dynamicText":"opas-conf-ins-mark"},
+  {"bg":"","color":"#e0e0e0","borderColor":"","borderWidth":0,"borderRadius":0,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.opas.conf_ins_lbl","children":[],"tag":"span","classes":["opas-conf-ins-lbl"],"x":236,"y":110,"w":80,"h":11},
+
+  {"bg":"rgba(0,0,0,0.3)","color":"#aaa","borderColor":"#555","borderWidth":1,"borderRadius":3,"fontWeight":"","isSlot":false,"text":"","translatableKey":"tsu.common.cancel","children":[],"tag":"div","classes":["opas-conf-cancel"],"x":18,"y":140,"w":140,"h":22,"textAlign":"center","hoverBg":"rgba(79,195,247,0.15)","hoverColor":"#fff","clickable":true},
+  {"bg":"rgba(102,187,106,0.15)","color":"#66bb6a","borderColor":"#66bb6a","borderWidth":1,"borderRadius":3,"fontWeight":"bold","isSlot":false,"text":"","translatableKey":"tsu.opas.conf_yes","children":[],"tag":"div","classes":["opas-conf-yes"],"x":166,"y":140,"w":140,"h":22,"textAlign":"center","hoverBg":"rgba(102,187,106,0.30)","hoverColor":"#fff","clickable":true}
+],"tag":"div","classes":["dialog"],"x":0,"y":0,"w":324,"h":172,"animationKey":"opas-conf-popup-open"}

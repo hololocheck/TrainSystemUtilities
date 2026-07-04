@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "facing=north,linked=false": { "model": "trainsystemutilities:block/management_computer" },
+    "facing=south,linked=false": { "model": "trainsystemutilities:block/management_computer", "y": 180 },
+    "facing=west,linked=false": { "model": "trainsystemutilities:block/management_computer", "y": 270 },
+    "facing=east,linked=false": { "model": "trainsystemutilities:block/management_computer", "y": 90 },
+    "facing=north,linked=true": { "model": "trainsystemutilities:block/management_computer_linked" },
+    "facing=south,linked=true": { "model": "trainsystemutilities:block/management_computer_linked", "y": 180 },
+    "facing=west,linked=true": { "model": "trainsystemutilities:block/management_computer_linked", "y": 270 },
+    "facing=east,linked=true": { "model": "trainsystemutilities:block/management_computer_linked", "y": 90 }
+  }
+}

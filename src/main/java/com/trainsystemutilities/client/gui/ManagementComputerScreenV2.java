@@ -147,14 +147,17 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                     this::sendSchedShareToggle);
 
     // === Stations tab state ===
+    private String selectedStationKey = "";  // stationScroll.activeWhen が参照するため前方宣言 (R4.20.2)
     /** stations タブ list scroll (= §4.19 ScrollViewport)。 */
-    private final ScrollViewport stationScroll = new ScrollViewport(() -> stationsForList().size(), STATION_LIST_MAX_VISIBLE);
+    private final ScrollViewport stationScroll = new ScrollViewport(() -> stationsForList().size(), STATION_LIST_MAX_VISIBLE)
+            .activeWhen(() -> tabs.is("stations") && selectedStationKey.isEmpty());  // §4.19 R4.19.2: リスト表示中のみ scrollbar
     // コンテナ高さ = 138, stride = 23 → 138/23 = 6 行ピッタリ。
     // 7 にすると 7 行目がコンテナ下端を超えてクリック不可、かつ total <= 7 ではスクロールも発動しないため
     // 「+ ボタンを押せず、スクロールもできない」状態になる。6 にすることで 7 駅以上ある場合にスクロールが
     // 確実に発動し、リスト全体にアクセスできる。
     private static final int STATION_LIST_MAX_VISIBLE = 6;
-    private String selectedStationKey = "";
+    private static final int STATION_LIST_TRACK_H = STATION_LIST_MAX_VISIBLE * 23; // = 138 (= container h、券売機タブと同寸)
+    private static final int STATION_LIST_THUMB_H = 20;
 
     // === Tickets tab state (券売機: ネットワーク駅の販売可を取捨選択) ===
     private static final int TICKETS_MAX_VISIBLE = 6;
@@ -1314,6 +1317,10 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             return ticketScroll.thumbY(defaultValue, TICKETS_LIST_TRACK_H - 2, TICKETS_LIST_THUMB_H);
         }
         if ("tickets-scrollbar-thumb-h".equals(key)) return TICKETS_LIST_THUMB_H;
+        if ("stations-scrollbar-thumb-y".equals(key)) {
+            return stationScroll.thumbY(defaultValue, STATION_LIST_TRACK_H - 2, STATION_LIST_THUMB_H);
+        }
+        if ("stations-scrollbar-thumb-h".equals(key)) return STATION_LIST_THUMB_H;
         if ("door-count".equals(key)) {
             return DOOR_OPTS.length;
         }
@@ -1484,6 +1491,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             return inStations && selectedStationKey.isEmpty();
         if ("tab-stations-list-rows".equals(key))
             return inStations && selectedStationKey.isEmpty() && !stationList.isEmpty();
+        if ("stations-scrollbar-visible".equals(key))
+            return stationScroll.needsScrollbar();  // activeWhen(stations & list) 内包 (§4.19 R4.19.2/R4.19.3)
         if ("tab-stations-detail".equals(key))
             return inStations && !selectedStationKey.isEmpty();
         if ("tab-stations-detail-rm".equals(key))
@@ -2702,17 +2711,40 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             }
             return;
         }
-        // server/Create read は screen 側に残し、編集モデルを構築して controller へ渡す。
-        boolean cyclic = true;
+        // schedule は server 権威。client の Train.runtime.getSchedule() は Create が全 client に
+        // 確実には同期せず、運行停止直後などに null/空になる (= 編集で全エントリ空欄バグ)。
+        // server に現在の schedule を要求し、応答 (ScheduleEditDataPayload) で editor を開く。
+        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+                new com.trainsystemutilities.network.RequestScheduleEditPayload(
+                        be().getBlockPos(), scheduleSelectedTrainId));
+    }
+
+    /** {@link com.trainsystemutilities.network.ScheduleEditDataPayload} 応答で editor を開く (server 権威の schedule)。 */
+    public void onScheduleEditData(UUID trainId, boolean hasData, net.minecraft.nbt.CompoundTag scheduleNbt) {
+        // 応答到達までに選択列車が変わっていたら無視
+        if (scheduleSelectedTrainId == null || !scheduleSelectedTrainId.equals(trainId)) return;
+        com.simibubi.create.content.trains.schedule.Schedule sched = null;
+        try {
+            if (hasData && minecraft != null && minecraft.level != null) {
+                sched = com.simibubi.create.content.trains.schedule.Schedule
+                        .fromTag(minecraft.level.registryAccess(), scheduleNbt);
+            }
+        } catch (Exception e) {
+            com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug(
+                    "schedule editor: failed to decode schedule nbt", e);
+        }
+        if (sched == null || sched.entries.isEmpty()) {
+            schedEditor.open(new ArrayList<>(), true);
+            return;
+        }
+        schedEditor.open(buildEditEntries(sched), sched.cyclic);
+    }
+
+    /** Create Schedule を editor の編集モデル (EditEntryData) に変換 (server 権威の schedule を parse)。 */
+    private List<ScheduleEditorController.EditEntryData> buildEditEntries(
+            com.simibubi.create.content.trains.schedule.Schedule sched) {
         List<ScheduleEditorController.EditEntryData> entries = new ArrayList<>();
         try {
-            var opt = TrackNetworkScanner.getTrainById(scheduleSelectedTrainId);
-            if (opt.isEmpty() || opt.get().runtime == null || opt.get().runtime.getSchedule() == null) {
-                schedEditor.open(entries, cyclic);
-                return;
-            }
-            var sched = opt.get().runtime.getSchedule();
-            cyclic = sched.cyclic;
             for (var e : sched.entries) {
                 String type = "destination"; String text = ""; int value = 0;
                 try {
@@ -2766,7 +2798,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug(
                     "schedule editor: failed to parse existing schedule into edit form", e);
         }
-        schedEditor.open(entries, cyclic);
+        return entries;
     }
 
     private void applyScheduleEdit() {

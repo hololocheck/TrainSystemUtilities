@@ -372,6 +372,18 @@ public class ModNetworking {
                 ApplyScheduleEditPayload.STREAM_CODEC,
                 ApplyScheduleEditPayload::handle
         );
+        // 編集を開くために現在の schedule を server (権威) へ要求
+        registrar.playToServer(
+                RequestScheduleEditPayload.TYPE,
+                RequestScheduleEditPayload.STREAM_CODEC,
+                RequestScheduleEditPayload::handle
+        );
+        // 上記要求への応答 (schedule NBT) を client へ返し editor を開く
+        registrar.playToClient(
+                ScheduleEditDataPayload.TYPE,
+                ScheduleEditDataPayload.STREAM_CODEC,
+                ScheduleEditDataPayload::handle
+        );
         // 時刻表を物理スケジュールアイテムへ書き出し開始
         registrar.playToServer(
                 ExportTimetablePayload.TYPE,

@@ -1208,6 +1208,26 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
                 rmbe.setAssignedLineSymbol(entry.getValue());
             }
         }
+        // chunk load 非依存の権威 store へ全駅ぶんを同期 (= 遠隔/未ロード駅も RMBE 側 tick で解決可能)。
+        syncSymbolsToStore();
+    }
+
+    /**
+     * 全ネットワーク駅の「解決済み路線記号」を {@link com.trainsystemutilities.station.LineSymbolStore}
+     * (chunk load 非依存の権威 store) へ書き込む。 各 {@code RailwayManagementBlockEntity} は自駅キーで
+     * これを引いて反映するため、 遠隔駅の chunk が unload されていても割り当てが行き渡る
+     * (= 従来の block entity 間 push が unload 駅に届かなかった問題の根治)。
+     */
+    private void syncSymbolsToStore() {
+        if (level == null || level.isClientSide() || cachedStations == null) return;
+        var server = level.getServer();
+        if (server == null) return;
+        var store = com.trainsystemutilities.station.LineSymbolStore.get(server);
+        for (var st : cachedStations) {
+            String k = stationKey(st.name(), st.position());
+            LineSymbol sym = getSymbolForStation(st.name(), st.position());
+            store.setSymbol(k, sym);
+        }
     }
 
     /**
@@ -1225,10 +1245,13 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
                     && stationMatches(rm, stationName, stationPos)) {
                 return rm;
             }
-            // キャッシュ無効化
-            stationManagerPosMap.remove(stationKey(stationName, stationPos));
-            stationManagerPosMap.remove(stationName);
-            cacheChanged = true;
+            // chunk が unload 済み (be==null) のときはキャッシュを消さない (= 位置は依然有効)。
+            // 消していたため、 遠隔駅への割り当て時に有効な managerPos キャッシュを失っていた (二次バグ)。
+            if (level.isLoaded(cached)) {
+                stationManagerPosMap.remove(stationKey(stationName, stationPos));
+                stationManagerPosMap.remove(stationName);
+                cacheChanged = true;
+            }
         }
         // 2. 周辺スキャン (scanStationManagers と同じ範囲: ±40 水平, ±8 垂直)
         if (stationPos == null) {

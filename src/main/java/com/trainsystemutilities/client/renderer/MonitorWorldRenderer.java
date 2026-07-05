@@ -1104,7 +1104,6 @@ public class MonitorWorldRenderer {
         // border-radius は border-box (= iconSize + borderW*2) に適用される。
         int totalSize = iconSize + borderW * 2;
         int radiusPx = Math.round(sym.getBorderRadius() * totalSize / 40f);
-        int borderArgb = parseHexColor(sym.getBorderColor(), 0xFF4fc3f7);
 
         // Phase 5f++++ Step 12.F: 真の V3 IR-native — Element を経由せず直接 IrBuilder で構築。
         // flex centering を IR で表現する代わりに、 icon を中央位置に直接配置する。
@@ -1117,8 +1116,6 @@ public class MonitorWorldRenderer {
                         .addClass("sym-icon")
                         .rect(iconLocalX, iconLocalY, totalSize, totalSize)
                         .bgColor(0xFFFFFFFF)
-                        .borderColor(borderArgb)
-                        .borderWidth(borderW)
                         .borderRadius(radiusPx))
                 .build();
 
@@ -1151,6 +1148,11 @@ public class MonitorWorldRenderer {
         float divLocalX = iconLocalX + borderW + (iconSize - divW) / 2f;
         belugalab.mcss3.draw.VectorRenderer.textFillRect(vcDiv, poseStack.last().pose(),
                 divLocalX, midY, divW, divH, borderColorInt, textZ);
+
+        // 縁色枠: V3 IR の border stroke は world で角丸コーナーが欠けるため、 他パネル枠 (isShowBorder)
+        // と同じ VectorRenderer.strokeRoundedRect で描画する (非発光 text バッファ)。
+        belugalab.mcss3.draw.VectorRenderer.strokeRoundedRect(vcDiv, poseStack.last().pose(),
+                iconLocalX, iconLocalY, totalSize, totalSize, borderColorInt, (float) borderW, (float) radiusPx, textZ);
 
         // テキスト描画 (z=textZでprivate translate)
         poseStack.pushPose();

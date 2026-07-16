@@ -16,6 +16,12 @@ Navigate to features / tools / electrification systems from this page.
 - [Management Computer Overview](management-computer/overview.md)
 - [Railway Management Block](railway-management.md)
 
+## Video Tutorials
+
+Video guides you can watch without leaving the game.
+
+- [Video Tutorials](tutorial-videos.md) — start with "Using the In-Game Video System"
+
 ## Management Computer
 
 The central GUI that lets a single block oversee the entire rail network.

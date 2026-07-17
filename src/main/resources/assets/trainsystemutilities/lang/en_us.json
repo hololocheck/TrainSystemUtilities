@@ -463,6 +463,9 @@
   "tsu.monitor.stopping_label": "Stopping",
 
   "tsu.upload.image_too_large_detail_fmt": "Image too large (%dMB). Max is 5MB.",
+  "tsu.upload.image_invalid": "Not a recognized image, or its dimensions are too large.",
+  "tsu.upload.poster_full": "This poster has reached its image limit.",
+  "tsu.upload.world_quota": "The world's image storage quota is full.",
   "tsu.upload.preset_place_unconfigured": "Preset Place not configured",
   "tsu.upload.encode_fail_fmt": "Encode failed: %s",
   "tsu.upload.file_size_over_fmt": "File size exceeds %d bytes",

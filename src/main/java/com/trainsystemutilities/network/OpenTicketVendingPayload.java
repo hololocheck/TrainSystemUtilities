@@ -1,5 +1,6 @@
 package com.trainsystemutilities.network;
 
+import belugalab.mcss3.util.codec.BoundedStreamCodec;
 import com.trainsystemutilities.TrainSystemUtilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -43,7 +44,9 @@ public record OpenTicketVendingPayload(BlockPos machinePos, String originName, L
                     buf -> {
                         BlockPos pos = buf.readBlockPos();
                         String origin = buf.readUtf();
-                        int n = buf.readVarInt();
+                        // SECURITY (TSU-NET-003): destination 数を bound して、悪意/非互換サーバーが
+                        // 巨大 n で client の new ArrayList<>(n) を OOM させるのを防ぐ (他 S2C list payload と同様)。
+                        int n = BoundedStreamCodec.readBoundedListLength(buf, 4096);
                         List<Dest> dests = new ArrayList<>(n);
                         for (int i = 0; i < n; i++) {
                             dests.add(new Dest(buf.readUUID(), buf.readUtf()));

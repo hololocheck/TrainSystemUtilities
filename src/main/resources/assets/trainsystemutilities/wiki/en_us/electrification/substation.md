@@ -82,7 +82,7 @@ A Geckolib-based static model (no animation). The texture is gray + an accent co
 A single BlockEntity renders the appearance of all 24 blocks in the 3×4×2 structure.
 
 > [!NOTE]
-> The cubicle core block has a BlockEntity. The 23 dummy blocks have no BlockEntity; capability access is routed to the core via [SubstationMultiblock.findCore](https://github.com/hololocheck/TrainSystemUtilities/blob/master/src/main/java/com/trainsystemutilities/blockentity/SubstationMultiblock.java).
+> The cubicle core block has a BlockEntity. The 23 dummy blocks have no BlockEntity; capability access is routed to the core via [SubstationMultiblock.findCore](https://github.com/hololocheck/TrainSystemUtilities/blob/master/src/main/java/com/trainsystemutilities/electrification/block/SubstationMultiblock.java).
 
 ## Related
 

@@ -122,18 +122,26 @@ public class CouplingPersistentData extends SavedData {
         CouplingPersistentData data = new CouplingPersistentData();
         ListTag list = tag.getList("SavedSchedules", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
-            CompoundTag item = list.getCompound(i);
-            UUID key = item.getUUID("Key");
-            data.savedSchedules.put(key, new SavedScheduleData(
-                    item.getUUID("OriginalId"),
-                    item.hasUUID("MergedId") ? item.getUUID("MergedId") : null,
-                    item.getCompound("Schedule"),
-                    item.getInt("CurrentEntry"),
-                    item.getInt("CarriageCount"),
-                    item.getBoolean("IsFront"),
-                    item.getString("TrainName"),
-                    item.contains("WaitTimeSeconds") ? item.getInt("WaitTimeSeconds") : 5
-            ));
+            // SECURITY/robustness (TSU-SAVED-001): 破損した 1 entry で全 coupling schedule を
+            // 失わないよう per-entry で隔離する (StationGroup/Wire/NavField と同方針)。
+            try {
+                CompoundTag item = list.getCompound(i);
+                UUID key = item.getUUID("Key");
+                data.savedSchedules.put(key, new SavedScheduleData(
+                        item.getUUID("OriginalId"),
+                        item.hasUUID("MergedId") ? item.getUUID("MergedId") : null,
+                        item.getCompound("Schedule"),
+                        item.getInt("CurrentEntry"),
+                        item.getInt("CarriageCount"),
+                        item.getBoolean("IsFront"),
+                        item.getString("TrainName"),
+                        item.contains("WaitTimeSeconds") ? item.getInt("WaitTimeSeconds") : 5
+                ));
+            } catch (Exception ex) {
+                com.trainsystemutilities.TrainSystemUtilities.LOGGER.warn(
+                        "[CouplingPersistentData] skipped corrupt saved-schedule entry #{}: {}",
+                        i, ex.toString());
+            }
         }
         return data;
     }

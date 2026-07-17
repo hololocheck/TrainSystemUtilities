@@ -210,11 +210,21 @@ public final class ContraptionElectrificationState {
     /** デバッグ用: 現在の PERSISTENT_ENERGY エントリ数。 */
     public static int persistentEnergyCount() { return PERSISTENT_ENERGY.size(); }
 
-    /** P0-5 #2: SavedData → 起動時 hydrate。 caller は {@link com.trainsystemutilities.electrification.TsuPersistentEnergyData}
-     *  から {@link Map#entrySet()} を渡す。 既存 in-memory entry は保持しつつ map 内容を上書き。 */
+    /** P0-5 #2 / TSU-SAVED-001: SavedData → 起動時 hydrate。
+     *  <b>replace セマンティクス</b>: 先に clear してから putAll する。integrated server で
+     *  world A → world B と同一 JVM で切替えた際、前 world の stale entry を次 world へ
+     *  持ち越さない (旧実装は保持 + empty 時 early-return で cross-world leak していた)。 */
     public static void hydrateFromSavedData(java.util.Map<Long, Integer> loadedEntries) {
-        if (loadedEntries == null || loadedEntries.isEmpty()) return;
-        PERSISTENT_ENERGY.putAll(loadedEntries);
+        PERSISTENT_ENERGY.clear();
+        if (loadedEntries != null && !loadedEntries.isEmpty()) {
+            PERSISTENT_ENERGY.putAll(loadedEntries);
+        }
+    }
+
+    /** TSU-SAVED-001: server stop 時に in-memory FE state を破棄する (save 済み後)。
+     *  次 world load 前に static map を空にし cross-world 持ち越しを防ぐ。 */
+    public static void clearPersistentEnergy() {
+        PERSISTENT_ENERGY.clear();
     }
 
     /** P0-5 #2: SavedData ← shutdown / 定期 save 時の snapshot 取得。 caller は

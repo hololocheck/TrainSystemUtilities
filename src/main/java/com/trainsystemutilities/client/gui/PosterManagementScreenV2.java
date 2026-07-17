@@ -717,7 +717,8 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
                         int chunkCount = (totalSize + chunkSize - 1) / chunkSize;
                         // V3 fix: server sync で Screen が再生成されても animation を再 trigger
                         // しないよう、2 秒の suppress window を予約する
-                        belugalab.mcss3.graph.AnimationNode.completeNewAnimationsFor(2000L);
+                        // facade 化 Phase 2-b: 内部 graph.AnimationNode を com.manta.api 経由に
+                        com.manta.api.anim.MantaAnim.completeNewAnimations(2000L);
                         PacketDistributor.sendToServer(new ImageUploadStartPayload(
                                 be.getBlockPos(), fileName, totalSize, chunkCount));
                         for (int i = 0; i < chunkCount; i++) {

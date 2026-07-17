@@ -47,6 +47,18 @@ public final class WikiPrebuildTrigger {
         });
     }
 
+    /**
+     * SECURITY/lifecycle (TSU-WIKI-001): disconnect で prebuild 状態をリセットし、生成した
+     * DynamicTexture を解放する。旧実装は firstLoginDone が JVM 単位で残り、切替先サーバーへ
+     * stale texture を持ち越し、texture が leak した。
+     */
+    @SubscribeEvent
+    public static void onPlayerLogout(ClientPlayerNetworkEvent.LoggingOut event) {
+        firstLoginDone = false;
+        WikiPrebuildCapture.clearCache();
+        WikiLiveCapture.clearCache();
+    }
+
     @SubscribeEvent
     public static void onRegisterClientCommands(RegisterClientCommandsEvent event) {
         event.getDispatcher().register(

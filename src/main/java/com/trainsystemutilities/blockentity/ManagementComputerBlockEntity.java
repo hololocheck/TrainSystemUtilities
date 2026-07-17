@@ -984,6 +984,26 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         }
     }
 
+    /**
+     * SECURITY (TSU-NET-002): {@code trainId} がこの管理コンピュータの linked track network に
+     * 属する列車かを検証する。single-train の stop/resume/schedule/export/share/ticket 経路は
+     * global {@code Create.RAILWAYS.trains} を直接引くため、mutation/query 前にこの membership を
+     * 確認して「reach 可能な computer 経由で管轄外の任意列車を操作する」ことを防ぐ。
+     *
+     * <p>authoritative な linked-network scan を都度行う (all-train 経路と同じソース)。
+     * 呼び出しは discrete なユーザー操作時のみで per-tick ではない (periodic scan の性能は TSU-PERF-001 で別途)。
+     */
+    public boolean containsLinkedTrain(UUID trainId) {
+        if (trainId == null || level == null) return false;
+        BlockPos scanPos = linkedTrackNetworkPos != null ? linkedTrackNetworkPos : linkedRailwayManagerPos;
+        if (scanPos == null) return false;
+        var data = com.trainsystemutilities.network.TrackNetworkScanner.scanFromPosition(level, scanPos);
+        for (var t : data.trains()) {
+            if (trainId.equals(t.id())) return true;
+        }
+        return false;
+    }
+
     public void selectTrain(UUID trainId) {
         if (!selectedTrains.contains(trainId)) { selectedTrains.add(trainId); setChanged(); }
     }

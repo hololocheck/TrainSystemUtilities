@@ -35,21 +35,25 @@ public record TicketConfigRequestPayload(BlockPos computerPos) implements Custom
     public static void handle(TicketConfigRequestPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
+            // SECURITY (TSU-NET-002): reach + BE + canAccess を検証。旧実装は computerPos だけで
+            // sellable 一覧と自ネットワークの駅グループを取得でき、遠隔/private computer の情報が漏れた。
+            if (!com.trainsystemutilities.util.PermissionHelper.isWithinReach(player, payload.computerPos)) return;
+            var level = player.level();
+            if (!(level.getBlockEntity(payload.computerPos)
+                    instanceof com.trainsystemutilities.blockentity.ManagementComputerBlockEntity be)) return;
+            if (!be.canAccess(player)) return;
+
             var server = player.server;
             var sellable = new ArrayList<>(TicketConfigSavedData.get(server).sellable());
             // 自ネットワーク = この管理用コンピューターがスキャン済みの駅を含む駅グループ集合
             // (= リンクした線路網。 findContaining で各スキャン駅 → 所属グループを解決)。
             List<UUID> networkGroups = new ArrayList<>();
-            var level = player.level();
-            if (level.getBlockEntity(payload.computerPos)
-                    instanceof com.trainsystemutilities.blockentity.ManagementComputerBlockEntity be) {
-                String dim = level.dimension().location().toString();
-                var sgData = StationGroupSavedData.get(server);
-                Set<UUID> seen = new HashSet<>();
-                for (var s : be.getCachedStations()) {
-                    var g = sgData.findContaining(dim, s.position());
-                    if (g != null && seen.add(g.id())) networkGroups.add(g.id());
-                }
+            String dim = level.dimension().location().toString();
+            var sgData = StationGroupSavedData.get(server);
+            Set<UUID> seen = new HashSet<>();
+            for (var s : be.getCachedStations()) {
+                var g = sgData.findContaining(dim, s.position());
+                if (g != null && seen.add(g.id())) networkGroups.add(g.id());
             }
             PacketDistributor.sendToPlayer(player, new TicketConfigSyncPayload(sellable, networkGroups));
         });

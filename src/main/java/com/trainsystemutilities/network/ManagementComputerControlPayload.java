@@ -82,6 +82,13 @@ public record ManagementComputerControlPayload(BlockPos computerPos, int action,
                 case ACTION_STOP_ALL -> mc.startAllTrainsStop();
                 case ACTION_RESUME_ALL -> mc.resumeAllTrains();
                 case ACTION_TOGGLE_ONE -> {
+                    // SECURITY (TSU-NET-002): 対象列車がこの computer の linked network に属すことを検証。
+                    if (!mc.containsLinkedTrain(payload.trainId)) {
+                        TrainSystemUtilities.LOGGER.debug(
+                                "ManagementComputerControl: train {} not in linked network of computer {} (rejected)",
+                                payload.trainId, payload.computerPos);
+                        return;
+                    }
                     Train train = Create.RAILWAYS.trains.get(payload.trainId);
                     if (train != null && train.runtime != null) {
                         if (train.runtime.paused) {

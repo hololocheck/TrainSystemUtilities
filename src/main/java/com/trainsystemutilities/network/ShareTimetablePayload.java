@@ -48,6 +48,9 @@ public record ShareTimetablePayload(BlockPos computerPos, UUID sourceTrainId, UU
             BlockEntity be = sp.serverLevel().getBlockEntity(payload.computerPos);
             if (!(be instanceof ManagementComputerBlockEntity mc)) return;
             if (!mc.canAccess(sp)) return;
+            // SECURITY (TSU-NET-002): source/target 双方がこの computer の linked network に属すことを検証。
+            if (!mc.containsLinkedTrain(payload.sourceTrainId)
+                    || !mc.containsLinkedTrain(payload.targetTrainId)) return;
             mc.toggleTimetableShare(payload.sourceTrainId, payload.targetTrainId);
         });
     }

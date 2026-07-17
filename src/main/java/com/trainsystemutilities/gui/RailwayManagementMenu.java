@@ -355,6 +355,9 @@ public class RailwayManagementMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(access, player, blockEntity.getBlockState().getBlock());
+        // SECURITY (TSU-AUTH-001): open 中に owner が private 化した場合、非 owner の
+        // 既存 menu を再認可で閉じる (open 時のみの canAccess では TOCTOU が残る)。
+        return stillValid(access, player, blockEntity.getBlockState().getBlock())
+                && blockEntity.canAccess(player);
     }
 }

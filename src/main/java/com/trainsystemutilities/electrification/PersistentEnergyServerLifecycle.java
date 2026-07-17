@@ -61,6 +61,9 @@ public final class PersistentEnergyServerLifecycle {
     @SubscribeEvent
     public static void onServerStopping(ServerStoppingEvent event) {
         saveSnapshotToSavedData(event.getServer(), "shutdown");
+        // TSU-SAVED-001: save 後に in-memory static map を clear。integrated server で
+        // 次 world を同一 JVM で開いた時に前 world の FE entry を持ち越さない。
+        ContraptionElectrificationState.clearPersistentEnergy();
     }
 
     @SubscribeEvent

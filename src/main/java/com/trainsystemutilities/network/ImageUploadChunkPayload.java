@@ -101,6 +101,32 @@ public record ImageUploadChunkPayload(int chunkIndex, byte[] data)
                     return;
                 }
 
+                // SECURITY (TSU-STORAGE-001): magic + decode \u5f8c dimension \u3092\u691c\u8a3c (client \u5074 decode \u306e
+                // native allocation \u7206\u767a\u3092\u9632\u3050)\u3002\u672a\u8a8d\u8b58/\u5de8\u5927\u5bf8\u6cd5\u306f\u4fdd\u5b58\u524d\u306b\u62d2\u5426\u3002
+                String contentError = ImageStorage.validateImageContent(session.buffer);
+                if (contentError != null) {
+                    TrainSystemUtilities.LOGGER.warn("[security] rejected image upload ({}) from {}",
+                            contentError, player.getName().getString());
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(
+                            "tsu.upload.image_invalid").withStyle(net.minecraft.ChatFormatting.RED));
+                    return;
+                }
+                // SECURITY (TSU-STORAGE-001): per-poster \u679a\u6570\u4e0a\u9650\u3002
+                if (posterBE.getImageIds().size() >= ImageStorage.MAX_POSTER_IMAGES) {
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(
+                            "tsu.upload.poster_full").withStyle(net.minecraft.ChatFormatting.RED));
+                    return;
+                }
+                // SECURITY (TSU-STORAGE-001): world \u5168\u4f53\u306e disk quota\u3002
+                if (ImageStorage.totalBytes(server) + session.buffer.length > ImageStorage.MAX_WORLD_IMAGE_BYTES) {
+                    TrainSystemUtilities.LOGGER.warn(
+                            "[security] rejected image upload (world image quota exceeded) from {}",
+                            player.getName().getString());
+                    player.sendSystemMessage(net.minecraft.network.chat.Component.translatable(
+                            "tsu.upload.world_quota").withStyle(net.minecraft.ChatFormatting.RED));
+                    return;
+                }
+
                 UUID imageId = ImageStorage.save(server, session.buffer, session.fileName);
                 if (imageId == null) {
                     player.sendSystemMessage(net.minecraft.network.chat.Component.translatable("tsu.upload.image_save_fail").withStyle(net.minecraft.ChatFormatting.RED));

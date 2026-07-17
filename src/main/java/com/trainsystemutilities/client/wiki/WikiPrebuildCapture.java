@@ -56,6 +56,16 @@ public final class WikiPrebuildCapture {
      *  embed:screen の bilinear downsample で文字が鮮明になる。 */
     private static final int SCALE = 2;
 
+    // === SECURITY (TSU-WIKI-001): allocation-before-validation を塞ぐ budget ===
+    // accepted resource pack が layouts/*.json を上書き/追加でき、root の w/h や file サイズは
+    // untrusted 入力。検証前に FBO/NativeImage/disk へ到達させない。
+    /** layout 単位 (super-sample 前) の 1 辺上限。 */
+    private static final int MAX_LAYOUT_DIM = 4096;
+    /** super-sample 後 (targetW×targetH) の総 pixel 上限 (= 4096² 相当、約 67MB @ RGBA)。 */
+    private static final long MAX_TARGET_PIXELS = 16_777_216L;
+    /** 1 layout JSON の byte 上限 (これを超える resource は読まずに拒否)。 */
+    private static final int MAX_RESOURCE_BYTES = 512 * 1024;
+
     /** Prebuild 済 key の cache (= <layout>__<lang>)。再起動でリセット。 */
     private static final Set<String> prebuilt = new java.util.concurrent.ConcurrentHashMap<String, Boolean>().keySet(Boolean.TRUE);
 
@@ -63,10 +73,23 @@ public final class WikiPrebuildCapture {
      *  prebuild が走った layout のみ entries が入る。 */
     public static final Map<String, int[]> LAYOUT_DIMS = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** SECURITY/lifecycle (TSU-WIKI-001): prebuild が register した DynamicTexture の location。
+     *  clearCache / reload で解放するため追跡する (旧実装は Set しか clear せず texture が leak した)。 */
+    private static final Set<ResourceLocation> registeredTextures =
+            java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private WikiPrebuildCapture() {}
 
-    /** 既知の prebuild cache をクリア (= 次回トリガで再 prebuild)。 */
-    public static void clearCache() { prebuilt.clear(); }
+    /** 既知の prebuild cache をクリアし、登録済 DynamicTexture と dims を解放 (= 次回トリガで再 prebuild)。 */
+    public static void clearCache() {
+        Minecraft mc = Minecraft.getInstance();
+        for (ResourceLocation loc : registeredTextures) {
+            try { mc.getTextureManager().release(loc); } catch (Throwable ignored) {}
+        }
+        registeredTextures.clear();
+        LAYOUT_DIMS.clear();
+        prebuilt.clear();
+    }
 
     /** 既に prebuild 済か。 */
     public static boolean isPrebuilt(String layoutName, String lang) {
@@ -117,6 +140,9 @@ public final class WikiPrebuildCapture {
             JsonObject root = JsonParser.parseString(json).getAsJsonObject();
             int w = root.has("w") ? root.get("w").getAsInt() : 256;
             int h = root.has("h") ? root.get("h").getAsInt() : 256;
+            // SECURITY (TSU-WIKI-001): dimension / total-pixel を allocation 前に検証。
+            // 巨大 w/h (例 height=1000000) が FBO/NativeImage 確保へ到達するのを防ぐ。
+            if (!dimensionsWithinBudget(name, w, h)) return false;
             // embed:screen が aspect ratio に使うため layout の native dims を保存
             LAYOUT_DIMS.put(name, new int[]{w, h});
 
@@ -182,12 +208,47 @@ public final class WikiPrebuildCapture {
                     new InputStreamReader(opt.get().open(), StandardCharsets.UTF_8))) {
                 StringBuilder sb = new StringBuilder();
                 String line;
-                while ((line = br.readLine()) != null) sb.append(line).append('\n');
+                while ((line = br.readLine()) != null) {
+                    sb.append(line).append('\n');
+                    // SECURITY (TSU-WIKI-001): untrusted resource pack が巨大 JSON を
+                    // heap へ丸読みするのを防ぐ。上限超過は読まずに破棄。
+                    if (sb.length() > MAX_RESOURCE_BYTES) {
+                        LOGGER.warn("[WikiPrebuild] {} exceeds {} bytes — skipped",
+                                loc, MAX_RESOURCE_BYTES);
+                        return null;
+                    }
+                }
                 return sb.toString();
             }
         } catch (Exception e) {
             return null;
         }
+    }
+
+    /**
+     * SECURITY (TSU-WIKI-001): layout root の w/h が有限・正・上限内で、super-sample 後の
+     * 総 pixel が budget 内かを checked math で検証する。超過は allocation 前に拒否。
+     */
+    private static boolean dimensionsWithinBudget(String name, int w, int h) {
+        if (w <= 0 || h <= 0 || w > MAX_LAYOUT_DIM || h > MAX_LAYOUT_DIM) {
+            LOGGER.warn("[WikiPrebuild] {} rejected — dimensions {}x{} out of [1,{}]",
+                    name, w, h, MAX_LAYOUT_DIM);
+            return false;
+        }
+        try {
+            long targetW = Math.multiplyExact((long) w, SCALE);
+            long targetH = Math.multiplyExact((long) h, SCALE);
+            long pixels = Math.multiplyExact(targetW, targetH);
+            if (pixels > MAX_TARGET_PIXELS) {
+                LOGGER.warn("[WikiPrebuild] {} rejected — target pixels {} > cap {}",
+                        name, pixels, MAX_TARGET_PIXELS);
+                return false;
+            }
+        } catch (ArithmeticException overflow) {
+            LOGGER.warn("[WikiPrebuild] {} rejected — dimension overflow {}x{}", name, w, h);
+            return false;
+        }
+        return true;
     }
 
     /** "layouts/wire-connector.json" → "wire-connector" */
@@ -229,13 +290,8 @@ public final class WikiPrebuildCapture {
 
             GuiGraphics g = new GuiGraphics(mc, mc.renderBuffers().bufferSource());
             // Phase 5e: V3 RenderGraph 経由 (V2 JsonLayoutEngine.renderElement 削除)
-            var compiled = belugalab.mcss3.runtime.V3LayoutCache.getCompiled(root);
-            if (compiled != null && compiled.renderGraph() != null) {
-                compiled.renderGraph().render(new belugalab.mcss3.graph.RenderCtx(
-                        g, mc.font,
-                        Integer.MIN_VALUE / 2, Integer.MIN_VALUE / 2,
-                        PREBUILD_HANDLER, -1));
-            }
+            // facade 化 Phase 2-b: 内部 V3LayoutCache / RenderGraph / RenderCtx を com.manta.api 経由に
+            com.manta.api.render.WikiPrebuild.renderLayout(root, g, mc.font, PREBUILD_HANDLER);
             g.flush();
 
             NativeImage img = new NativeImage(targetW, targetH, false);
@@ -263,6 +319,7 @@ public final class WikiPrebuildCapture {
         NativeImage copy = copyImage(img);
         DynamicTexture dt1 = new DynamicTexture(img);
         mc.getTextureManager().register(locLang, dt1);
+        registeredTextures.add(locLang);
         // 高解像度キャプチャの bilinear downsample → 鮮明な wiki preview
         applyBilinear(dt1);
 
@@ -272,10 +329,13 @@ public final class WikiPrebuildCapture {
                     TrainSystemUtilities.MOD_ID, "textures/wiki/screens/" + name + ".png");
             DynamicTexture dt2 = new DynamicTexture(copy);
             mc.getTextureManager().register(locLegacy, dt2);
+            registeredTextures.add(locLegacy);
             applyBilinear(dt2);
         }
 
-        // PNG として gamedir/screenshots/wiki に永続保存 (assets bundling 用)
+        // PNG として gamedir/screenshots/wiki に永続保存 (assets bundling 用、dev 限定)。
+        // SECURITY (TSU-WIKI-001): production では untrusted resource から disk 書込みしない。
+        if (net.neoforged.fml.loading.FMLEnvironment.production) return;
         try {
             Path output = Paths.get(mc.gameDirectory.getPath(),
                     "screenshots", "wiki", name + "__" + lang + ".png");
@@ -304,6 +364,7 @@ public final class WikiPrebuildCapture {
         // variant texture
         DynamicTexture dtv = new DynamicTexture(img);
         mc.getTextureManager().register(locVariant, dtv);
+        registeredTextures.add(locVariant);
         applyBilinear(dtv);
         // main texture (= variant なし) — 1 件目 variant のみ
         if (alsoAsMain && mainCopy != null) {
@@ -311,6 +372,7 @@ public final class WikiPrebuildCapture {
                     TrainSystemUtilities.MOD_ID, "textures/wiki/screens/" + name + "__" + lang + ".png");
             DynamicTexture dtm = new DynamicTexture(mainCopy);
             mc.getTextureManager().register(locMain, dtm);
+            registeredTextures.add(locMain);
             applyBilinear(dtm);
             // legacy lang なし
             ResourceLocation locLegacy = ResourceLocation.fromNamespaceAndPath(
@@ -319,10 +381,15 @@ public final class WikiPrebuildCapture {
             if (legacyCopy != null) {
                 DynamicTexture dtl = new DynamicTexture(legacyCopy);
                 mc.getTextureManager().register(locLegacy, dtl);
+                registeredTextures.add(locLegacy);
                 applyBilinear(dtl);
             }
         }
-        // PNG 永続保存
+        // PNG 永続保存 (dev 限定)。SECURITY (TSU-WIKI-001): production では disk 書込みしない。
+        if (net.neoforged.fml.loading.FMLEnvironment.production) {
+            if (variantCopy != null) variantCopy.close();
+            return;
+        }
         try {
             Path output = Paths.get(mc.gameDirectory.getPath(),
                     "screenshots", "wiki", fullName + "__" + lang + ".png");

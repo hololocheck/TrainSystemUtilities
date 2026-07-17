@@ -463,6 +463,9 @@
   "tsu.monitor.stopping_label": "停車中",
 
   "tsu.upload.image_too_large_detail_fmt": "画像が大きすぎます (%dMB). 最大 5MB です。",
+  "tsu.upload.image_invalid": "画像として認識できないか、寸法が大きすぎます。",
+  "tsu.upload.poster_full": "このポスターの画像が上限に達しています。",
+  "tsu.upload.world_quota": "ワールドの画像保存容量が上限に達しています。",
   "tsu.upload.preset_place_unconfigured": "プリセットプレイス未設定",
   "tsu.upload.encode_fail_fmt": "encode 失敗: %s",
   "tsu.upload.file_size_over_fmt": "ファイルサイズ %d バイトを超過",

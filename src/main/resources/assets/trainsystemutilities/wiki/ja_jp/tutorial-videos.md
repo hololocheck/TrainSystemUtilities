@@ -15,7 +15,7 @@ TSU と Manta の使い方を動画で確認できるページ。下の動画カ
 
 Manta のゲーム内動画再生 (wiki 埋め込み / PiP パネル) の公式ガイド動画。
 
-```embed:youtube url=https://youtu.be/YrC_78YIKVQ title=Manta Guide: Use the In-Game Video System
+```embed:youtube url=https://youtu.be/lUIN8LcW59Y title=Manta Guide: Use the In-Game Video System
 ```
 
 ## 関連ページ

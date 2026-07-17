@@ -11,6 +11,13 @@ tags: [electrification, tool]
 
 A **held tool** that places an [overhead pole](../electrification/overhead-pole.md) at the point on a track you right-click. First decide the pole height, clearance, number of parallel tracks, etc. on the settings screen, then switch to placement mode and right-click a track to raise one pole at that point.
 
+## Video walkthrough
+
+Watch the full flow from setup to placement (Manta's embedded video feature).
+
+```embed:youtube url=https://youtu.be/C3xMglvSssk title=Overhead Pole Auto Tool
+```
+
 ## Opening / holding
 
 This tool has **two modes**. Right after switching to it, it is in "GUI mode" (the settings screen).

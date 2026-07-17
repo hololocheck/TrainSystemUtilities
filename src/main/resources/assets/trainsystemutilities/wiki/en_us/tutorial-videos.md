@@ -15,7 +15,7 @@ Watch how to use TSU and Manta without leaving the game — the video cards belo
 
 The official guide to Manta's in-game video playback (wiki embeds / PiP panel).
 
-```embed:youtube url=https://youtu.be/YrC_78YIKVQ title=Manta Guide: Use the In-Game Video System
+```embed:youtube url=https://youtu.be/lUIN8LcW59Y title=Manta Guide: Use the In-Game Video System
 ```
 
 ## Related pages

@@ -25,8 +25,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = StandardBogeyVisual.Small.class, remap = false)
 public abstract class StandardBogeyVisualSmallMixin {
 
+    /** Mixin は @Unique field のインライン初期化子をターゲットの ctor に移送しないため、
+     *  初期化子を書いても実行時は null になる (= NPE で visual 生成ごと失敗する)。初回 miss 時に遅延生成する。 */
     @Unique
-    private final Matrix4f trainsystemutilities$lastPose = new Matrix4f();
+    private Matrix4f trainsystemutilities$lastPose;
 
     @Unique
     private int trainsystemutilities$lastWheelAngleBits = 0;
@@ -41,16 +43,21 @@ public abstract class StandardBogeyVisualSmallMixin {
 
         int angleBits = Float.floatToRawIntBits(wheelAngle);
         Matrix4f current = poseStack.last().pose();
+        Matrix4f last = trainsystemutilities$lastPose;
 
-        if (trainsystemutilities$hasCache
+        if (trainsystemutilities$hasCache && last != null
                 && angleBits == trainsystemutilities$lastWheelAngleBits
-                && trainsystemutilities$lastPose.equals(current)) {
+                && last.equals(current)) {
             TsuTrainOptimization.STATS.bogeyCacheHits.incrementAndGet();
             ci.cancel();
             return;
         }
 
-        trainsystemutilities$lastPose.set(current);
+        if (last == null) {
+            last = new Matrix4f();
+            trainsystemutilities$lastPose = last;
+        }
+        last.set(current);
         trainsystemutilities$lastWheelAngleBits = angleBits;
         trainsystemutilities$hasCache = true;
         TsuTrainOptimization.STATS.bogeyCacheMisses.incrementAndGet();

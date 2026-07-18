@@ -2,7 +2,7 @@ package com.trainsystemutilities.station.routing;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -33,6 +33,10 @@ import java.util.PriorityQueue;
  * Heuristic: chebyshev (admissible で xy 平面に対し最適)。
  *
  * <p>探索半径上限 {@link #MAX_DISTANCE} (= 128 ブロック)。これを超えれば失敗扱い。
+ *
+ * <p>world 読み取りは {@link BlockGetter} 経由。worker thread から呼ぶ場合は必ず
+ * {@link OffThreadBlockView} を渡すこと — {@code ServerLevel} を直接渡すと 1 ブロックにつき
+ * 1 回 server main thread への往復が発生し、main thread を飽和させて全員切断を招く。
  */
 public final class WalkingPathfinder {
 
@@ -71,7 +75,7 @@ public final class WalkingPathfinder {
      *
      * @return 到達した field cell 含む path、または unreachable
      */
-    public static Result findPathToField(Level level, BlockPos start,
+    public static Result findPathToField(BlockGetter level, BlockPos start,
             com.trainsystemutilities.station.routing.navfield.NavField field) {
         var log = com.trainsystemutilities.TrainSystemUtilities.LOGGER;
         if (level == null || start == null || field == null) return Result.unreachable();
@@ -149,7 +153,7 @@ public final class WalkingPathfinder {
         return Result.unreachable();
     }
 
-    public static Result findPath(Level level, BlockPos start, BlockPos goal) {
+    public static Result findPath(BlockGetter level, BlockPos start, BlockPos goal) {
         var log = com.trainsystemutilities.TrainSystemUtilities.LOGGER;
         if (level == null || start == null || goal == null) {
             log.warn("[WalkPath] null arg level={} start={} goal={}", level, start, goal);
@@ -354,7 +358,7 @@ public final class WalkingPathfinder {
     }
 
     /** 足元が Create の線路ブロックか? (経路 penalty 用)。 */
-    private static boolean isTrackBlockBelow(Level level, BlockPos pos) {
+    private static boolean isTrackBlockBelow(BlockGetter level, BlockPos pos) {
         try {
             return level.getBlockState(pos.below()).getBlock()
                     instanceof com.simibubi.create.content.trains.track.ITrackBlock;
@@ -367,7 +371,7 @@ public final class WalkingPathfinder {
      * <p>装飾用に単発で置かれた階段ブロック (= 駅エッジの装飾、ホーム端等) を「踏み台にした
      * 2 段壁の突破」を禁止するための判定。本物の階段列だけが low-cost step-up の対象になる。
      */
-    private static boolean isPartOfStaircase(Level level, BlockPos pos) {
+    private static boolean isPartOfStaircase(BlockGetter level, BlockPos pos) {
         BlockState s = level.getBlockState(pos);
         if (!isStairBlock(s)) {
             // 立ち位置自体が階段でなくても、足元が階段列の一部ならOK (= 階段の上に立っている)
@@ -383,7 +387,7 @@ public final class WalkingPathfinder {
     }
 
     /** stairPos の 4 水平方向で、上下 ±1 Y に別の階段ブロックがあるか? */
-    private static boolean hasAdjacentStair(Level level, BlockPos stairPos) {
+    private static boolean hasAdjacentStair(BlockGetter level, BlockPos stairPos) {
         for (var d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
             BlockPos n = stairPos.relative(d);
             if (isStairBlock(level.getBlockState(n.above()))) return true;
@@ -395,7 +399,7 @@ public final class WalkingPathfinder {
     }
 
     /** 「ブロックそのものが通れる空間か」(立てるかは無関係)。対角コーナーチェック用。 */
-    private static boolean passableSpace(Level level, BlockPos pos) {
+    private static boolean passableSpace(BlockGetter level, BlockPos pos) {
         return passable(level.getBlockState(pos)) && passable(level.getBlockState(pos.above()));
     }
 
@@ -405,7 +409,7 @@ public final class WalkingPathfinder {
      *
      * <p>水中も「立てる」扱い (= 泳ぎ可能)、ただしコストはペナルティ。
      */
-    public static boolean standableAt(Level level, BlockPos pos) {
+    public static boolean standableAt(BlockGetter level, BlockPos pos) {
         BlockState foot = level.getBlockState(pos);
         BlockState head = level.getBlockState(pos.above());
         // ラダー: 足元が空気でも、その柱 (pos) が ladder なら立てる
@@ -497,12 +501,12 @@ public final class WalkingPathfinder {
     }
 
     /** 水ブロック判定。 */
-    private static boolean isWaterAt(Level level, BlockPos pos) {
+    private static boolean isWaterAt(BlockGetter level, BlockPos pos) {
         return level.getBlockState(pos).getFluidState().is(net.minecraft.tags.FluidTags.WATER);
     }
 
     /** 階段判定 (cost バイアス用)。 */
-    private static boolean isStair(Level level, BlockPos pos) {
+    private static boolean isStair(BlockGetter level, BlockPos pos) {
         return level.getBlockState(pos.below()).getBlock() instanceof StairBlock;
     }
 
@@ -511,7 +515,7 @@ public final class WalkingPathfinder {
      * step-up: cur の頭上 (cur+2) も空気が必要 (1m ジャンプの飛び越しスペース)。
      * step-down: 落下先足元の支持は standableAt で check 済 → 追加 check 不要。
      */
-    private static boolean walkableTransition(Level level, BlockPos cur, BlockPos next) {
+    private static boolean walkableTransition(BlockGetter level, BlockPos cur, BlockPos next) {
         if (next.getY() > cur.getY()) {
             // step-up: cur の頭上 +1 (= cur+2) と next の頭上 (= next+1 = cur+2) が空気
             return passable(level.getBlockState(cur.above().above()));

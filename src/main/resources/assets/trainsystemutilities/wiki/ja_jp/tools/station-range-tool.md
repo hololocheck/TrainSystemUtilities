@@ -47,12 +47,16 @@ tags: [tool, station]
 
 ![](bws:trainsystemutilities:wiki/screens/station-group-manage__ja_jp.png)
 
-`/tsu sg manage` 等で管理 GUI を開き、保存済み駅グループの:
+ツールを **Alt + マウスホイール** で「GUI」モードに切り替え、 **右クリック** すると管理 GUI が開き、
+保存済み駅グループの:
 - 名前変更
 - 削除 (確認ダイアログあり)
 - メンバー駅の確認
 
 を行える。
+
+> [!NOTE]
+> 駅グループ管理用のコマンドはありません。 管理はすべてこのツールの GUI モードから行います。
 
 ![](bws:trainsystemutilities:wiki/screens/station-group-manage-delete__ja_jp.png)
 

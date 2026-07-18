@@ -86,7 +86,7 @@ dependencies {
     implementation "com.tterrag.registrate:Registrate:${registrate_version}"
 
     // Manta library - compile against original (full generics/signatures)
-    compileOnly files("../manta/build/libs/manta-1.0.4.jar")
+    compileOnly files("../manta/build/libs/manta-1.0.6.jar")
 
     // Spatial Audio System (optional integration). API は belugalab.sas.api.* のみ参照。
     // 実行時は SAS が未導入でも SasIntegration の soft-dep ガードで no-op になる。

@@ -2,10 +2,12 @@ package com.trainsystemutilities.station.routing.navfield;
 
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.station.StationGroup;
+import com.trainsystemutilities.station.routing.OffThreadBlockView;
 import com.trainsystemutilities.station.routing.WalkingPathfinder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -68,9 +70,12 @@ public final class NavFieldBuilder {
     /**
      * 指定番線について逆 Dijkstra で field を構築。
      */
-    public static Result build(ServerLevel level, StationGroup group, int platform) {
+    public static Result build(ServerLevel serverLevel, StationGroup group, int platform) {
         long startNanos = System.nanoTime();
         var log = TrainSystemUtilities.LOGGER;
+        // build は worker thread で走る。 ServerLevel を直接読むと 1 ブロックにつき 1 回
+        // server main thread への往復が発生するため、 chunk キャッシュ付きビュー経由で読む。
+        BlockGetter level = new OffThreadBlockView(serverLevel);
         if (platform <= 0 || platform > group.stationBlockPositions().size()) {
             log.warn("[NavField] invalid platform={} for group={}", platform, group.id());
             return new Result(null, 0, 0, false);
@@ -347,7 +352,7 @@ public final class NavFieldBuilder {
 
     // --- ヘルパ (WalkingPathfinder と同等の判定を再実装) ---
 
-    private static BlockPos nearestStandable(ServerLevel level, BlockPos origin, int radius) {
+    private static BlockPos nearestStandable(BlockGetter level, BlockPos origin, int radius) {
         if (WalkingPathfinder.standableAt(level, origin)) return origin;
         BlockPos best = null;
         double bestDistSq = Double.MAX_VALUE;
@@ -368,7 +373,7 @@ public final class NavFieldBuilder {
         return best;
     }
 
-    private static boolean passableSpace(ServerLevel level, BlockPos pos) {
+    private static boolean passableSpace(BlockGetter level, BlockPos pos) {
         BlockState foot = level.getBlockState(pos);
         BlockState head = level.getBlockState(pos.above());
         return passableState(foot) && passableState(head);
@@ -388,20 +393,20 @@ public final class NavFieldBuilder {
     }
 
     /**
-     * Phase D-3: chunk section 直接アクセスでブロック走査。
+     * 指定 box のブロック走査。
      *
      * <p>同時にフェンスゲート位置と open 状態も記録 → Dijkstra でコスト調整に使う。
      */
-    private static void scanWithSections(ServerLevel level,
+    private static void scanWithSections(BlockGetter level,
                                           int sxMin, int syMin, int szMin,
                                           int sxMax, int syMax, int szMax,
                                           java.util.List<Integer> stairCoordList,
                                           java.util.List<Integer> trackCoordList,
                                           java.util.HashMap<Long, Boolean> fenceGateOpen) {
-        // H-8 hardening: section の PalettedContainer 直読み (section.getBlockState) は worker thread
-        // から tick の chunk 書込み中に読むと torn read / AIOOBE を起こしやすい。 より guard の多い
-        // level.getBlockState(pos) 経由に変更 (= chunk/section の null/範囲チェックを通る)。 走査結果は同一。
-        // worker 側は try/catch で包んでおり、 万一の例外は graceful failure になる。
+        // level は OffThreadBlockView (= chunk キャッシュ付き)。 chunk 取得だけが main thread 往復で、
+        // ブロック読みは LevelChunk.getBlockState (= section の null/範囲 guard を通る) になる。
+        // H-8 hardening が避けたかった section 直読みの torn read も踏まない。
+        // ServerLevel を直接渡すと 1 ブロックごとに main thread 往復が発生するので不可。
         BlockPos.MutableBlockPos mp = new BlockPos.MutableBlockPos();
         for (int wx = sxMin; wx <= sxMax; wx++) {
             for (int wz = szMin; wz <= szMax; wz++) {
@@ -429,7 +434,7 @@ public final class NavFieldBuilder {
 
     /** isPartOfStaircase の lazy キャッシュ。Dijkstra で同一 cell が複数回参照されるのを排除。 */
     private static boolean cachedStair(java.util.HashMap<Long, Boolean> cache,
-                                        ServerLevel level, BlockPos pos) {
+                                        BlockGetter level, BlockPos pos) {
         Long k = pos.asLong();
         Boolean v = cache.get(k);
         if (v != null) return v;
@@ -440,7 +445,7 @@ public final class NavFieldBuilder {
 
     /** isTrackBelow の lazy キャッシュ。 */
     private static boolean cachedTrackBelow(java.util.HashMap<Long, Boolean> cache,
-                                             ServerLevel level, BlockPos pos) {
+                                             BlockGetter level, BlockPos pos) {
         Long k = pos.asLong();
         Boolean v = cache.get(k);
         if (v != null) return v;
@@ -451,7 +456,7 @@ public final class NavFieldBuilder {
 
     /** isWaterAt の lazy キャッシュ。 */
     private static boolean cachedWater(java.util.HashMap<Long, Boolean> cache,
-                                        ServerLevel level, BlockPos pos) {
+                                        BlockGetter level, BlockPos pos) {
         Long k = pos.asLong();
         Boolean v = cache.get(k);
         if (v != null) return v;
@@ -460,7 +465,7 @@ public final class NavFieldBuilder {
         return r;
     }
 
-    private static boolean isTrackBelow(ServerLevel level, BlockPos pos) {
+    private static boolean isTrackBelow(BlockGetter level, BlockPos pos) {
         try {
             return level.getBlockState(pos.below()).getBlock()
                     instanceof com.simibubi.create.content.trains.track.ITrackBlock;
@@ -468,7 +473,7 @@ public final class NavFieldBuilder {
     }
 
     /** セルの足元空間 / 頭上空間に線路ブロックが存在するか? = そのセルを線路が貫通している。 */
-    private static boolean cellIntersectsTrack(ServerLevel level, BlockPos pos) {
+    private static boolean cellIntersectsTrack(BlockGetter level, BlockPos pos) {
         try {
             if (level.getBlockState(pos).getBlock()
                     instanceof com.simibubi.create.content.trains.track.ITrackBlock) return true;
@@ -478,7 +483,7 @@ public final class NavFieldBuilder {
         return false;
     }
 
-    private static boolean isPartOfStaircase(ServerLevel level, BlockPos pos) {
+    private static boolean isPartOfStaircase(BlockGetter level, BlockPos pos) {
         BlockState s = level.getBlockState(pos);
         if (!(s.getBlock() instanceof StairBlock)) {
             BlockState below = level.getBlockState(pos.below());
@@ -488,7 +493,7 @@ public final class NavFieldBuilder {
         return hasAdjStair(level, pos);
     }
 
-    private static boolean hasAdjStair(ServerLevel level, BlockPos stair) {
+    private static boolean hasAdjStair(BlockGetter level, BlockPos stair) {
         for (Direction d : Direction.Plane.HORIZONTAL) {
             BlockPos n = stair.relative(d);
             if (level.getBlockState(n.above()).getBlock() instanceof StairBlock) return true;
@@ -498,7 +503,7 @@ public final class NavFieldBuilder {
         return false;
     }
 
-    private static boolean isWaterAt(ServerLevel level, BlockPos pos) {
+    private static boolean isWaterAt(BlockGetter level, BlockPos pos) {
         return level.getFluidState(pos).isSource()
                 || (level.getFluidState(pos).getType() != net.minecraft.world.level.material.Fluids.EMPTY
                 && level.getFluidState(pos).is(net.minecraft.tags.FluidTags.WATER));

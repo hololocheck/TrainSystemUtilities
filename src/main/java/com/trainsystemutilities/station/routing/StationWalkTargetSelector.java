@@ -3,6 +3,7 @@ package com.trainsystemutilities.station.routing;
 import com.trainsystemutilities.station.StationGroup;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.BlockGetter;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -42,12 +43,15 @@ public final class StationWalkTargetSelector {
         }
     }
 
-    public static PathResult findPathToGroup(ServerLevel level, BlockPos start, StationGroup group, int platform) {
+    public static PathResult findPathToGroup(ServerLevel serverLevel, BlockPos start, StationGroup group, int platform) {
         var log = com.trainsystemutilities.TrainSystemUtilities.LOGGER;
-        if (level == null || start == null || group == null) {
-            log.warn("[NavSelector] null input level={} start={} group={}", level, start, group);
+        if (serverLevel == null || start == null || group == null) {
+            log.warn("[NavSelector] null input level={} start={} group={}", serverLevel, start, group);
             return PathResult.unreachable();
         }
+        // NavPathDispatcher の worker thread で走る。 ServerLevel を直接読むと 1 ブロックにつき
+        // 1 回 server main thread への往復が発生するため、 chunk キャッシュ付きビュー経由で読む。
+        BlockGetter level = new OffThreadBlockView(serverLevel);
         log.info("[NavSelector] start={} group={} '{}' platform={} stationBlocks={} bounds=[{},{},{}]→[{},{},{}]",
                 start, group.id(), group.name(), platform,
                 group.stationBlockPositions() == null ? -1 : group.stationBlockPositions().size(),
@@ -80,16 +84,16 @@ public final class StationWalkTargetSelector {
         // platform 指定がある場合のみ field を使用。0 の場合は旧 voxel candidates に fallback。
         if (platform > 0 && platform <= group.stationBlockPositions().size()) {
             var field = com.trainsystemutilities.station.routing.navfield.NavFieldCache
-                    .get(level, group.id(), platform);
+                    .get(serverLevel, group.id(), platform);
             if (field == null) {
                 log.info("[NavSelector] NavField cache MISS for group={} platform={} — building",
                         group.id(), platform);
                 try {
                     var br = com.trainsystemutilities.station.routing.navfield
-                            .NavFieldBuilder.build(level, group, platform);
+                            .NavFieldBuilder.build(serverLevel, group, platform);
                     if (br.field() != null) {
                         com.trainsystemutilities.station.routing.navfield.NavFieldCache
-                                .put(level, br.field());
+                                .put(serverLevel, br.field());
                         field = br.field();
                         log.info("[NavSelector] field built cells={} elapsed={}ms truncated={}",
                                 field.cellCount(), br.elapsedMs(), br.truncated());
@@ -129,7 +133,7 @@ public final class StationWalkTargetSelector {
             log.info("[NavSelector] NavField unavailable — fallback to voxel candidates");
         }
 
-        List<Candidate> candidates = candidates(level, pathStart, group, platform);
+        List<Candidate> candidates = candidates(level, serverLevel, pathStart, group, platform);
         log.info("[NavSelector] {} candidate goal positions inside group", candidates.size());
         if (candidates.isEmpty()) {
             log.warn("[NavSelector] no candidates! group has {} station blocks, range volume might be empty",
@@ -193,10 +197,12 @@ public final class StationWalkTargetSelector {
         return new PathResult(true, bestCandidate.platform(), bestCandidate.pos(), bestPath);
     }
 
-    private static List<Candidate> candidates(ServerLevel level, BlockPos start, StationGroup group, int platform) {
+    /** serverLevel は {@link PlatformCache} の gameTime 取得専用 — ブロック読みは level (= view) 経由。 */
+    private static List<Candidate> candidates(BlockGetter level, ServerLevel serverLevel,
+                                              BlockPos start, StationGroup group, int platform) {
         var log = com.trainsystemutilities.TrainSystemUtilities.LOGGER;
         // キャッシュヒットチェック
-        var cached = PlatformCache.get(group, platform, level);
+        var cached = PlatformCache.get(group, platform, serverLevel);
         if (cached != null) {
             log.info("[NavSelector] cache HIT for group={} platform={} → {} cached candidates",
                     group.id(), platform, cached.candidates().size());
@@ -254,7 +260,7 @@ public final class StationWalkTargetSelector {
             if (c.isPlatform()) platformOnly.add(c.pos());
         }
         if (!platformOnly.isEmpty()) {
-            PlatformCache.put(group, platform, platformOnly, level);
+            PlatformCache.put(group, platform, platformOnly, serverLevel);
             log.info("[NavSelector] cached {} platform positions", platformOnly.size());
         } else {
             log.warn("[NavSelector] NO platform candidates found! Using non-platform fallback");
@@ -276,7 +282,7 @@ public final class StationWalkTargetSelector {
      * 「指定番線の周囲」に限定することで、別番線の候補が混入するのを防ぐ。
      * 半径外は (1) 別番線の領域 / (2) コンコース等のため、当該番線の goal としては不適切。
      */
-    private static void collectAroundStationWide(ServerLevel level, StationGroup group, StationRef station,
+    private static void collectAroundStationWide(BlockGetter level, StationGroup group, StationRef station,
                                                   Map<Long, Candidate> out) {
         var log = com.trainsystemutilities.TrainSystemUtilities.LOGGER;
         BlockPos s = station.pos();
@@ -371,7 +377,7 @@ public final class StationWalkTargetSelector {
         return ys;
     }
 
-    private static void collectAroundStation(ServerLevel level, StationGroup group, StationRef station,
+    private static void collectAroundStation(BlockGetter level, StationGroup group, StationRef station,
                                              Map<Long, Candidate> out) {
         BlockPos s = station.pos();
         Bounds b = bounds(group);
@@ -402,7 +408,7 @@ public final class StationWalkTargetSelector {
     }
 
     /** 足元 (= pos.below()) が Create の線路ブロックなら true。 */
-    private static boolean isOnTrack(ServerLevel level, BlockPos pos) {
+    private static boolean isOnTrack(BlockGetter level, BlockPos pos) {
         try {
             return level.getBlockState(pos.below()).getBlock()
                     instanceof com.simibubi.create.content.trains.track.ITrackBlock;
@@ -413,7 +419,7 @@ public final class StationWalkTargetSelector {
      * pos の水平 4 方向 + 1 マス下に線路ブロックがあれば「ホーム上」とみなす。
      * 線路から横へ 1 マス + 上へ 1 マスでアクセスできる関係 = 標準的なホーム配置。
      */
-    private static boolean isAdjacentToTrack(ServerLevel level, BlockPos pos) {
+    private static boolean isAdjacentToTrack(BlockGetter level, BlockPos pos) {
         try {
             for (var d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
                 BlockPos n = pos.relative(d);
@@ -428,7 +434,7 @@ public final class StationWalkTargetSelector {
         return false;
     }
 
-    private static void collectRangeFallback(ServerLevel level, StationGroup group, BlockPos start,
+    private static void collectRangeFallback(BlockGetter level, StationGroup group, BlockPos start,
                                              Map<Long, Candidate> out) {
         Bounds b = bounds(group);
         long volume = ((long) b.maxX() - b.minX() + 1)
@@ -457,7 +463,7 @@ public final class StationWalkTargetSelector {
         for (int i = 0; i < n; i++) add(out, all.get(i).pos(), all.get(i).platform(), all.get(i).isPlatform());
     }
 
-    private static BlockPos nearestStandable(ServerLevel level, BlockPos origin, int radius, int verticalRadius) {
+    private static BlockPos nearestStandable(BlockGetter level, BlockPos origin, int radius, int verticalRadius) {
         if (WalkingPathfinder.standableAt(level, origin)) return origin;
         BlockPos best = null;
         double bestDist = Double.MAX_VALUE;

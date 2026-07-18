@@ -281,18 +281,12 @@ public record StationGroupCreatePayload(String name, BlockPos pos1, BlockPos pos
 
             data.put(group);
 
-            // 駅構造解析 (旧 NavGraph) — 残存コード、軽量なので継続実行
-            try {
-                var analysis = com.trainsystemutilities.station.routing.navgraph
-                        .StationStructureAnalyzer.analyze(level, group);
-                if (!analysis.skipped() && analysis.graph() != null) {
-                    com.trainsystemutilities.station.routing.navgraph.NavGraphCache
-                            .put(analysis.graph());
-                }
-            } catch (Throwable t) {
-                TrainSystemUtilities.LOGGER.error("[Analyzer] failed for group={}: {}",
-                        group.id(), t.toString(), t);
-            }
+            // 旧 NavGraph の駅構造解析 (StationStructureAnalyzer.analyze) はここで呼んでいたが削除した。
+            // handle 全体が enqueueWork (= server main thread) なのに、 中身はノード総当たりの A*
+            // (WalkingPathfinder、 1 ペアあたり最大 4.5s) + 最大 200 万ブロックの走査。 到達不能ペアが
+            // 7 個あるだけで 30s の keep-alive 窓を超え、 マルチサーバーで駅グループ作成時に全員が
+            // Timed out で切断されていた。 出力先の NavGraphCache は読み出し側が 1 箇所も無く
+            // (GraphPathfinder も未使用)、 結果を誰も使わない純粋な死に処理だった。
 
             // Phase A: NavField をバックグラウンド構築 (= 主要ナビ用)
             // 完了時に action bar / chat で player に通知される。

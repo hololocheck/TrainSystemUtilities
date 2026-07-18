@@ -47,12 +47,16 @@ At save time, you can choose a **track auto-numbering** mode:
 
 ![](bws:trainsystemutilities:wiki/screens/station-group-manage__ja_jp.png)
 
-Open the management GUI via `/tsu sg manage` etc. to:
+Switch the tool to **GUI** mode with **Alt + mouse wheel**, then **right-click** to open the
+management GUI, where you can:
 - Rename
 - Delete (with confirmation dialog)
 - Check member stations
 
 of a saved station group.
+
+> [!NOTE]
+> There is no command for station group management. Everything is done from this tool's GUI mode.
 
 ![](bws:trainsystemutilities:wiki/screens/station-group-manage-delete__ja_jp.png)
 

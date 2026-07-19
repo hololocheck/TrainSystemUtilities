@@ -16,6 +16,7 @@ import belugalab.mcss3.draw.VectorRenderer;
 import com.trainsystemutilities.blockentity.ManagementComputerBlockEntity;
 import com.trainsystemutilities.gui.ManagementComputerMenu;
 import com.trainsystemutilities.schedule.CreateScheduleIds;
+import com.trainsystemutilities.schedule.TrainTypes;
 import com.trainsystemutilities.network.TrackNetworkScanner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -126,7 +127,9 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     private final ScrollViewport schedListScroll = new ScrollViewport(() -> trainsForList().size(), TRAIN_LIST_MAX_VISIBLE);
     /** schedule 詳細の entries scroll (= §4.19 ScrollViewport)。 */
     private final ScrollViewport schedEntryScroll = new ScrollViewport(() -> selectedSchedEntries.size(), SCHED_VIEW_MAX);
-    private static final int SCHED_VIEW_MAX = 6;
+    // 種別行を「戻る」直下に入れたぶん entries ビューポートが 84px→70px に縮んだ (2026-07-18)。
+    // management-computer.json の sched-entries h と必ず一致させること。
+    private static final int SCHED_VIEW_MAX = 5;
 
     // === 時刻表共有 (P3) ===
     private boolean showScheduleShare = false;
@@ -1035,6 +1038,9 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                     elec = isElectronicTimetable(info.id());
                 }
                 for (String c : classes) {
+                    if ("sched-row-type".equals(c)) {
+                        return TrainTypes.localize(be().getSyncedTrainType(info.id()));
+                    }
                     if ("sched-row-name".equals(c)) return prefix + info.name();
                     if ("sched-row-entries".equals(c)) {
                         UUID shareSrc = be().getTimetableShareSource(info.id());
@@ -1052,6 +1058,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         // Schedule tab detail (no repeat context except for entries)
         if (tabs.is("schedule") && scheduleSelectedTrainId != null) {
             for (String c : classes) {
+                if ("sched-type-val".equals(c)) return TrainTypes.localizeForEditor(selectedTrainTypeCode());
                 if ("sched-detail-name".equals(c)) return selectedTrainName.isEmpty() ? "?" : selectedTrainName;
                 if ("sched-detail-info".equals(c)) {
                     String status = !selectedTrainStation.isEmpty() ? selectedTrainStation
@@ -1344,7 +1351,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
 
     private static final int TRAIN_LIST_TRACK_H = (28 + 2) * 4;  // (TRAINS_ROW_H+2) * TRAINS_MAX
     private static final int TRAIN_LIST_THUMB_H = 20;
-    private static final int SCHED_ENTRIES_TRACK_H = 84;  // sched-entries repeat h (= SCHED_VIEW_MAX(6) * stride 14)
+    private static final int SCHED_ENTRIES_TRACK_H = 70;  // sched-entries repeat h (= SCHED_VIEW_MAX(5) * stride 14)
     private static final int SCHED_ENTRIES_THUMB_H = 18;
 
     /** 駅タブのリスト表示用に「優先度順」の駅一覧を返す:
@@ -1586,6 +1593,38 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                         be().getBlockPos(), scheduleSelectedTrainId, target));
     }
 
+    // 種別ホイールの client 即時反映 (R4.9.1)。 server 同期は tick 単位なので、
+    // 届くまでのあいだローカル値を優先し、 一致したら破棄する。
+    private UUID pendingTypeTrainId = null;
+    private String pendingTypeCode = null;
+
+    /** 選択中列車の種別コード。 未同期のローカル変更があればそれを優先する。 */
+    private String selectedTrainTypeCode() {
+        UUID id = scheduleSelectedTrainId;
+        if (id == null) return TrainTypes.NONE;
+        String synced = be().getSyncedTrainType(id);
+        if (id.equals(pendingTypeTrainId) && pendingTypeCode != null) {
+            if (pendingTypeCode.equals(synced)) {
+                pendingTypeTrainId = null;
+                pendingTypeCode = null;
+            } else {
+                return pendingTypeCode;
+            }
+        }
+        return synced;
+    }
+
+    /** 種別ホイール 1 段 → server payload + client 即時反映 (R4.9.1)。 */
+    private void cycleSelectedTrainType(int dir) {
+        if (scheduleSelectedTrainId == null) return;
+        String next = TrainTypes.cycle(selectedTrainTypeCode(), dir);
+        pendingTypeTrainId = scheduleSelectedTrainId;
+        pendingTypeCode = next;
+        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
+                new com.trainsystemutilities.network.SetTrainTypePayload(
+                        be().getBlockPos(), scheduleSelectedTrainId, TrainTypes.indexOf(next)));
+    }
+
     private TrackNetworkScanner.StationInfo selectedStation() {
         if (selectedStationKey.isEmpty()) return null;
         for (var s : be().getCachedStations()) {
@@ -1617,7 +1656,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             case "export-all-toggle-bg": return exportAllToggle.trackBg();
             case "export-all-knob-bg":   return exportAllToggle.knobBg();
             case "owner-border":
-                return be().isPrivateMode() ? 0xFFef5350 : 0xFF66bb6a;
+                return belugalab.tsu.api.OwnerAccess.ringColor(be().isPrivateMode());
             case "mc-monitor-status-dot-bg":
             case "mc-monitor-info-color":
                 return isOnline() ? 0xFF4caf50 : 0xFFef5350;
@@ -1655,8 +1694,17 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         if ("sched-pause-color".equals(key)) return paused ? 0xFF80ffaa : 0xFFff8888;
         if ("sched-pause-border".equals(key)) return paused ? 0xFF66cc66 : 0xFFcc6666;
         if ("sched-edit-color".equals(key)) return selectedSchedEditable() ? 0xFF4fc3f7 : 0xFF888888;
+        if ("sched-type-color".equals(key)) return TrainTypes.colorArgb(selectedTrainTypeCode());
         if ("sched-share-toggle-bg".equals(key)) return schedShareToggle.trackBgFor(schedShareRealIdx());
         if ("sched-share-toggle-knob-bg".equals(key)) return schedShareToggle.knobBgFor(schedShareRealIdx());
+        // 車両タイルの種別バッジ色
+        if ("sched-row-type-color".equals(key) && ri >= 0) {
+            var live = trainsForList();
+            int realIdx = ri + schedListScroll.offset();
+            if (realIdx < live.size()) {
+                return TrainTypes.colorArgb(be().getSyncedTrainType(live.get(realIdx).id()));
+            }
+        }
         // Schedule entry: highlight current entry
         if ("sched-entry-color".equals(key) && ri >= 0) {
             int realIdx = ri + schedEntryScroll.offset();
@@ -2021,6 +2069,11 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                     layoutEditor.select(idx);
                 }
             }
+            return true;
+        }
+        // 列車種別: 値 hover + wheel で循環 (R4.13.0 / R4.13.0.8)。 値ピッカーなので非反転。
+        if ("sched-type-val".equals(key)) {
+            cycleSelectedTrainType(scrollY > 0 ? 1 : -1);
             return true;
         }
         // Panel settings popup: 値 hover + wheel で増減 (R4.13.0)。 0 = 自動 (推奨)。

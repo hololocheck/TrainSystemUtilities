@@ -4,6 +4,7 @@ import com.trainsystemutilities.registry.ModBlockEntities;
 import com.trainsystemutilities.eta.TrainArrivalCalculator;
 import com.trainsystemutilities.schedule.TrainCouplingManager;
 import com.trainsystemutilities.schedule.TrainScheduleReader;
+import com.trainsystemutilities.schedule.TrainTypeState;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -285,7 +286,7 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
                         }
                     } else {
                         String routeType = TrainScheduleReader.routeTypeForStation(train, linkedStationName);
-                        String trainType = TrainScheduleReader.detectTrainType(train);
+                        String trainType = TrainTypeState.typeOf(level, id);
                         long dayTime = level.getDayTime();
                         newArrivals.add(new ArrivedTrain(
                                 id, train.name.getString(), currentTick, dayTime, carriages, destination, stopSec,
@@ -380,7 +381,7 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
                     // Not at our station - check if heading here
                     if (TrainScheduleReader.isHeadingToStation(train, linkedStationName)) {
                         String rt = TrainScheduleReader.routeTypeForStation(train, linkedStationName);
-                        String tt = TrainScheduleReader.detectTrainType(train);
+                        String tt = TrainTypeState.typeOf(level, id);
                         String currentStop = train.getCurrentStation() != null ? train.getCurrentStation().name : "";
                         String from = currentStop;
                         int stopSec = TrainScheduleReader.getStopSecondsAtStation(train, linkedStationName);

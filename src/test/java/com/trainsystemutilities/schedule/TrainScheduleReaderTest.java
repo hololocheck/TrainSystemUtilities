@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * god-class deep #2: {@link TrainScheduleReader} から切り出した純判定ロジックを検証
- * (Minecraft / Create 非依存)。Create を読む wrapper (analyzeRouteType / detectTrainType)
- * は挙動不変で、本テストは抽出した純関数のみを対象とする。
+ * (Minecraft / Create 非依存)。Create を読む wrapper (analyzeRouteType) は挙動不変で、
+ * 本テストは抽出した純関数のみを対象とする。
  */
 class TrainScheduleReaderTest {
 
@@ -54,28 +54,6 @@ class TrainScheduleReaderTest {
                 TrainScheduleReader.routeTypeFromStations(List.of("A", "B")));
     }
 
-    // ===== trainTypeFromRatio =====
-
-    @Test
-    void trainType_ratioAtLeast80IsLocal() {
-        assertEquals("LOCAL", TrainScheduleReader.trainTypeFromRatio(8, 10));
-        assertEquals("LOCAL", TrainScheduleReader.trainTypeFromRatio(10, 10));
-    }
-
-    @Test
-    void trainType_ratioBetween40And80IsRapid() {
-        assertEquals("RAPID", TrainScheduleReader.trainTypeFromRatio(4, 10));
-        assertEquals("RAPID", TrainScheduleReader.trainTypeFromRatio(7, 10));
-    }
-
-    @Test
-    void trainType_ratioBelow40IsExpress() {
-        assertEquals("EXPRESS", TrainScheduleReader.trainTypeFromRatio(3, 10));
-        assertEquals("EXPRESS", TrainScheduleReader.trainTypeFromRatio(1, 10));
-    }
-
-    @Test
-    void trainType_emptyWhenNoNetwork() {
-        assertEquals("", TrainScheduleReader.trainTypeFromRatio(5, 0));
-    }
+    // trainTypeFromRatio のテストは、 判定アルゴリズム本体の廃止 (2026-07-18) にあわせて削除した。
+    // 種別の振る舞いは TrainTypesTest が担保する。
 }

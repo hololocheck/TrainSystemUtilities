@@ -16,12 +16,14 @@ authors = "${mod_authors}"
 description = '''${mod_description}'''
 
 # CROSS-REL-001 修正 (2026-07-17): TSU は com.manta.api.render.WikiPrebuild /
-# com.manta.api.anim.MantaAnim facade を hard 参照するため、これらが初出の 1.0.2 を下限にする。
-# 1.0.0/1.0.1 では NoClassDefFoundError になる。manta は TSU release に同梱配布 = 常に同版。
+# com.manta.api.anim.MantaAnim facade を hard 参照するため、これらが初出の 1.0.2 を下限にしていた。
+# 1.0.6 から com.manta.api.image.MantaImage (JPEG decode) も hard 参照するため、
+# その初出である 1.0.7 へ下限を引き上げる。下回ると NoClassDefFoundError になる。
+# manta は TSU release に同梱配布 = 常に同版。
 [[dependencies.${mod_id}]]
     modId = "manta"
     type = "required"
-    versionRange = "[1.0.2,2)"
+    versionRange = "[1.0.7,2)"
     ordering = "AFTER"
     side = "BOTH"
 

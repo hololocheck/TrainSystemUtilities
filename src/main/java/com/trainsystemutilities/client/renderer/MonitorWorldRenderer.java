@@ -14,6 +14,7 @@ import com.trainsystemutilities.blockentity.ManagementComputerBlockEntity;
 import com.trainsystemutilities.blockentity.MonitorBlockEntity;
 import com.trainsystemutilities.blockentity.RailwayManagementBlockEntity;
 import com.trainsystemutilities.registry.ModBlocks;
+import com.trainsystemutilities.schedule.TrainTypes;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
@@ -42,14 +43,9 @@ public class MonitorWorldRenderer {
     private static String trf(String key, Object... args) {
         return net.minecraft.network.chat.Component.translatable(key, args).getString();
     }
-    /** train type コード (LOCAL/RAPID/EXPRESS) → ローカライズ済みテキスト。 */
+    /** train type コード → ローカライズ済みテキスト。 種別の定義は {@link TrainTypes} が単一情報源。 */
     private static String trainTypeText(String code) {
-        return switch (code) {
-            case "RAPID" -> tr("tsu.monitor.train_type_rapid");
-            case "EXPRESS" -> tr("tsu.monitor.train_type_express");
-            case "LOCAL" -> tr("tsu.monitor.train_type_local");
-            default -> code;
-        };
+        return TrainTypes.localize(code);
     }
     /** route type コード (SHUTTLE/CIRCULAR) → ローカライズ済みテキスト。 */
     private static String routeTypeText(String code) {
@@ -225,6 +221,9 @@ public class MonitorWorldRenderer {
         @Override
         public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
             if (key == null) return null;
+            // 種別バッジの動的幅: flex row が毎フレーム resolve して枠と隣要素を追従させる。
+            // 4 文字種別 (区間快速) や英語 (Sec. Rapid) の切れ、2 文字種別の枠余りの両方を解消する。
+            if (key.endsWith("_badge_w")) return resolveSlotBadgeWidth(key);
             int autoFontSize = trackFontSize > 0 ? trackFontSize : 64;
             int trackClockSize = clockFontSize > 0 ? clockFontSize : 21;
             int clockRectH = Math.max(9, trackClockSize);
@@ -266,7 +265,10 @@ public class MonitorWorldRenderer {
 
         @Override
         public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-            if (key == null || manager == null) return null;
+            if (key == null) return null;
+            // 種別バッジの色は列車ごとに変わるので、 モニターの色設定ではなく種別から解決する。
+            if (key.endsWith("_badge_color")) return resolveSlotBadgeColor(key);
+            if (manager == null) return null;
             String prefix = isBack ? "back." : "";
             String hex = switch (key) {
                 case "colorTrainName" -> manager.getColorOrDefault(prefix + "trainName", "#4fc3f7");
@@ -332,6 +334,44 @@ public class MonitorWorldRenderer {
             return null;
         }
 
+        /** "&lt;prefix&gt;&lt;slot&gt;_badge_w" → その枠の種別テキストにフィットする幅。 該当なしは null (= 静的 w)。 */
+        private Integer resolveSlotBadgeWidth(String key) {
+            String body = key.substring(0, key.length() - "_badge_w".length());
+            String type = null;
+            if (body.startsWith("arr") && isDigits(body, 3)) {
+                int slot = parseInt(body.substring(3));
+                if (slot >= 0 && slot < arrived.size()) type = arrived.get(slot).trainType();
+            } else if (body.startsWith("next") && isDigits(body, 4)) {
+                int slot = parseInt(body.substring(4));
+                if (slot >= 0 && slot < nextVisible.size()) type = nextVisible.get(slot).trainType();
+            }
+            if (!TrainTypes.isSet(type)) return null; // 非表示 (visibleKey=false) なので幅は無関係
+            return badgeWidthFor(TrainTypes.localize(type));
+        }
+
+        /** TextNode の autoW 式 (textW + 2*(borderWidth+1) + textPad) と一致させる。 bold で実測。 */
+        private static int badgeWidthFor(String text) {
+            var bold = net.minecraft.network.chat.Component.literal(text)
+                    .withStyle(net.minecraft.ChatFormatting.BOLD);
+            return Minecraft.getInstance().font.width(bold) + 4;
+        }
+
+        /** "&lt;prefix&gt;&lt;slot&gt;_badge_color" → その枠の列車の種別色。 該当なしは null (= JSON の静的色)。 */
+        private Integer resolveSlotBadgeColor(String key) {
+            String body = key.substring(0, key.length() - "_badge_color".length());
+            if (body.startsWith("arr") && isDigits(body, 3)) {
+                int slot = parseInt(body.substring(3));
+                return (slot >= 0 && slot < arrived.size())
+                        ? TrainTypes.colorArgb(arrived.get(slot).trainType()) : null;
+            }
+            if (body.startsWith("next") && isDigits(body, 4)) {
+                int slot = parseInt(body.substring(4));
+                return (slot >= 0 && slot < nextVisible.size())
+                        ? TrainTypes.colorArgb(nextVisible.get(slot).trainType()) : null;
+            }
+            return null;
+        }
+
         /** kind: 0=arr, 1=depArr, 2=next, 3=depNext. */
         private Boolean resolveSlotBool(String key, int prefixLen, int kind) {
             // key = "<prefix><slot>(_<sub>)?_visible"
@@ -363,9 +403,7 @@ public class MonitorWorldRenderer {
                 case "detail" -> trf("tsu.monitor.cars_fmt", t.carriageCount());
                 case "dest" -> (t.destination() != null && !t.destination().isEmpty())
                         ? trf("tsu.monitor.dest_fmt", t.destination()) : null;
-                case "badge_local" -> "LOCAL".equals(t.trainType()) ? trainTypeText("LOCAL") : null;
-                case "badge_rapid" -> "RAPID".equals(t.trainType()) ? trainTypeText("RAPID") : null;
-                case "badge_express" -> "EXPRESS".equals(t.trainType()) ? trainTypeText("EXPRESS") : null;
+                case "badge" -> TrainTypes.isSet(t.trainType()) ? trainTypeText(t.trainType()) : null;
                 case "route" -> (t.routeType() != null && !t.routeType().isEmpty())
                         ? routeTypeText(t.routeType()) : null;
                 case "coupling" -> isCouplingCode(t.couplingStatus())
@@ -404,9 +442,7 @@ public class MonitorWorldRenderer {
             boolean isCouple = isCouplingCode(t.couplingStatus());
             return switch (sub) {
                 case "dest_visible" -> t.destination() != null && !t.destination().isEmpty();
-                case "badge_local_visible" -> "LOCAL".equals(t.trainType());
-                case "badge_rapid_visible" -> "RAPID".equals(t.trainType());
-                case "badge_express_visible" -> "EXPRESS".equals(t.trainType());
+                case "badge_visible" -> TrainTypes.isSet(t.trainType());
                 case "route_visible" -> t.routeType() != null && !t.routeType().isEmpty();
                 case "coupling_visible" -> hasCoupling && isCouple;
                 case "decoupling_visible" -> hasCoupling && !isCouple;
@@ -438,9 +474,7 @@ public class MonitorWorldRenderer {
             return switch (field) {
                 case "name" -> nt.name();
                 case "detail" -> trf("tsu.monitor.cars_fmt", nt.carriageCount());
-                case "badge_local" -> "LOCAL".equals(nt.trainType()) ? trainTypeText("LOCAL") : null;
-                case "badge_rapid" -> "RAPID".equals(nt.trainType()) ? trainTypeText("RAPID") : null;
-                case "badge_express" -> "EXPRESS".equals(nt.trainType()) ? trainTypeText("EXPRESS") : null;
+                case "badge" -> TrainTypes.isSet(nt.trainType()) ? trainTypeText(nt.trainType()) : null;
                 case "route" -> (nt.routeType() != null && !nt.routeType().isEmpty())
                         ? routeTypeText(nt.routeType()) : null;
                 case "stopinfo" -> (nt.currentStopStation() != null && !nt.currentStopStation().isEmpty())
@@ -470,9 +504,7 @@ public class MonitorWorldRenderer {
             var nt = nextVisible.get(slot);
             boolean hasCurrent = nt.currentStopStation() != null && !nt.currentStopStation().isEmpty();
             return switch (sub) {
-                case "badge_local_visible" -> "LOCAL".equals(nt.trainType());
-                case "badge_rapid_visible" -> "RAPID".equals(nt.trainType());
-                case "badge_express_visible" -> "EXPRESS".equals(nt.trainType());
+                case "badge_visible" -> TrainTypes.isSet(nt.trainType());
                 case "route_visible" -> nt.routeType() != null && !nt.routeType().isEmpty();
                 case "stopinfo_visible" -> hasCurrent;
                 case "from_visible" -> !hasCurrent

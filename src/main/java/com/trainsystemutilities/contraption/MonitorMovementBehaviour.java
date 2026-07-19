@@ -29,6 +29,8 @@ import com.trainsystemutilities.block.ThinDoubleSidedMonitorBlock;
 import com.trainsystemutilities.network.MonitorDisplayInfoPayload;
 import com.trainsystemutilities.registry.ModBlocks;
 import com.trainsystemutilities.schedule.TrainCouplingManager;
+import com.trainsystemutilities.schedule.TrainTypeState;
+import com.trainsystemutilities.schedule.TrainTypes;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.*;
@@ -139,6 +141,14 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
                 case "cssH" -> cssH;
                 case "contentW" -> contentW;
                 case "sectionH" -> sectionH;
+                // 種別バッジの動的幅 (flex row が毎フレーム resolve。 TextNode autoW 式に一致させ bold 実測 + 4)
+                case "trainType_w" -> {
+                    if (info == null || !TrainTypes.isSet(info.trainType())) yield null;
+                    var bold = net.minecraft.network.chat.Component
+                            .literal(TrainTypes.localize(info.trainType()))
+                            .withStyle(net.minecraft.ChatFormatting.BOLD);
+                    yield net.minecraft.client.Minecraft.getInstance().font.width(bold) + 4;
+                }
                 default -> null;
             };
         }
@@ -153,13 +163,17 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
             return null;
         }
 
+        @Override
+        public Integer getDynamicColor(String[] classes, String key, int def) {
+            if (info == null) return null;
+            return "trainType_color".equals(key) ? TrainTypes.colorArgb(info.trainType()) : null;
+        }
+
         private String resolveTextClass(String c) {
             if (c == null || info == null) return c == null ? null : ("mc-time".equals(c) ? clockText : null);
             switch (c) {
                 case "mc-time": return clockText;
-                case "trainType_local": return localizeTrainType("LOCAL");
-                case "trainType_rapid": return localizeTrainType("RAPID");
-                case "trainType_express": return localizeTrainType("EXPRESS");
+                case "trainType": return TrainTypes.localize(info.trainType());
                 case "routeType": return localizeRouteType(info.routeType());
             }
             // current_* / next_* slot fields (= class name encodes slot + field)
@@ -188,9 +202,7 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
             String tt = info.trainType();
             String rt = info.routeType();
             switch (key) {
-                case "trainType_local_visible": return "LOCAL".equals(tt);
-                case "trainType_rapid_visible": return "RAPID".equals(tt);
-                case "trainType_express_visible": return "EXPRESS".equals(tt);
+                case "trainType_visible": return TrainTypes.isSet(tt);
                 case "routeType_visible": return rt != null && !rt.isEmpty();
             }
             StopInfo stop = stopFor(key);
@@ -261,14 +273,6 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
         }
         private static String trf(String k, Object... args) {
             return net.minecraft.network.chat.Component.translatable(k, args).getString();
-        }
-        private static String localizeTrainType(String code) {
-            return switch (code) {
-                case "RAPID" -> tr("tsu.monitor.train_type_rapid");
-                case "EXPRESS" -> tr("tsu.monitor.train_type_express");
-                case "LOCAL" -> tr("tsu.monitor.train_type_local");
-                default -> code == null ? "" : code;
-            };
         }
         private static String localizeRouteType(String code) {
             if (code == null || code.isEmpty()) return "";
@@ -496,8 +500,8 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
             // 車載モニターは列車全体のバッジなので per-station gate は不要。
             String routeType = TrainScheduleReader.analyzeRouteType(train);
 
-            // 列車種別判定
-            String trainType = detectTrainType(train);
+            // 列車種別は管理用コンピューターで手動設定された値 (自動判定は 2026-07-18 に廃止)
+            String trainType = TrainTypeState.typeOf(context.world, train.id);
 
             TrainDisplayInfo info = new TrainDisplayInfo(stops, routeType, trainType,
                     couplingStatus, couplingPartner);
@@ -521,24 +525,6 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
             case "SHUTTLE" -> net.minecraft.network.chat.Component.translatable("tsu.monitor.route_type_shuttle").getString();
             default -> code;
         };
-    }
-
-    /** Stable code → localized display string. Returns empty for empty/unknown codes. */
-    private static String localizeTrainType(String code) {
-        if (code == null || code.isEmpty()) return "";
-        return switch (code) {
-            case "RAPID" -> net.minecraft.network.chat.Component.translatable("tsu.monitor.train_type_rapid").getString();
-            case "EXPRESS" -> net.minecraft.network.chat.Component.translatable("tsu.monitor.train_type_express").getString();
-            case "LOCAL" -> net.minecraft.network.chat.Component.translatable("tsu.monitor.train_type_local").getString();
-            default -> code;
-        };
-    }
-
-    // ===== 列車種別判定 =====
-
-    /** TrainScheduleReader の共通メソッドを使用 */
-    private static String detectTrainType(Train train) {
-        return TrainScheduleReader.detectTrainType(train);
     }
 
     // ===== クライアント側: レンダリング =====

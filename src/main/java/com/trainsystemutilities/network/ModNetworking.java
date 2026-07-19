@@ -396,6 +396,12 @@ public class ModNetworking {
                 ShareTimetablePayload.STREAM_CODEC,
                 ShareTimetablePayload::handle
         );
+        // 列車種別 (普通 / 快速 / 特急 …) をホイール選択で設定
+        registrar.playToServer(
+                SetTrainTypePayload.TYPE,
+                SetTrainTypePayload.STREAM_CODEC,
+                SetTrainTypePayload::handle
+        );
 
         // Phase 24: 電化列車スナップショット S2C
         registrar.playToClient(

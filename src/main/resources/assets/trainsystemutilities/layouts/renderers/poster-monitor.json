@@ -18,6 +18,7 @@
           "dynamicW": "contentW",
           "dynamicH": "contentH",
           "bgImageKey": "posterImg",
+          "bgImageFitKey": "posterFit",
           "animationKey": "posterAnim",
           "visibleKey": "posterVisible"
         }

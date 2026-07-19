@@ -284,6 +284,9 @@ public class PosterMonitorRenderer {
                 case "pad" -> pad;
                 case "contentW" -> cssW - pad * 2;
                 case "contentH" -> cssH - pad * 2;
+                // 「モニターに合わせる」ON = CONTAIN (全体を収める) / OFF = COVER (埋めて切り抜く)。
+                // 値は IrNode.bgImageFit と同じ 0=STRETCH / 1=COVER / 2=CONTAIN。
+                case "posterFit" -> be.isFitToMonitor() ? 2 : 1;
                 default -> null;
             };
         }
@@ -301,10 +304,14 @@ public class PosterMonitorRenderer {
             } else {
                 idx = Math.min(anim.currentIndex, images.size() - 1);
             }
-            ResourceLocation tex = PosterTextureManager.getOrRequest(images.get(idx));
+            UUID imageId = images.get(idx);
+            ResourceLocation tex = PosterTextureManager.getOrRequest(imageId);
             if (tex == null) return null;
-            // ImageRef requires width/height — use 256 as nominal (= actual will be fit by ImageNode)
-            return new ImageRef(tex, 256, 256);
+            // ImageNode は ImageRef の width/height からアスペクト比を出す。 ここで固定値を返すと
+            // 非正方モニターでも常に正方形に描画されるため、 decode 時の実寸を渡すこと。
+            int[] size = PosterTextureManager.getDimensions(imageId);
+            if (size == null) return null; // texture と dimensions は同一 cache 由来 (LRU 追い出しの競合時のみ)
+            return new ImageRef(tex, size[0], size[1]);
         }
 
         @Override

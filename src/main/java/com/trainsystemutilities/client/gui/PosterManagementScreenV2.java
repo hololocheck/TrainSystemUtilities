@@ -241,7 +241,7 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         }
         // Owner face box border: Private = 赤、Public = 緑
         if ("owner-border".equals(key)) {
-            return be().isPrivateMode() ? 0xFFef5350 : 0xFF66bb6a;
+            return belugalab.tsu.api.OwnerAccess.ringColor(be().isPrivateMode());
         }
         // Anim popup の type ボタン: 選択中だけ primary 配色で強調 (V1 anim-type-selected 相当)
         if (key.startsWith("anim-type-") && (key.endsWith("-bg") || key.endsWith("-color"))) {

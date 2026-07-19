@@ -196,6 +196,29 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         Byte f = trainTimetableFlags.get(trainId); return f != null && (f & 4) != 0;
     }
 
+    /** 同期用: 列車UUID → 種別コード。 source of truth は server-global な
+     *  {@link com.trainsystemutilities.schedule.TrainTypeState}。 server tick でそこから読み取り
+     *  getUpdateTag で client へ同期する (= client が SavedData を直読みしないため。 §5.1)。 */
+    private final java.util.Map<UUID, String> trainTypes = new java.util.HashMap<>();
+
+    /** 同期済みの列車種別コード。 未設定は空文字。 client から参照してよい唯一の経路。 */
+    public String getSyncedTrainType(UUID trainId) {
+        String t = trainId == null ? null : trainTypes.get(trainId);
+        return t == null ? com.trainsystemutilities.schedule.TrainTypes.NONE : t;
+    }
+
+    /** 種別を設定する (server 専用)。 SavedData を更新し、 同期マップと client 配信も行う。 */
+    public void setTrainType(UUID trainId, String code) {
+        if (trainId == null || level == null || level.isClientSide()) return;
+        if (level instanceof net.minecraft.server.level.ServerLevel sl) {
+            com.trainsystemutilities.schedule.TrainTypeState.get(sl.getServer()).set(trainId, code);
+        }
+        if (com.trainsystemutilities.schedule.TrainTypes.isSet(code)) trainTypes.put(trainId, code);
+        else trainTypes.remove(trainId);
+        setChanged();
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
     /** 同期用: 列車の schedule 表示明細 (entries テキスト / current / cyclic)。 server tick で計算し getUpdateTag で同期。 */
     public record SchedView(java.util.List<String> entries, int current, boolean cyclic) {}
     private final java.util.Map<UUID, SchedView> trainSchedViews = new java.util.HashMap<>();
@@ -522,8 +545,16 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         // 電子式時刻表ゲート用フラグ (運転士 / schedule) を server で計算 → getUpdateTag で MP 同期
         trainTimetableFlags.clear();
         trainSchedViews.clear();
+        trainTypes.clear();
+        var typeState = level instanceof net.minecraft.server.level.ServerLevel sl2
+                ? com.trainsystemutilities.schedule.TrainTypeState.get(sl2.getServer()) : null;
         for (var ti : data.trains()) {
             if (ti.id() == null) continue;
+            // 種別は Create の Train が解決できなくても同期する (= 手動設定値であって列車状態ではない)
+            if (typeState != null) {
+                String type = typeState.get(ti.id());
+                if (com.trainsystemutilities.schedule.TrainTypes.isSet(type)) trainTypes.put(ti.id(), type);
+            }
             var opt = com.trainsystemutilities.network.TrackNetworkScanner.getTrainById(ti.id());
             if (opt.isEmpty()) continue;
             var tr = opt.get();
@@ -1401,6 +1432,13 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             }
             tag.put("TrainTimetableFlags", ttf);
         }
+        if (!trainTypes.isEmpty()) {
+            net.minecraft.nbt.ListTag tt = new net.minecraft.nbt.ListTag();
+            for (var e : trainTypes.entrySet()) {
+                CompoundTag c = new CompoundTag(); c.putUUID("U", e.getKey()); c.putString("T", e.getValue()); tt.add(c);
+            }
+            tag.put("TrainTypes", tt);
+        }
         if (!exportInputStack.isEmpty()) tag.put("ExportIn", exportInputStack.save(registries));
         if (!exportOutputStack.isEmpty()) tag.put("ExportOut", exportOutputStack.save(registries));
         if (exportTrainId != null) tag.putUUID("ExportTrain", exportTrainId);
@@ -1554,6 +1592,14 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             for (int i = 0; i < ttf.size(); i++) {
                 CompoundTag c = ttf.getCompound(i);
                 if (c.hasUUID("U")) trainTimetableFlags.put(c.getUUID("U"), c.getByte("F"));
+            }
+        }
+        trainTypes.clear();
+        if (tag.contains("TrainTypes")) {
+            var tt = tag.getList("TrainTypes", net.minecraft.nbt.Tag.TAG_COMPOUND);
+            for (int i = 0; i < tt.size(); i++) {
+                CompoundTag c = tt.getCompound(i);
+                if (c.hasUUID("U")) trainTypes.put(c.getUUID("U"), c.getString("T"));
             }
         }
         exportInputStack = tag.contains("ExportIn")

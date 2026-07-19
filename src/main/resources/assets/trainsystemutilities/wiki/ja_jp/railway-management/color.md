@@ -25,7 +25,7 @@ tags: [station, color]
 | `arrTime` | 到着時刻 |
 | `depTime` | 出発時刻 |
 | `stopInfo` | 停車情報 |
-| `routeType` | 列車種別 |
+| `routeType` | 路線種別（環状 / 折返）。列車種別とは別物 |
 | `stopSec` | 停車秒数 |
 | `trainName` | 列車名 |
 | `nextName` | 次列車名 |

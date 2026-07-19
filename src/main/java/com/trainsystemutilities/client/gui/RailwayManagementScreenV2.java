@@ -9,6 +9,7 @@ import belugalab.mcss3.screen.JsonLayoutScreen;
 import belugalab.experience.controller.ColorTargetController;
 import belugalab.experience.controller.ScrollViewport;
 import com.trainsystemutilities.blockentity.RailwayManagementBlockEntity;
+import com.trainsystemutilities.schedule.TrainTypes;
 import com.trainsystemutilities.gui.RailwayManagementMenu;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -457,14 +458,9 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         return formatDayTime(arrivalDayTime + (long) stopSec * 20L);
     }
 
-    /** train type コード (LOCAL/RAPID/EXPRESS) → ローカライズ表示。 */
+    /** train type コード → ローカライズ表示。 種別の定義は {@link TrainTypes} が単一情報源。 */
     private static String trainTypeText(String code) {
-        return switch (code) {
-            case "RAPID" -> Component.translatable("tsu.monitor.train_type_rapid").getString();
-            case "EXPRESS" -> Component.translatable("tsu.monitor.train_type_express").getString();
-            case "LOCAL" -> Component.translatable("tsu.monitor.train_type_local").getString();
-            default -> code;
-        };
+        return TrainTypes.localize(code);
     }
     /** route type コード (SHUTTLE/CIRCULAR) → ローカライズ表示。 */
     private static String routeTypeText(String code) {
@@ -706,8 +702,8 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                         return (t.routeType() != null && !t.routeType().isEmpty())
                                 ? fit(routeTypeText(t.routeType()), 56) : "";
                     case "train-type-badge":
-                        return (t.trainType() != null && !t.trainType().isEmpty())
-                                ? fit("[" + trainTypeText(t.trainType()) + "]", 30) : "";
+                        return TrainTypes.isSet(t.trainType())
+                                ? fit("[" + trainTypeText(t.trainType()) + "]", 40) : "";
                     case "train-arr-time":
                         return Component.translatable("tsu.rm.time_arr_fmt", formatDayTime(t.arrivalDayTime())).getString();
                     case "train-dep-time":
@@ -740,7 +736,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                         return (n.routeType() != null && !n.routeType().isEmpty())
                                 ? fit(routeTypeText(n.routeType()), 50) : "";
                     case "next-type-badge":
-                        return (n.trainType() != null && !n.trainType().isEmpty())
+                        return TrainTypes.isSet(n.trainType())
                                 ? fit("[" + trainTypeText(n.trainType()) + "]", 50) : "";
                     case "next-stop-info":
                         if (n.currentStopStation() != null && !n.currentStopStation().isEmpty())
@@ -2005,7 +2001,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                 case "owner-face-canvas": // 中央の顔 canvas が innermost auto-clickable で実クリックはこちらに来る
                     // サーバ側で button id 9000 経由で togglePrivateMode 呼び出し。
                     // client は getUpdateTag 同期で反映 (client 直 mutate を廃止)。
-                    clickButton(9000);
+                    clickButton(belugalab.tsu.api.OwnerAccess.TOGGLE_BUTTON);
                     return;
             }
         }
@@ -2551,7 +2547,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         }
         // Owner face box border: Private = 赤、Public = 緑
         if ("owner-border".equals(key)) {
-            return be().isPrivateMode() ? 0xFFef5350 : 0xFF66bb6a;
+            return belugalab.tsu.api.OwnerAccess.ringColor(be().isPrivateMode());
         }
         return null;
     }

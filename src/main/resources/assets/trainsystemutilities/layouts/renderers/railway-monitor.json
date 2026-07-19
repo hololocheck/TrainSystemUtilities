@@ -390,44 +390,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "arr0_badge_local"
+                                "badge-type",
+                                "arr0_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "arr0_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "arr0_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr0_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "arr0_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr0_badge_express_visible"
+                              "textKey": "arr0_badge",
+                              "colorKey": "arr0_badge_color",
+                              "borderColorKey": "arr0_badge_color",
+                              "visibleKey": "arr0_badge_visible",
+                              "dynamicW": "arr0_badge_w"
                             },
                             {
                               "tag": "span",
@@ -606,44 +582,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "arr1_badge_local"
+                                "badge-type",
+                                "arr1_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "arr1_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "arr1_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr1_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "arr1_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr1_badge_express_visible"
+                              "textKey": "arr1_badge",
+                              "colorKey": "arr1_badge_color",
+                              "borderColorKey": "arr1_badge_color",
+                              "visibleKey": "arr1_badge_visible",
+                              "dynamicW": "arr1_badge_w"
                             },
                             {
                               "tag": "span",
@@ -822,44 +774,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "arr2_badge_local"
+                                "badge-type",
+                                "arr2_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "arr2_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "arr2_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr2_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "arr2_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr2_badge_express_visible"
+                              "textKey": "arr2_badge",
+                              "colorKey": "arr2_badge_color",
+                              "borderColorKey": "arr2_badge_color",
+                              "visibleKey": "arr2_badge_visible",
+                              "dynamicW": "arr2_badge_w"
                             },
                             {
                               "tag": "span",
@@ -1038,44 +966,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "arr3_badge_local"
+                                "badge-type",
+                                "arr3_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "arr3_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "arr3_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr3_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "arr3_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr3_badge_express_visible"
+                              "textKey": "arr3_badge",
+                              "colorKey": "arr3_badge_color",
+                              "borderColorKey": "arr3_badge_color",
+                              "visibleKey": "arr3_badge_visible",
+                              "dynamicW": "arr3_badge_w"
                             },
                             {
                               "tag": "span",
@@ -1254,44 +1158,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "arr4_badge_local"
+                                "badge-type",
+                                "arr4_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "arr4_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "arr4_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr4_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "arr4_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr4_badge_express_visible"
+                              "textKey": "arr4_badge",
+                              "colorKey": "arr4_badge_color",
+                              "borderColorKey": "arr4_badge_color",
+                              "visibleKey": "arr4_badge_visible",
+                              "dynamicW": "arr4_badge_w"
                             },
                             {
                               "tag": "span",
@@ -1470,44 +1350,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "arr5_badge_local"
+                                "badge-type",
+                                "arr5_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "arr5_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "arr5_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr5_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "arr5_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "arr5_badge_express_visible"
+                              "textKey": "arr5_badge",
+                              "colorKey": "arr5_badge_color",
+                              "borderColorKey": "arr5_badge_color",
+                              "visibleKey": "arr5_badge_visible",
+                              "dynamicW": "arr5_badge_w"
                             },
                             {
                               "tag": "span",
@@ -1911,44 +1767,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next0_badge_local"
+                                "badge-type",
+                                "next0_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next0_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next0_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next0_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next0_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next0_badge_express_visible"
+                              "textKey": "next0_badge",
+                              "colorKey": "next0_badge_color",
+                              "borderColorKey": "next0_badge_color",
+                              "visibleKey": "next0_badge_visible",
+                              "dynamicW": "next0_badge_w"
                             },
                             {
                               "tag": "span",
@@ -2088,44 +1920,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next1_badge_local"
+                                "badge-type",
+                                "next1_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next1_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next1_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next1_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next1_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next1_badge_express_visible"
+                              "textKey": "next1_badge",
+                              "colorKey": "next1_badge_color",
+                              "borderColorKey": "next1_badge_color",
+                              "visibleKey": "next1_badge_visible",
+                              "dynamicW": "next1_badge_w"
                             },
                             {
                               "tag": "span",
@@ -2265,44 +2073,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next2_badge_local"
+                                "badge-type",
+                                "next2_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next2_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next2_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next2_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next2_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next2_badge_express_visible"
+                              "textKey": "next2_badge",
+                              "colorKey": "next2_badge_color",
+                              "borderColorKey": "next2_badge_color",
+                              "visibleKey": "next2_badge_visible",
+                              "dynamicW": "next2_badge_w"
                             },
                             {
                               "tag": "span",
@@ -2442,44 +2226,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next3_badge_local"
+                                "badge-type",
+                                "next3_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next3_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next3_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next3_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next3_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next3_badge_express_visible"
+                              "textKey": "next3_badge",
+                              "colorKey": "next3_badge_color",
+                              "borderColorKey": "next3_badge_color",
+                              "visibleKey": "next3_badge_visible",
+                              "dynamicW": "next3_badge_w"
                             },
                             {
                               "tag": "span",
@@ -2619,44 +2379,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next4_badge_local"
+                                "badge-type",
+                                "next4_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next4_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next4_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next4_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next4_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next4_badge_express_visible"
+                              "textKey": "next4_badge",
+                              "colorKey": "next4_badge_color",
+                              "borderColorKey": "next4_badge_color",
+                              "visibleKey": "next4_badge_visible",
+                              "dynamicW": "next4_badge_w"
                             },
                             {
                               "tag": "span",
@@ -2796,44 +2532,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next5_badge_local"
+                                "badge-type",
+                                "next5_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next5_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next5_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next5_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next5_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next5_badge_express_visible"
+                              "textKey": "next5_badge",
+                              "colorKey": "next5_badge_color",
+                              "borderColorKey": "next5_badge_color",
+                              "visibleKey": "next5_badge_visible",
+                              "dynamicW": "next5_badge_w"
                             },
                             {
                               "tag": "span",
@@ -2973,44 +2685,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next6_badge_local"
+                                "badge-type",
+                                "next6_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next6_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next6_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next6_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next6_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next6_badge_express_visible"
+                              "textKey": "next6_badge",
+                              "colorKey": "next6_badge_color",
+                              "borderColorKey": "next6_badge_color",
+                              "visibleKey": "next6_badge_visible",
+                              "dynamicW": "next6_badge_w"
                             },
                             {
                               "tag": "span",
@@ -3150,44 +2838,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next7_badge_local"
+                                "badge-type",
+                                "next7_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next7_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next7_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next7_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next7_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next7_badge_express_visible"
+                              "textKey": "next7_badge",
+                              "colorKey": "next7_badge_color",
+                              "borderColorKey": "next7_badge_color",
+                              "visibleKey": "next7_badge_visible",
+                              "dynamicW": "next7_badge_w"
                             },
                             {
                               "tag": "span",
@@ -3327,44 +2991,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next8_badge_local"
+                                "badge-type",
+                                "next8_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next8_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next8_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next8_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next8_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next8_badge_express_visible"
+                              "textKey": "next8_badge",
+                              "colorKey": "next8_badge_color",
+                              "borderColorKey": "next8_badge_color",
+                              "visibleKey": "next8_badge_visible",
+                              "dynamicW": "next8_badge_w"
                             },
                             {
                               "tag": "span",
@@ -3504,44 +3144,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next9_badge_local"
+                                "badge-type",
+                                "next9_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next9_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next9_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next9_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next9_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next9_badge_express_visible"
+                              "textKey": "next9_badge",
+                              "colorKey": "next9_badge_color",
+                              "borderColorKey": "next9_badge_color",
+                              "visibleKey": "next9_badge_visible",
+                              "dynamicW": "next9_badge_w"
                             },
                             {
                               "tag": "span",
@@ -3681,44 +3297,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next10_badge_local"
+                                "badge-type",
+                                "next10_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next10_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next10_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next10_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next10_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next10_badge_express_visible"
+                              "textKey": "next10_badge",
+                              "colorKey": "next10_badge_color",
+                              "borderColorKey": "next10_badge_color",
+                              "visibleKey": "next10_badge_visible",
+                              "dynamicW": "next10_badge_w"
                             },
                             {
                               "tag": "span",
@@ -3858,44 +3450,20 @@
                             {
                               "tag": "span",
                               "classes": [
-                                "badge-local",
-                                "next11_badge_local"
+                                "badge-type",
+                                "next11_badge"
                               ],
-                              "w": 30,
+                              "w": 40,
                               "h": 12,
-                              "color": "#66bb6a",
-                              "borderColor": "#66bb6a",
+                              "color": "#e0e0e0",
+                              "borderColor": "#e0e0e0",
                               "borderWidth": 1,
                               "fontWeight": "bold",
-                              "visibleKey": "next11_badge_local_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-rapid",
-                                "next11_badge_rapid"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ff8a65",
-                              "borderColor": "#ff8a65",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next11_badge_rapid_visible"
-                            },
-                            {
-                              "tag": "span",
-                              "classes": [
-                                "badge-express",
-                                "next11_badge_express"
-                              ],
-                              "w": 30,
-                              "h": 12,
-                              "color": "#ef5350",
-                              "borderColor": "#ef5350",
-                              "borderWidth": 1,
-                              "fontWeight": "bold",
-                              "visibleKey": "next11_badge_express_visible"
+                              "textKey": "next11_badge",
+                              "colorKey": "next11_badge_color",
+                              "borderColorKey": "next11_badge_color",
+                              "visibleKey": "next11_badge_visible",
+                              "dynamicW": "next11_badge_w"
                             },
                             {
                               "tag": "span",

@@ -113,71 +113,10 @@ public final class TrainScheduleReader {
         return com.trainsystemutilities.route.RouteClassifier.classify(stationNames);
     }
 
-    /**
-     * 同一ネットワーク上の全駅数と停車駅数の比率で列車種別を自動判定。
-     * 80%以上→普通、40-80%→快速、40%未満→特急
-     */
-    public static String detectTrainType(Train train) {
-        try {
-            if (train.runtime == null || train.runtime.getSchedule() == null) return "";
-            var schedule = train.runtime.getSchedule();
-
-            // この列車の停車駅を収集
-            java.util.Set<String> trainStops = new java.util.HashSet<>();
-            for (var entry : schedule.entries) {
-                CompoundTag data = entry.instruction.getData();
-                if (data.contains("Text")) {
-                    String name = data.getString("Text");
-                    if (!name.isEmpty()) trainStops.add(name);
-                }
-            }
-            if (trainStops.isEmpty()) return "";
-
-            // 分母 = 同一グラフ上に実在する駅数 (= 線路ネットワークの駅数)。
-            // 旧: 全列車スケジュールの駅の和集合 — 1 列車だけだと分母 = 自分の停車駅数になり、
-            // 8 駅ネットワーク 2 駅停車でも 100% = LOCAL (普通) と誤判定していた。
-            java.util.Set<String> networkStations = new java.util.HashSet<>();
-            try {
-                if (train.graph != null) {
-                    for (var st : train.graph.getPoints(
-                            com.simibubi.create.content.trains.graph.EdgePointType.STATION)) {
-                        if (st.name != null && !st.name.isEmpty()) networkStations.add(st.name);
-                    }
-                }
-            } catch (Throwable ignored) { /* Create API 変動時は fallback へ */ }
-            if (networkStations.isEmpty()) {
-                // fallback: 旧方式 (同一グラフ上の全列車スケジュールの和集合)
-                com.simibubi.create.Create.RAILWAYS.trains.forEach((id, otherTrain) -> {
-                    if (otherTrain.graph == train.graph && otherTrain.runtime != null) {
-                        var sch = otherTrain.runtime.getSchedule();
-                        if (sch != null) {
-                            for (var entry : sch.entries) {
-                                CompoundTag data = entry.instruction.getData();
-                                if (data.contains("Text")) {
-                                    String name = data.getString("Text");
-                                    if (!name.isEmpty()) networkStations.add(name);
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            return trainTypeFromRatio(trainStops.size(), networkStations.size());
-        } catch (Exception e) { com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[Railway] detectTrainType failed", e); return ""; }
-    }
-
-    /**
-     * 停車駅比率から列車種別を分類する純ロジック (Minecraft 非依存)。
-     * LOCAL &gt;= 0.8、RAPID &gt;= 0.4、EXPRESS &lt; 0.4、"" = network 不明 (&lt;= 0)。
-     */
-    static String trainTypeFromRatio(int trainStops, int networkStations) {
-        if (networkStations <= 0) return "";
-        double ratio = (double) trainStops / networkStations;
-        if (ratio >= 0.8) return "LOCAL";
-        if (ratio >= 0.4) return "RAPID";
-        return "EXPRESS";
-    }
+    // 列車種別の自動判定 (detectTrainType / trainTypeFromRatio) は 2026-07-18 に廃止した。
+    // 停車駅数 ÷ 同一 TrackGraph 上の全駅数という比率判定で、 分母が路線ではなく連結グラフ全体
+    // だったため、 全駅停車の普通列車でも大きなネットワークでは比率が下がり特急と判定されていた。
+    // 種別は com.trainsystemutilities.schedule.TrainTypes / TrainTypeState による手動設定に移行。
 
     /** Get stop seconds at OUR station (not the current destination) */
     public static int getStopSecondsAtStation(Train train, String stationName) {

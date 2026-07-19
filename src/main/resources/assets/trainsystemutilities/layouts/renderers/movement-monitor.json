@@ -35,47 +35,20 @@
             {
               "tag": "span",
               "classes": [
-                "badge-local",
-                "trainType_local"
+                "badge-type",
+                "trainType"
               ],
-              "w": 30,
+              "w": 40,
               "h": 12,
-              "color": "#66bb6a",
-              "borderColor": "#66bb6a",
+              "color": "#e0e0e0",
+              "borderColor": "#e0e0e0",
               "borderWidth": 1,
               "fontWeight": "bold",
-              "textKey": "trainType_local",
-              "visibleKey": "trainType_local_visible"
-            },
-            {
-              "tag": "span",
-              "classes": [
-                "badge-rapid",
-                "trainType_rapid"
-              ],
-              "w": 30,
-              "h": 12,
-              "color": "#ff8a65",
-              "borderColor": "#ff8a65",
-              "borderWidth": 1,
-              "fontWeight": "bold",
-              "textKey": "trainType_rapid",
-              "visibleKey": "trainType_rapid_visible"
-            },
-            {
-              "tag": "span",
-              "classes": [
-                "badge-express",
-                "trainType_express"
-              ],
-              "w": 30,
-              "h": 12,
-              "color": "#ef5350",
-              "borderColor": "#ef5350",
-              "borderWidth": 1,
-              "fontWeight": "bold",
-              "textKey": "trainType_express",
-              "visibleKey": "trainType_express_visible"
+              "textKey": "trainType",
+              "colorKey": "trainType_color",
+              "borderColorKey": "trainType_color",
+              "visibleKey": "trainType_visible",
+              "dynamicW": "trainType_w"
             },
             {
               "tag": "span",

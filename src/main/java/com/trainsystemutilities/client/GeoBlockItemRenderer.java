@@ -45,6 +45,19 @@ public final class GeoBlockItemRenderer extends BlockEntityWithoutLevelRenderer 
 
     private final Map<Block, BlockEntity> beCache = new HashMap<>();
 
+    /** その ItemStack の描画に使われる BE (アイテム描画のアニメ状態はここが持つ)。
+     *  wiki のアニメ書き出しが状態を設定するために使う。null = 対象外。 */
+    public static BlockEntity blockEntityFor(ItemStack stack) {
+        if (!(stack.getItem() instanceof BlockItem bi)) return null;
+        Block block = bi.getBlock();
+        return get().beCache.computeIfAbsent(block, b -> {
+            if (b instanceof EntityBlock eb) {
+                return eb.newBlockEntity(BlockPos.ZERO, b.defaultBlockState());
+            }
+            return null;
+        });
+    }
+
     private GeoBlockItemRenderer(
             net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher dispatcher,
             net.minecraft.client.model.geom.EntityModelSet modelSet) {

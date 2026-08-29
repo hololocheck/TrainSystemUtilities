@@ -155,6 +155,10 @@ final class WikiItemMeshExport {
                 }
             }
         }
+        // アニメ (開閉トグル) を持つブロックは、姿勢を時間軸で複数フレーム出す。
+        // 失敗は同じ _errors.txt に積むので、sync 側の既存ゲートがそのまま効く。
+        WikiItemAnimExport.exportAll(mc, root, errors);
+
         // 書き込み順は fail-closed: _errors を先に書き、失敗したら _manifest を
         // 書かない (manifest 欠落は sync 側で赤)。逆順だと errors 書込失敗で
         // 「manifest あり・errors 無し = 全緑」に見える (2026-08-28 レビュー)。
@@ -193,6 +197,7 @@ final class WikiItemMeshExport {
     private static void exportOne(Minecraft mc, Item item, ResourceLocation key, Path root)
             throws Exception {
         ItemStack stack = new ItemStack(item);
+        settle(mc, stack); // 待機姿勢で撮る (アニメ先頭の途中姿勢を出さない)
         BakedModel model = mc.getItemRenderer().getModel(stack, null, null, 0);
 
         // GuiGraphics.renderItem と同じ変換 (z の定数 150 は純平行移動なので落とす)
@@ -338,6 +343,55 @@ final class WikiItemMeshExport {
     private static boolean isAtlas(Minecraft mc, ResourceLocation tex) {
         return tex.getPath().startsWith("textures/atlas/")
                 && mc.getTextureManager().getTexture(tex) instanceof TextureAtlas;
+    }
+
+    /** 静止姿勢に落ち着かせる。
+     *
+     *  <p>GeckoLib は初回描画でアニメの<b>先頭</b>にいる。ホームドアの待機アニメは
+     *  "close" (開→閉) なので、そのまま撮ると<b>途中まで開いた姿勢</b>が静止画像に
+     *  なる (2026-08-29 実測: 静止メッシュがアニメの 8/12 フレーム目と一致していた)。
+     *  パンタも T が 0 に落ちる前の姿勢で撮れていた (フレーム 1 と一致)。
+     *
+     *  <p>対策は「置いたまま放置した状態」を作ること: 何度か描いてモデル側の
+     *  補間を収束させ、GeckoLib は終端へ送って HOLD_ON_LAST_FRAME に落とす。
+     *  アニメを持たないブロックには影響しない (描画を数回増やすだけ)。 */
+    static void settle(Minecraft mc, ItemStack stack) {
+        for (int i = 0; i < 6; i++) {
+            WikiItemAnimExport.seekToEnd(stack);
+            recordFrame(mc, stack);
+        }
+    }
+
+    /** 1 フレームぶんの記録 (アニメ書き出し用)。base mesh と同じ記録経路を通すので、
+     *  トポロジ・UV・テクスチャは同一で、変わるのは位置と法線だけ。 */
+    record Frame(float[] positions, float[] normals) {}
+
+    /** 現在の状態のまま 1 度だけ描いて頂点を採る。呼び出し側 (WikiItemAnimExport) が
+     *  直前に GeckoLib の時計を目的の時刻へ合わせている。 */
+    static Frame recordFrame(Minecraft mc, ItemStack stack) {
+        BakedModel model = mc.getItemRenderer().getModel(stack, null, null, 0);
+        Recorder rec = new Recorder();
+        PoseStack pose = new PoseStack();
+        pose.translate(8.0f, 8.0f, 0.0f);
+        pose.scale(16.0f, -16.0f, 16.0f);
+        mc.getItemRenderer().render(stack, ItemDisplayContext.GUI, false, pose, rec,
+                15728880, OverlayTexture.NO_OVERLAY, model);
+        rec.sinks.values().forEach(Sink::finish);
+        int n = rec.sinks.values().stream().mapToInt(sk -> sk.verts.size()).sum();
+        // GeoBlockItemRenderer は描画例外を握り潰すので、ここが 0 なら「アニメが
+        // 動かない」ではなく「描画が落ちた」。呼び出し側がそう報告できるように
+        // 空を空のまま返す (0 判定は WikiItemAnimExport が行う)。
+        float[] pos = new float[n * 3];
+        float[] nrm = new float[n * 3];
+        int i = 0;
+        for (Sink sink : rec.sinks.values()) {
+            for (float[] v : sink.verts) {
+                pos[i * 3] = v[0]; pos[i * 3 + 1] = v[1]; pos[i * 3 + 2] = v[2];
+                nrm[i * 3] = v[5]; nrm[i * 3 + 1] = v[6]; nrm[i * 3 + 2] = v[7];
+                i++;
+            }
+        }
+        return new Frame(pos, nrm);
     }
 
     /** モデルが意図するスプライト集合 (焼き込み quad の getSprite)。UV 帰属の一次候補。

@@ -55,10 +55,16 @@ public final class WikiItemIconCapture {
     static final int LOGICAL_SIZE = 16;
     private static final int SCALE = 4;
 
-    /** web wiki の embed:item(s) が参照する名前空間。ASC は同じ Prism インスタンスに
-     *  入っているので、未登録なら captureNamespace が 0 件で空振りするだけ。 */
+    /** web wiki の embed:item(s) と製品ページのカタログが参照する名前空間。
+     *  BelugaLab の 4 mod は同じ Prism インスタンスに入っているので、未登録なら
+     *  captureNamespace が 0 件で空振りするだけ。 */
     private static final String[] CAPTURE_NAMESPACES = {
-            TrainSystemUtilities.MOD_ID, "advancedschematicannon" };
+            TrainSystemUtilities.MOD_ID, "advancedschematicannon",
+            "spatialaudiosystem", "airplacementwandlite" };
+
+    /** カタログの表示名を書き出す locale。site は日本語だが、wiki が英語ページを
+     *  持つので両方出す。 */
+    private static final String[] NAME_LOCALES = { "ja_jp", "en_us" };
 
     /** 自動フィットの判定: 内容の最大辺がこれ未満 (64px 中) なら「小さすぎ」。 */
     private static final int FIT_MIN_DIM = 44;
@@ -129,6 +135,7 @@ public final class WikiItemIconCapture {
             n += captureNamespace(ns);
         }
         int meshes = WikiItemMeshExport.exportNamespaces(mc, CAPTURE_NAMESPACES);
+        writeNames(mc, CAPTURE_NAMESPACES);
         try {
             Files.writeString(Paths.get(mc.gameDirectory.getPath(),
                     "screenshots", "wiki", "items", "_done.txt"), n + " " + meshes);
@@ -150,12 +157,94 @@ public final class WikiItemIconCapture {
             }
             int meshes = WikiItemMeshExport.exportNamespaces(
                     Minecraft.getInstance(), CAPTURE_NAMESPACES);
+            writeNames(Minecraft.getInstance(), CAPTURE_NAMESPACES);
             final int n = total;
             ctx.getSource().sendSuccess(() -> Component.literal(
                     "[TSU Wiki] captured " + n + " item icons + " + meshes
                     + " meshes (screenshots/wiki)"), false);
             return n;
         }));
+    }
+
+    /** 対象 namespace の表示名を {@code items/_names.json} に書く。
+     *
+     *  <p>{@code lang/<locale>.json} をリソースマネージャから直接読む — アクティブな
+     *  言語に依存しないので 1 回の起動で全 locale 分が揃い、repo をワークスペースに
+     *  持たない mod (APWL は jar だけ) も同じ経路で拾える。値はゲームが実際に
+     *  読むリソースそのもの。 */
+    private static void writeNames(Minecraft mc, String[] namespaces) {
+        // cleanroom: 先に消す。書き込みに失敗したら「古い名前が残る」ではなく
+        // 「ファイルが無い」で終わり、sync が FATAL で止まる (icons / meshes と
+        // 同じ fail-closed。2026-08-29 レビュー: ここだけ stale が通れた)。
+        Path out = Paths.get(mc.gameDirectory.getPath(),
+                "screenshots", "wiki", "items", "_names.json");
+        try {
+            Files.deleteIfExists(out);
+        } catch (Throwable t) {
+            LOGGER.warn("[WikiItemIcon] stale _names.json delete failed: {}", t.getMessage());
+        }
+        StringBuilder json = new StringBuilder("{");
+        boolean first = true;
+        for (String ns : namespaces) {
+            java.util.Map<String, java.util.Map<String, String>> byLocale =
+                    new java.util.LinkedHashMap<>();
+            for (String locale : NAME_LOCALES) {
+                ResourceLocation langFile =
+                        ResourceLocation.fromNamespaceAndPath(ns, "lang/" + locale + ".json");
+                var res = mc.getResourceManager().getResource(langFile);
+                if (res.isEmpty()) continue;
+                try (var in = res.get().open()) {
+                    var obj = com.google.gson.JsonParser
+                            .parseReader(new java.io.InputStreamReader(in,
+                                    java.nio.charset.StandardCharsets.UTF_8))
+                            .getAsJsonObject();
+                    java.util.Map<String, String> names = new java.util.LinkedHashMap<>();
+                    for (var e : obj.entrySet()) {
+                        String k = e.getKey();
+                        if (!k.startsWith("item." + ns + ".") && !k.startsWith("block." + ns + ".")) {
+                            continue;
+                        }
+                        String path = k.substring(k.indexOf('.', k.indexOf('.') + 1) + 1);
+                        // item.* を優先 (BlockItem の表示名はアイテム側が正)
+                        if (k.startsWith("item.") || !names.containsKey(path)) {
+                            names.put(path, e.getValue().getAsString());
+                        }
+                    }
+                    byLocale.put(locale, names);
+                } catch (Throwable t) {
+                    LOGGER.warn("[WikiItemIcon] lang read failed {} {}: {}", ns, locale,
+                            t.getMessage());
+                }
+            }
+            for (Item item : BuiltInRegistries.ITEM) {
+                ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
+                if (!ns.equals(key.getNamespace())) continue;
+                if (!first) json.append(',');
+                first = false;
+                json.append('"').append(key).append("\":{");
+                boolean f2 = true;
+                for (var e : byLocale.entrySet()) {
+                    String name = e.getValue().get(key.getPath());
+                    if (name == null) continue;
+                    if (!f2) json.append(',');
+                    f2 = false;
+                        json.append('"').append(e.getKey()).append("\":")
+                        .append(new com.google.gson.JsonPrimitive(name).toString());
+                }
+                json.append('}');
+            }
+        }
+        json.append('}');
+        try {
+            Files.writeString(out, json.toString());
+        } catch (Throwable t) {
+            // 事前に削除済みなので、失敗しても「前回の名前」は残らない。残るのは
+            // 不在か切り詰めのどちらかで、sync はどちらでも赤になる (欠落 FATAL /
+            // JSON.parse が投げる)。delete と write が両方失敗した時だけ旧 names が
+            // 生き残り、そのときの signal はこのログだけ。
+            LOGGER.error("[WikiItemIcon] names write failed (stale names cannot survive a"
+                    + " successful delete; sync refuses either way): {}", t.getMessage(), t);
+        }
     }
 
     /** namespace の全登録アイテムを描画して保存。render thread 必須。 */
@@ -176,7 +265,11 @@ public final class WikiItemIconCapture {
         for (Item item : BuiltInRegistries.ITEM) {
             ResourceLocation key = BuiltInRegistries.ITEM.getKey(item);
             if (!namespace.equals(key.getNamespace())) continue;
-            NativeImage img = renderFitted(mc, new ItemStack(item), key);
+            ItemStack stack = new ItemStack(item);
+            // アニメ持ちは待機姿勢に落ち着かせてから撮る (ホームドアが途中まで
+            // 開いた絵になっていた。2026-08-29 実測)
+            WikiItemMeshExport.settle(mc, stack);
+            NativeImage img = renderFitted(mc, stack, key);
             if (img == null) {
                 LOGGER.warn("[WikiItemIcon] render failed: {}", key);
                 continue;

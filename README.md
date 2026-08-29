@@ -19,7 +19,8 @@ Manta UI runtime.
 
 - **Railway management console** — monitor your track network, lines, and stations from a
   single in-game screen.
-- **Coupling / decoupling tools** — connect and split trains in the field.
+- **Coupling / decoupling** — a Create schedule wait condition that couples and splits
+  trains automatically.
 - **Scheduling & electronic timetables** — author Create schedules, export them, and share
   them between trains.
 - **FE electrification** — power Create trains with Forge Energy: substations, overhead

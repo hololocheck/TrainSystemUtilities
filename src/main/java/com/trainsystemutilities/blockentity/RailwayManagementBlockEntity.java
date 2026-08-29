@@ -129,10 +129,8 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
         };
     }
 
-    // 路線記号(管理コンピューターから割り当て)
+    // 路線記号(管理用コンピューターが LineSymbolStore へ公開したもの)
     private LineSymbol assignedLineSymbol = null;
-    // LineSymbolStore を自 NBT で一度 seed したか (transient, migration/computer 先行ロード対策)
-    private boolean lineSymbolSeeded = false;
     // 管理コンピューターへの逆リンク
     private BlockPos linkedComputerPos = null;
 
@@ -197,6 +195,11 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
      * 割り当て路線記号を {@link com.trainsystemutilities.station.LineSymbolStore} から解決する
      * (= chunk load 非依存)。 管理用コンピューターは割り当て時に store へ書き込むだけでよく、
      * 遠隔駅の本 BE でも (load 済みなら) ここで自駅キーを引いて反映する。 変化時のみ block update。
+     *
+     * <p><b>store が唯一の権威。</b> 1.0.10 以前はここに「store が空なら自 NBT の記号で seed し直す」
+     * 経路があったが、 管理用コンピューターが取り下げた記号をこの BE が毎回書き戻すため、
+     * 「カードを抜いた / ブロックを壊したら消える」を成立させられなかった。 store が null を返せば
+     * 記号は消える。
      */
     private void resolveLineSymbol() {
         if (level == null || level.isClientSide()) return;
@@ -206,15 +209,6 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
         var store = com.trainsystemutilities.station.LineSymbolStore.get(server);
         String key = ManagementComputerBlockEntity.stationKey(linkedStationName, linkedStationPos);
         LineSymbol resolved = store.getSymbol(key);
-        // migration / computer 先行ロード対策: store が自駅ぶん未 populate かつ自身は割り当て済なら、
-        // 自 NBT のシンボルで store を一度だけ seed して現状維持する (= 既存割り当てを消さない)。
-        // 以後は store が権威 (computer の sync が seed を上書き / 削除できる)。
-        if (resolved == null && !lineSymbolSeeded && assignedLineSymbol != null) {
-            store.setSymbol(key, assignedLineSymbol);
-            lineSymbolSeeded = true;
-            return;
-        }
-        lineSymbolSeeded = true;
         if (resolved == assignedLineSymbol) return;          // 定常状態: 同一 snapshot / 両 null
         if (symbolsEqual(resolved, assignedLineSymbol)) {    // 値同一 (= reload 直後): block update 無しで採用
             assignedLineSymbol = resolved;

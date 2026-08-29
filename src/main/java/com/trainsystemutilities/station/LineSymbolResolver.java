@@ -17,10 +17,14 @@ import java.util.UUID;
  * <ol>
  *   <li>Create 全 trackNetworks を走査し、target の stationId に一致する
  *       {@link GlobalStation} を探す → station 名 + 位置を取得</li>
- *   <li>{@link ManagementComputerBlockEntity#serverInstances()} を走査し、
- *       (name, pos) ペアに対応する LineSymbol を引いている管理コンピュータを見つける</li>
- *   <li>最初に見つかったものを返す (同じ駅を複数 MC に登録するのは想定外)</li>
+ *   <li>その (name, pos) で {@link LineSymbolStore} を引く</li>
  * </ol>
+ *
+ * <p><b>1.0.10: 権威は store 一本。</b> 以前は
+ * {@link ManagementComputerBlockEntity#serverInstances()} を走査して block entity の
+ * {@code stationSymbolMap} を直接読んでいた。 これは store を経由しない<b>もう 1 つの読み手</b>で、
+ * メモリーカードが抜かれて駅から取り下げた記号を、 乗換ターミナル側だけが表示し続けていた
+ * (独立レビュー 2026-08-29 の指摘)。 モニター / 駅名サイン / GUI と同じ store を見る。
  *
  * <p>結果は thread-unsafe なので server tick から呼び出すこと。
  */
@@ -36,13 +40,13 @@ public final class LineSymbolResolver {
             String name = gs.name;
             BlockPos pos = gs.getBlockEntityPos();
             if (name == null) return null;
-            for (ManagementComputerBlockEntity mc : ManagementComputerBlockEntity.serverInstances()) {
-                LineSymbol s = mc.getSymbolForStation(name, pos);
-                if (s != null) return s;
-                // pos なしフォールバック (legacy)
-                LineSymbol s2 = mc.getSymbolForStation(name);
-                if (s2 != null) return s2;
-            }
+            var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server == null) return null;
+            var store = LineSymbolStore.get(server);
+            LineSymbol s = store.getSymbol(ManagementComputerBlockEntity.stationKey(name, pos));
+            if (s != null) return s;
+            // pos なしフォールバック (legacy な bare-name 公開)
+            return store.getSymbol(name);
         } catch (Throwable ignored) { com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[LineSymbol] station symbol lookup failed", ignored); }
         return null;
     }

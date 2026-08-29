@@ -73,11 +73,38 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     // 駅→RailwayManagementBE位置キャッシュ（駅名 → BlockPos）
     // server tick 内の scan/clear と client→server execute 内の lookup が並行する可能性があるため Concurrent。
     private final java.util.Map<String, BlockPos> stationManagerPosMap = new java.util.concurrent.ConcurrentHashMap<>();
-    // 路線記号 -> RailwayManagementBE への伝播が必要かを示す dirty フラグ。
+    // 路線記号 -> LineSymbolStore への公開が必要かを示す dirty フラグ。
     // assign/save/remove 系の API が呼ばれたタイミングだけ true にし、
     // 200tick タイマで一括反映する。これにより stationSymbolMap が空でなくても無条件に
-    // propagateSymbolToLinkedManagers() を回さずに済む。
+    // publishSymbolsToStore() を回さずに済む。
     private boolean symbolPropagationDirty = false;
+
+    /** この管理用コンピューターが {@link com.trainsystemutilities.station.LineSymbolStore} へ
+     *  公開中の stationKey 集合。 カードが抜かれた / ブロックが壊れたときに「自分が出したぶんだけ」を
+     *  正確に取り下げるために持つ (他のコンピューターの駅を巻き添えにしない)。 BE NBT に永続化。 */
+    private final java.util.Set<String> publishedSymbolKeys = new java.util.LinkedHashSet<>();
+
+    /** 直近に処理したメモリーカード上の設定 (= カードの差し替え検知用)。 transient。 */
+    private CompoundTag lastCardSettings = null;
+    /** 直近にカードへ書いた / カードから読んだ自分の設定 (= 自分側の変更検知用)。 transient。 */
+    private CompoundTag lastOwnSettings = null;
+    /** スロット 0 が動いた (= カードが抜かれた / 差し替わった)。 次の同期を「挿入」として扱う。
+     *
+     *  <p>中身の比較だけでは <b>20 tick 以内の差し替えを検知できない</b>。 設定 S のカードを
+     *  同内容の別カードや空カードに換えると {@code lastCardSettings} と一致してしまい、
+     *  カード優先が働かず自分の設定を書き込んでしまう (独立レビュー 2026-08-29 の指摘)。
+     *  スロットが動いた事実そのものを見る。 transient。
+     *
+     *  <p><b>初期値は false</b> — これが「reload でカードが勝たない」ことの根拠になっている。
+     *  chunk unload は<b>保存してから</b> {@code setRemoved()} を呼ぶので、 編集直後に unload すると
+     *  「BE = 新設定 / カード = 旧設定」のまま保存され、 reload 時にカードが勝つと編集が消える
+     *  (独立レビュー round 2 の指摘)。 BE の NBT はカードと同じかそれより新しいので、
+     *  <b>カードが勝つのはスロットが動いたときだけ</b>でよい。 ブロックを置くと中身は空なので、
+     *  「置き直してカードを挿す」は必ず挿入 = カード優先を通る。 */
+    private boolean cardSlotChanged = false;
+
+    /** 旧ワールドから読んだ BE で、 公開済みキーの seed がまだ済んでいない。 transient。 */
+    private boolean legacyPublishSeedPending = false;
 
     // モニターレイアウト
     private final List<MonitorLayoutPanel> monitorLayout = new ArrayList<>();
@@ -105,9 +132,20 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     /** 電子式時刻表として管理用コンピューターが管理する列車 (= 物理アイテムで直接渡された「通常」時刻表と区別)。 */
     private final java.util.Set<UUID> electronicTimetableTrains = new java.util.HashSet<>();
 
-    /** 電子式時刻表 (= この管理用コンピューターで設定された) 列車か。 */
+    /** 電子式時刻表 (= この管理用コンピューターで設定された) 列車か。
+     *
+     *  <p>権威は server-global の {@code ElectronicTimetableState}。 local 集合はその写しなので、
+     *  壊して置き直した (= local が空の) コンピューターでも global を見れば判定できる。
+     *  local だけを見ると、 カードから復元しても「電子式ではない」と誤判定した
+     *  (独立レビュー round 2 の指摘。 electronicTimetableTrains をカードに載せない理由もこれ)。 */
     public boolean isElectronicTimetable(UUID trainId) {
-        return trainId != null && electronicTimetableTrains.contains(trainId);
+        if (trainId == null) return false;
+        if (electronicTimetableTrains.contains(trainId)) return true;
+        if (level instanceof net.minecraft.server.level.ServerLevel sl) {
+            return com.trainsystemutilities.schedule.ElectronicTimetableState.get(sl.getServer())
+                    .isElectronic(trainId);
+        }
+        return false;
     }
 
     /** 列車を電子式時刻表としてマークし、 server-global 登録簿にも反映する (= 運転士右クリック横取り用)。 */
@@ -422,10 +460,24 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     public void onLoad() {
         super.onLoad();
         if (level != null && !level.isClientSide()) SERVER_INSTANCES.add(this);
+        // reload 時点でスロットに入っているカードは「反映済み」として起動する。
+        // これをしないと lastCardSettings == null のせいで毎 load でカードが BE を上書きし、
+        // chunk unload (保存 → setRemoved の順) で書き戻せなかった編集がそこで巻き戻る
+        // (独立レビュー round 3 の指摘)。 まだ反映していない挿入は CardSlotChanged が
+        // NBT に残っているので、 そのときは上書きしない。
+        if (!cardSlotChanged) lastCardSettings = ManagementComputerSettings.readSettings(memoryCard);
     }
 
     @Override
     public void setRemoved() {
+        // ここで flushSettingsToCard() を呼んでいたが**効果が無い**ので外した:
+        // chunk unload は chunk を保存してから setRemoved を呼ぶので、 書き込んでも
+        // 捨てられるメモリを触るだけ。 ブロック破壊時は onRemove が先に flush 済みで、
+        // dropContents がスロットを空にした後なので何も書けない。
+        // unload をまたぐ取りこぼしは cardSlotChanged の NBT 永続化と、 reload 時に
+        // 「カードが勝つのはスロットが動いたときだけ」にしたことで塞いである。
+        // 記号の取り下げもここではしない — unload のたびに全駅から記号が消える。
+        // 取り下げは ManagementComputerBlock.onRemove = 実際に壊されたときだけ。
         SERVER_INSTANCES.remove(this);
         super.setRemoved();
     }
@@ -474,6 +526,12 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
                             ManagementComputerBlockEntity blockEntity) {
         if (level.isClientSide()) return;
 
+        // 旧ワールドの「公開済みキー」復元は load 後の最初の tick で行う。 ここが
+        // lineSymbols / stationSymbolMap / cachedStations が全て読み込み直後の状態で並ぶ
+        // 唯一の地点で、 カード適用・記号編集・割り当て解除のどれよりも先に走る。
+        // 各 mutator の先頭にも同じ呼び出しがあるが (取りこぼし対策)、 順序を保証するのはここ。
+        blockEntity.seedLegacyPublishedKeys();
+
         if (blockEntity.isLinkedToMonitor() && blockEntity.linkedRailwayManagerPos != null) {
             blockEntity.pushDataToMonitor();
         }
@@ -483,9 +541,10 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             blockEntity.detectMonitorSize();
         }
 
-        // メモリーカードスロットから自動リンク
+        // メモリーカードスロットから自動リンク + 設定の復元 / 保存
         if (level.getGameTime() % 20 == 0) {
             blockEntity.checkMemoryCardSlot();
+            blockEntity.syncSettingsWithCard();
         }
 
         // 全列車段階的停止処理
@@ -500,10 +559,10 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         if (level.getGameTime() % 20 == 0 &&
                 (blockEntity.linkedRailwayManagerPos != null || blockEntity.linkedTrackNetworkPos != null)) {
             blockEntity.updateNetworkCache();
-            // 路線記号をリンク先RailwayManagementBEに伝播（dirty 時のみ・最大10秒以内）
+            // 路線記号を LineSymbolStore へ公開（dirty 時のみ・最大10秒以内）
             if (blockEntity.symbolPropagationDirty
                     || (level.getGameTime() % 200 == 0 && !blockEntity.stationSymbolMap.isEmpty())) {
-                blockEntity.propagateSymbolToLinkedManagers();
+                blockEntity.publishSymbolsToStore();
                 blockEntity.symbolPropagationDirty = false;
             }
         }
@@ -530,6 +589,166 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             }
         }
     }
+
+    // --- メモリーカード = 管理設定の保存媒体 (1.0.10) ---
+
+    /**
+     * メモリーカードと管理設定を同期する (server, 20 tick 周期)。
+     *
+     * <p>方向は 2 つで、 どちらが動くかは「カードが差し替わったか」だけで決まる。
+     * <ul>
+     *   <li><b>カード → BE</b>: 直近に見たカード設定と違う設定が載っている = 差し込まれた瞬間。
+     *       カード優先で復元する (ユーザー決定 2026-08-29)。</li>
+     *   <li><b>BE → カード</b>: カードは同じままで自分の設定が変わった = 編集された。 書き戻す。
+     *       空の設定は書かない — 設定の無いコンピューターに差した空カードが、 後で設定済みの
+     *       コンピューターに差されたときに中身を消してしまうため。</li>
+     * </ul>
+     *
+     * <p>カードが抜かれているときは {@link #withdrawSymbolsFromStore()} で公開中の路線記号を
+     * 取り下げる。 カードが権威なので、 カードが無い状態では駅に記号を出さない。
+     */
+    /** スロット 0 の中身が実際にメモリーカードか。 旧ワールドや自動化で別のアイテムが
+     *  入っている可能性があるので、 設定を読み書きする前に必ず通す
+     *  (通さないと無関係なアイテムに設定 CUSTOM_DATA を焼き付ける)。 */
+    private boolean memoryCardIsRealCard() {
+        return !memoryCard.isEmpty()
+                && memoryCard.getItem() instanceof com.trainsystemutilities.item.MemoryCardItem;
+    }
+
+    private void syncSettingsWithCard() {
+        if (level == null || level.isClientSide()) return;
+        var registries = level.registryAccess();
+
+        boolean slotMoved = cardSlotChanged;
+        cardSlotChanged = false;
+
+        if (!memoryCardIsRealCard()) {
+            lastCardSettings = null;
+            lastOwnSettings = null;
+            withdrawSymbolsFromStore();
+            return;
+        }
+
+        CompoundTag onCard = ManagementComputerSettings.readSettings(memoryCard);
+        if (onCard != null && (slotMoved || !onCard.equals(lastCardSettings))) {
+            applySettings(onCard, registries);
+            lastCardSettings = onCard.copy();
+            lastOwnSettings = captureSettings(registries);
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+            symbolPropagationDirty = true;
+            publishSymbolsToStore();
+            return;
+        }
+
+        CompoundTag own = captureSettings(registries);
+        if (!slotMoved && own.equals(lastOwnSettings)) {
+            // 差し込まれたばかりの空カードは、 中身が前回と同じでも一度は書きに行く
+            // (差し替えを「変化なし」と読んで空カードのままにしないため)。
+            return;
+        }
+        if (own.equals(onCard)) {
+            // reload 直後は lastOwnSettings が null なので、 中身が同じでも 1 回書きに行ってしまう。
+            // 同一なら component を差し替えない (無意味な container 同期を出さない)。
+            lastOwnSettings = own;
+            lastCardSettings = own.copy();
+            return;
+        }
+        if (ManagementComputerSettings.isEmpty(own) && onCard == null) {
+            // 何も設定されていないコンピューターは空カードを「空の保存」で汚さない。
+            lastOwnSettings = own;
+            lastCardSettings = null;
+            return;
+        }
+        ManagementComputerSettings.writeSettings(memoryCard, own);
+        lastOwnSettings = own;
+        lastCardSettings = own.copy();
+        setChanged();
+        // 空カードを差して保存した直後も駅へ記号を出す (200 tick タイマを待たない)。
+        symbolPropagationDirty = true;
+        publishSymbolsToStore();
+    }
+
+    /**
+     * カードがスロットを離れる / ブロックが消える直前に、 未書き戻しの設定をカードへ流し込む。
+     *
+     * <p>書き戻しは 20 tick 周期なので、 編集してから 1 秒以内にカードを抜く / ブロックを壊すと
+     * カードは 1 つ前の状態のままになり、 次に差したときその古い状態が
+     * <b>カード優先で適用されて新しい編集が消える</b> (独立レビュー 2026-08-29 の指摘)。
+     * 抜去・破壊・chunk unload の直前にここを通す。
+     */
+    public void flushSettingsToCard() {
+        if (level == null || level.isClientSide() || !memoryCardIsRealCard()) return;
+        // まだ反映していないカードを自分の旧設定で潰さない。 挿してから 20 tick 以内に
+        // 抜く / 交換する / 壊すと、 カード優先が逆転していた (独立レビュー round 2 の指摘)。
+        if (cardSlotChanged) return;
+        CompoundTag own = captureSettings(level.registryAccess());
+        if (ManagementComputerSettings.isEmpty(own)
+                && ManagementComputerSettings.readSettings(memoryCard) == null) {
+            return;
+        }
+        if (own.equals(ManagementComputerSettings.readSettings(memoryCard))) return;
+        ManagementComputerSettings.writeSettings(memoryCard, own);
+        lastOwnSettings = own;
+        lastCardSettings = own.copy();
+        setChanged();
+    }
+
+    /** 現在の設定だけを抜き出した tag。 {@code saveAdditional} の出力から取るので、
+     *  設定キーを 1 箇所 ({@link ManagementComputerSettings#SETTING_KEYS}) に足すだけで
+     *  カードにも載る (= 保存とカードの書式がずれない)。 */
+    private CompoundTag captureSettings(HolderLookup.Provider registries) {
+        CompoundTag full = new CompoundTag();
+        saveAdditional(full, registries);
+        return ManagementComputerSettings.extract(full);
+    }
+
+    /** カード上の設定を自分に適用する。 現在の save 出力から設定キーだけを差し替えて
+     *  {@code loadAdditional} に流すため、 cache や スロットの中身は保たれる。
+     *
+     *  <p>{@code loadAdditional} は「tag に有るキーだけ設定する」ので、 カードが持たない設定は
+     *  そのままでは<b>コンピューター側の値が残り、 カード優先にならない</b>
+     *  (独立レビュー 2026-08-29 の指摘)。 条件付きでしか書かれないキーは事前に既定へ戻す。 */
+    private void applySettings(CompoundTag settings, HolderLookup.Provider registries) {
+        CompoundTag merged = new CompoundTag();
+        saveAdditional(merged, registries);
+        for (String k : new java.util.ArrayList<>(merged.getAllKeys())) {
+            if (ManagementComputerSettings.isSetting(k)) merged.remove(k);
+        }
+        // モニターの比較は「消す前」の値と行う (CLEARED_WHEN_ABSENT が先に null にすると
+        // カードにリンクが無いとき null == null で一致してしまい、 寸法がゼロ化されない)。
+        BlockPos monitorBefore = linkedMonitorPos;
+        // 色は「無い = 既定」なので空文字を明示して上書きさせる。
+        for (String k : COLOR_KEYS) setColorSilently(k, "");
+        // リンク先は tag から消えても loadAdditional が触らないので、ここで落とす。
+        for (String k : ManagementComputerSettings.CLEARED_WHEN_ABSENT) {
+            if (settings.contains(k)) continue;
+            if (k.startsWith("Monitor")) linkedMonitorPos = null;
+            else if (k.startsWith("Manager")) linkedRailwayManagerPos = null;
+            else if ("TrackNetPos".equals(k)) linkedTrackNetworkPos = null;
+        }
+        // モニターが別の場所に変わるなら寸法を捨てて再検出させる。 monitorW != 0 のままだと
+        // detectMonitorSize が走らず、 旧モニターの寸法を新モニターに使う
+        // (MonW / MonH をカードに載せないのはこのため。 独立レビュー round 2 の指摘)。
+        // field ではなく merged を書き換えること — この後の loadAdditional が merged の
+        // MonW / MonH (= runtime キーなので現在値が残っている) で field を上書きする。
+        BlockPos cardMonitor = settings.contains("MonitorX")
+                ? new BlockPos(settings.getInt("MonitorX"), settings.getInt("MonitorY"),
+                               settings.getInt("MonitorZ"))
+                : null;
+        if (!java.util.Objects.equals(cardMonitor, monitorBefore)) {
+            merged.putInt("MonW", 0);
+            merged.putInt("MonH", 0);
+        }
+        for (String k : settings.getAllKeys()) {
+            var t = settings.get(k);
+            if (t != null) merged.put(k, t.copy());
+        }
+        loadAdditional(merged, registries);
+    }
+
+    /** カードが差さっているか (= 路線記号を駅へ出してよいか)。 */
+    public boolean hasSettingsCard() { return memoryCardIsRealCard(); }
 
     private boolean mapDataDirty = true;
 
@@ -579,10 +798,18 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
                 trainSchedViews.put(ti.id(), new SchedView(sEntries, tr.runtime.currentEntry, sched.cyclic));
             }
         }
-        // 電子式時刻表を server-global 登録簿へ push (= world load 後 / モブ右クリック横取りで大域参照するため)
-        if (level instanceof net.minecraft.server.level.ServerLevel sl && !electronicTimetableTrains.isEmpty()) {
+        // 電子式時刻表を server-global 登録簿と双方向で突き合わせる。
+        // push だけだと、 壊して置き直した (= local が空の) コンピューターでは local が
+        // 永久に空になり、 getUpdateTag 経由の client 判定も false のままになる
+        // (独立レビュー round 3 の指摘)。 権威は global 側。
+        if (level instanceof net.minecraft.server.level.ServerLevel sl) {
             var ets = com.trainsystemutilities.schedule.ElectronicTimetableState.get(sl.getServer());
             for (UUID id : electronicTimetableTrains) ets.add(id);
+            if (cachedTrains != null) {
+                for (var ti : cachedTrains) {
+                    if (ets.isElectronic(ti.id())) electronicTimetableTrains.add(ti.id());
+                }
+            }
         }
         // 各駅周辺のRailwayManagementBEの位置をキャッシュ
         scanStationManagers();
@@ -654,6 +881,7 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     public ItemStack removeItem(int slot, int amount) {
         ItemStack src = getItem(slot);
         if (src.isEmpty()) return ItemStack.EMPTY;
+        if (slot == 0) { flushSettingsToCard(); cardSlotChanged = true; }
         ItemStack result = src.split(amount);
         if (slot == 0 && src.isEmpty()) memoryCard = ItemStack.EMPTY;
         if (slot == 1 && src.isEmpty()) monitorLinkCard = ItemStack.EMPTY;
@@ -667,6 +895,7 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
         ItemStack old;
+        if (slot == 0) { flushSettingsToCard(); cardSlotChanged = true; }
         switch (slot) {
             case 0 -> { old = memoryCard; memoryCard = ItemStack.EMPTY; }
             case 1 -> { old = monitorLinkCard; monitorLinkCard = ItemStack.EMPTY; syncMonitorLinkFromCard(); }
@@ -679,6 +908,7 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     }
     @Override
     public void setItem(int slot, ItemStack stack) {
+        if (slot == 0 && memoryCard != stack) { flushSettingsToCard(); cardSlotChanged = true; }
         switch (slot) {
             case 0 -> { memoryCard = stack; setChanged(); }
             case 1 -> { monitorLinkCard = stack; setChanged(); syncMonitorLinkFromCard(); }
@@ -688,10 +918,40 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         }
         syncCardPresence();
     }
+    /**
+     * ホッパー等の自動化からの挿入を弾く。
+     *
+     * <p>Menu の {@code mayPlace} は<b>プレイヤー操作にしか効かない</b>。
+     * {@code HopperBlockEntity} は素の {@code Container} として扱うので、 これが無いと
+     * 任意のアイテムをスロット 0 に押し込める。 そうなると {@code memoryCard} が
+     * メモリーカードでなくなり、 設定の書き戻しが<b>無関係なアイテムに CUSTOM_DATA を
+     * 焼き付ける</b> (独立レビュー 2026-08-29 の指摘)。 兄弟の
+     * {@code PosterManagementBlockEntity} / {@code RailwayManagementBlockEntity} は
+     * どちらも override 済みで、 ここだけ抜けていた。
+     *
+     * <p>書き出し入力 (slot 2) も弾く。 ここを {@code true} のままにすると、
+     * 0 と 1 を閉じたぶん<b>ホッパーが最初に受け入れるスロットが 2 になり、 詰まる先を
+     * 移しただけ</b>になる (独立レビュー 2026-08-29 の指摘)。 判定は {@link #isBlankSchedule}
+     * (= create の時刻表アイテムで、 かつ未書込) を共有する。
+     */
+    @Override
+    public boolean canPlaceItem(int slot, ItemStack stack) {
+        if (stack.isEmpty()) return true;
+        return switch (slot) {
+            case 0 -> stack.getItem() instanceof com.trainsystemutilities.item.MemoryCardItem;
+            case 1 -> stack.getItem() instanceof com.trainsystemutilities.item.MonitorLinkCardItem;
+            case 2 -> isBlankSchedule(stack);
+            case 3 -> false;   // 書き出し出力は取り出し専用
+            default -> false;
+        };
+    }
+
     @Override public boolean stillValid(Player player) {
         return player.distanceToSqr(worldPosition.getX() + 0.5, worldPosition.getY() + 0.5, worldPosition.getZ() + 0.5) <= 64;
     }
     @Override public void clearContent() {
+        flushSettingsToCard();
+        cardSlotChanged = true;
         memoryCard = ItemStack.EMPTY;
         monitorLinkCard = ItemStack.EMPTY;
         exportInputStack = ItemStack.EMPTY;
@@ -712,10 +972,16 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
 
-    /** Create スケジュールアイテムか (= 中身は書き出し時に train の schedule で上書きする)。 */
-    private static boolean isBlankSchedule(ItemStack s) {
+    /** create:schedule の未書込 (= 空) アイテムか。 ここが唯一の定義。
+     *  Menu の mayPlace / beSlotFor と canPlaceItem が別々の写しを持つと、
+     *  片方だけ直したときに shift クリックの行き先とホッパーのフィルタが食い違う。 */
+    public static boolean isBlankSchedule(ItemStack s) {
         return !s.isEmpty()
-                && s.getItem() instanceof com.simibubi.create.content.trains.schedule.ScheduleItem;
+                && s.getItem() instanceof com.simibubi.create.content.trains.schedule.ScheduleItem
+                // 書き込み済みを弾く。 instanceof だけだと**中身のある時刻表**が書き出し入力に入り、
+                // processExport の shrink で消費されて元の内容ごと失われる (独立レビュー 2026-08-29)。
+                // 1.0.10 以前からの既往で、 doc の「入力=空スケジュール」と実装がずれていた。
+                && !s.has(com.simibubi.create.AllDataComponents.TRAIN_SCHEDULE);
     }
 
     /** 書き出し開始 (server)。 入力=空スケジュール + 出力空 + train に schedule があれば進捗開始。 */
@@ -1102,6 +1368,12 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         };
     }
     public void setColor(String key, String value) {
+        setColorSilently(key, value);
+        setChanged();
+        if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+    /** field 代入だけ (block update を伴わない)。 カード適用時に 12 色を一括で既定へ戻す用。 */
+    private void setColorSilently(String key, String value) {
         switch (key) {
             case "panelTitle" -> colorPanelTitle = value; case "panelBorder" -> colorPanelBorder = value;
             case "trainName" -> colorTrainName = value; case "trainStatus" -> colorTrainStatus = value;
@@ -1110,8 +1382,6 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             case "signalRed" -> colorSignalRed = value; case "mapLine" -> colorMapLine = value;
             case "mapStation" -> colorMapStation = value; case "mapTrain" -> colorMapTrain = value;
         }
-        setChanged();
-        if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
     public String getColorOrDefault(String key, String defaultColor) {
         String c = getColor(key);
@@ -1133,16 +1403,18 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         symbolPropagationDirty = true;
         setChanged();
         scanStationManagers();
-        propagateSymbolToLinkedManagers();
+        publishSymbolsToStore();
         if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
     public void addLineSymbol(LineSymbol symbol) {
         if (symbol == null) return;
+        seedLegacyPublishedKeys();   // lineSymbols を触る前に seed する (触った後では復元できない)
         lineSymbols.add(symbol);
         onLineSymbolsChanged();
     }
     public void saveLineSymbol(int index, LineSymbol symbol) {
         if (symbol == null) return;
+        seedLegacyPublishedKeys();   // lineSymbols を触る前に seed する (触った後では復元できない)
         if (index >= 0 && index < lineSymbols.size()) {
             LineSymbol existing = lineSymbols.get(index);
             existing.setLetters(symbol.getLetters());
@@ -1157,6 +1429,7 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     }
     public void removeLineSymbol(int index) {
         if (index >= 0 && index < lineSymbols.size()) {
+            seedLegacyPublishedKeys();   // lineSymbols を触る前に seed する (触った後では復元できない)
             lineSymbols.remove(index);
             onLineSymbolsChanged();
         }
@@ -1199,8 +1472,6 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
                 if (be instanceof RailwayManagementBlockEntity rmbe
                         && stationMatches(rmbe, station.name(), sp)) {
                     rmbe.setLinkedComputerPos(worldPosition);
-                    LineSymbol sym = getSymbolForStation(station.name(), sp);
-                    rmbe.setAssignedLineSymbol(sym);
                     continue; // 有効、次の駅へ
                 }
                 // 無効 → エントリ削除して下の full scan に進む
@@ -1228,7 +1499,6 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
                             stationManagerPosMap.put(key, bp);
                             stationManagerPosMap.put(station.name(), bp);
                             rmbe.setLinkedComputerPos(worldPosition);
-                            rmbe.setAssignedLineSymbol(getSymbolForStation(station.name(), sp));
                             found = true;
                             break;
                         }
@@ -1265,62 +1535,90 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     // --- 駅→路線記号割り当て API ---
     public java.util.Map<String, java.util.UUID> getStationSymbolMap() { return stationSymbolMap; }
     public void assignSymbolToStation(String stationName, java.util.UUID symbolId) {
+        seedLegacyPublishedKeys();   // map を消す前に seed する (消した後では復元できない)
         if (symbolId != null) stationSymbolMap.put(stationName, symbolId);
-        else stationSymbolMap.remove(stationName);
+        else { stationSymbolMap.remove(stationName); withdrawSymbolKey(stationName); }
         symbolPropagationDirty = true;
         setChanged();
-        // リンクされたRailwayManagementBEにシンボルを伝播
-        propagateSymbolToLinkedManagers();
-    }
-    /** 全駅のシンボル割り当てをキャッシュ済みRailwayManagementBEに伝播 */
-    void propagateSymbolToLinkedManagers() {
-        if (level == null) return;
-        // stationManagerPosMap には同一 managerPos に対して複数キー
-        // (full "name|x,y,z" + 後方互換の bare "name") が登録される。
-        // bare key は stationSymbolMap で見つからず getSymbolForStationKey が null を返すため、
-        // そのまま setAssignedLineSymbol(null) を呼ぶと直後に full key 側で
-        // 非 null が再設定される 2 連射パターンが発生し、200 tick おきに
-        // クライアントへ "null → 実シンボル" の連続更新が飛ぶ。
-        // managerPos ごとに集約し、非 null を優先して 1 回だけ反映する。
-        java.util.Map<BlockPos, LineSymbol> resolved = new java.util.HashMap<>();
-        java.util.Set<BlockPos> hasNonNull = new java.util.HashSet<>();
-        for (var entry : stationManagerPosMap.entrySet()) {
-            BlockPos managerPos = entry.getValue();
-            if (managerPos == null) continue;
-            LineSymbol sym = getSymbolForStationKey(entry.getKey());
-            if (sym != null) {
-                resolved.put(managerPos, sym);
-                hasNonNull.add(managerPos);
-            } else if (!hasNonNull.contains(managerPos) && !resolved.containsKey(managerPos)) {
-                resolved.put(managerPos, null);
-            }
-        }
-        for (var entry : resolved.entrySet()) {
-            var be = level.getBlockEntity(entry.getKey());
-            if (be instanceof RailwayManagementBlockEntity rmbe) {
-                rmbe.setAssignedLineSymbol(entry.getValue());
-            }
-        }
-        // chunk load 非依存の権威 store へ全駅ぶんを同期 (= 遠隔/未ロード駅も RMBE 側 tick で解決可能)。
-        syncSymbolsToStore();
+        publishSymbolsToStore();
     }
 
     /**
      * 全ネットワーク駅の「解決済み路線記号」を {@link com.trainsystemutilities.station.LineSymbolStore}
-     * (chunk load 非依存の権威 store) へ書き込む。 各 {@code RailwayManagementBlockEntity} は自駅キーで
-     * これを引いて反映するため、 遠隔駅の chunk が unload されていても割り当てが行き渡る
-     * (= 従来の block entity 間 push が unload 駅に届かなかった問題の根治)。
+     * (chunk load 非依存の権威 store) へ公開する。 各 {@code RailwayManagementBlockEntity} は自駅キーで
+     * これを引いて反映するため、 遠隔駅の chunk が unload されていても割り当てが行き渡る。
+     *
+     * <p><b>書き手はここ 1 箇所だけ。</b> 1.0.10 以前は本メソッドに加えて
+     * {@code scanStationManagers} と {@code assignSymbolToStation} が
+     * {@code RailwayManagementBlockEntity.setAssignedLineSymbol} を直接呼んでいた。 記号を持たない
+     * コンピューター (= 壊して置き直した直後) が毎秒 null を push し、 次の tick で
+     * {@code resolveLineSymbol} が store の旧値を書き戻すため、 モニターの路線記号が 1 Hz で
+     * 出たり消えたりしていた。 store を唯一の権威にして構造的に潰してある。
+     *
+     * <p>メモリーカードが無いときは公開しない。 カードが設定の権威なので、
+     * カードを抜いた / ブロックを壊した状態では駅に記号を出さない (ユーザー決定 2026-08-29)。
+     * {@code cachedStations} が空のときは何もしない — スキャン一時失敗で全駅ぶんを
+     * 取り下げてしまわないため。
      */
-    private void syncSymbolsToStore() {
-        if (level == null || level.isClientSide() || cachedStations == null) return;
+    /**
+     * 旧ワールド (PublishedSymbolKeys を持たない BE) の公開済みキーを復元する。
+     *
+     * <p>旧 {@code syncSymbolsToStore} は {@code cachedStations} から作った
+     * {@code "name|pos"} 形のキーで store に書いていた。 割り当てマップには legacy の
+     * bare name も混在するので、 <b>両方の形を入れる</b> — 片方だけだと取り下げが空振りし、
+     * カードを抜いても記号が残る (独立レビュー round 2 の指摘)。
+     */
+    private void seedLegacyPublishedKeys() {
+        if (!legacyPublishSeedPending) return;
+        legacyPublishSeedPending = false;
+        publishedSymbolKeys.addAll(stationSymbolMap.keySet());
+        if (cachedStations != null) {
+            for (var st : cachedStations) {
+                if (getSymbolForStation(st.name(), st.position()) != null) {
+                    publishedSymbolKeys.add(stationKey(st.name(), st.position()));
+                }
+            }
+        }
+    }
+
+    void publishSymbolsToStore() {
+        if (level == null || level.isClientSide()) return;
         var server = level.getServer();
         if (server == null) return;
+        seedLegacyPublishedKeys();
+        if (!memoryCardIsRealCard()) { withdrawSymbolsFromStore(); return; }
+        if (cachedStations == null || cachedStations.isEmpty()) return;
         var store = com.trainsystemutilities.station.LineSymbolStore.get(server);
+        java.util.Set<String> nowPublished = new java.util.LinkedHashSet<>();
         for (var st : cachedStations) {
             String k = stationKey(st.name(), st.position());
             LineSymbol sym = getSymbolForStation(st.name(), st.position());
+            if (sym == null) continue;
             store.setSymbol(k, sym);
+            nowPublished.add(k);
         }
+        // 明示的に解除された (= 自分が出していたが今は割り当てが無い) キーだけ取り下げる。
+        for (String k : publishedSymbolKeys) {
+            if (!nowPublished.contains(k)) store.setSymbol(k, null);
+        }
+        if (!publishedSymbolKeys.equals(nowPublished)) {
+            publishedSymbolKeys.clear();
+            publishedSymbolKeys.addAll(nowPublished);
+            setChanged();
+        }
+    }
+
+    /** 自分が公開した路線記号を store から取り下げる (カードが抜かれた / ブロックが壊された)。 */
+    public void withdrawSymbolsFromStore() {
+        if (level == null || level.isClientSide()) return;
+        seedLegacyPublishedKeys();
+        if (publishedSymbolKeys.isEmpty()) return;
+        var server = level.getServer();
+        if (server == null) return;
+        var store = com.trainsystemutilities.station.LineSymbolStore.get(server);
+        for (String k : publishedSymbolKeys) store.setSymbol(k, null);
+        publishedSymbolKeys.clear();
+        setChanged();
     }
 
     /**
@@ -1400,6 +1698,7 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     }
 
     public void assignSymbolToStation(String stationName, BlockPos stationPos, java.util.UUID symbolId) {
+        seedLegacyPublishedKeys();   // map を消す前に seed する (消した後では復元できない)
         String key = stationKey(stationName, stationPos);
         if (symbolId != null) stationSymbolMap.put(key, symbolId);
         else stationSymbolMap.remove(key);
@@ -1408,13 +1707,25 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         }
         symbolPropagationDirty = true;
         setChanged();
-        // キャッシュ済みマネージャに伝播
-        propagateSymbolToLinkedManagers();
-        // この駅に対するマネージャを直接検索 (キャッシュ未登録対策)
-        RailwayManagementBlockEntity rmbe = findOrScanManagerForStation(stationName, stationPos);
-        if (rmbe != null) {
-            rmbe.setAssignedLineSymbol(getSymbolForStation(stationName, stationPos));
+        // 駅にマネージャがまだキャッシュされていなければ探しておく (逆リンク登録のため)。
+        findOrScanManagerForStation(stationName, stationPos);
+        // 明示的な解除はその key を直接取り下げる。 publishSymbolsToStore() は
+        // cachedStations が空だと早期 return するので、 スキャン結果に依存させない。
+        // legacy の bare name 側も一緒に落とす — 旧 store エントリがそちらの形で残っている。
+        if (symbolId == null) {
+            withdrawSymbolKey(key);
+            if (stationPos != null) withdrawSymbolKey(stationName);
         }
+        publishSymbolsToStore();
+    }
+
+    /** 指定した stationKey の公開を取り下げる (明示的な割り当て解除)。 */
+    private void withdrawSymbolKey(String key) {
+        if (level == null || level.isClientSide()) return;
+        var server = level.getServer();
+        if (server == null) return;
+        com.trainsystemutilities.station.LineSymbolStore.get(server).setSymbol(key, null);
+        if (publishedSymbolKeys.remove(key)) setChanged();
     }
 
     public LineSymbol getSymbolForStation(String stationName, BlockPos stationPos) {
@@ -1515,6 +1826,13 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             }
         }
         tag.put("StationManagerPosMap", managerMap);
+        // LineSymbolStore へ公開中のキー (= カードを抜いた / 壊したときに取り下げる対象)
+        net.minecraft.nbt.ListTag published = new net.minecraft.nbt.ListTag();
+        for (String k : publishedSymbolKeys) published.add(net.minecraft.nbt.StringTag.valueOf(k));
+        tag.put("PublishedSymbolKeys", published);
+        // 未反映の挿入は unload をまたいでも「未反映」でなければならない (transient だと
+        // reload 後の初回同期前の flush が、 新しいカードを BE の旧設定で潰す)。
+        tag.putBoolean("CardSlotChanged", cardSlotChanged);
 
         // マップデータ
         // ノード
@@ -1686,6 +2004,21 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
                 stationManagerPosMap.put(key, BlockPos.of(managerMap.getLong(key)));
             }
         }
+        publishedSymbolKeys.clear();
+        if (tag.contains("PublishedSymbolKeys")) {
+            var published = tag.getList("PublishedSymbolKeys", net.minecraft.nbt.Tag.TAG_STRING);
+            for (int i = 0; i < published.size(); i++) publishedSymbolKeys.add(published.getString(i));
+        } else {
+            // 1.0.10 移行: 旧ワールドの BE には PublishedSymbolKeys が無い。 何も seed しないと
+            // 「自分が公開したもの」が空のままになり、 カードを抜いても LineSymbolStore の
+            // 既存エントリを取り下げられず、 記号が出っぱなしになる (ドメイン不変条件 §5.3:
+            // 新しい権威は旧データを seed するまで権威ではない)。
+            // seed はここではなく最初の publish / withdraw で行う — cachedStations は
+            // この時点ではまだ読み込まれておらず、 旧 store が使う "name|pos" 形のキーを
+            // 割り当てマップ (bare name も混在) だけからは作れないため。
+            legacyPublishSeedPending = true;
+        }
+        cardSlotChanged = tag.getBoolean("CardSlotChanged");
 
         // マップデータ読み込み
         cachedNodes = new ArrayList<>();
@@ -1751,6 +2084,13 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
 
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        // カード上の管理設定を client へ送らない最適化を一度入れたが撤去した。
+        // 「Menu が full stack を別途送るのでツールチップは欠けない」という前提が誤りで、
+        // updateNetworkCache が 20 tick ごとに sendBlockUpdated するたび client の
+        // スロット 0 が設定なしの写しに置き換わり (server 側は不変なので broadcastChanges も
+        // 訂正を送らない)、 **「管理用コンピューターの設定を保存済み」ツールチップが消えた**。
+        // それはカードに保存できたことを GUI で確かめる唯一の手掛かりだった
+        // (独立レビュー 2026-08-29 の指摘)。 帯域は測っておらず、 依頼にも無い最適化だった。
         CompoundTag tag = new CompoundTag();
         saveAdditional(tag, registries);
         return tag;

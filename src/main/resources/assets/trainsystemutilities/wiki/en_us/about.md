@@ -36,7 +36,7 @@ Built on top of Create's existing "tracks / stations / schedules / signals", TSU
 
 #### Tools (3)
 
-```embed:items size=32 cols=5 label=true ids=trainsystemutilities:station_range_tool,trainsystemutilities:train_preset_tool,trainsystemutilities:transit_terminal links=tools/station-range-tool,tools/train-preset-tool,tools/transit-terminal
+```embed:items size=32 cols=5 label=true ids=trainsystemutilities:station_range_tool,trainsystemutilities:train_preset_tool,trainsystemutilities:transit_terminal links=tools/station-range-tool,train-preset-tool/save,tools/transit-terminal
 ```
 
 #### Data cards (3)

@@ -30,7 +30,16 @@ public class ManagementComputerMenu extends AbstractContainerMenu {
         this.access = ContainerLevelAccess.create(blockEntity.getLevel(), blockEntity.getBlockPos());
 
         // Slot 0: メモリーカードスロット (CSS レイアウトで位置自動同期)
-        addSlot(new Slot(blockEntity, 0, 0, 0));
+        // mayPlace は必須。 vanilla の Slot.mayPlace は container.canPlaceItem を見ずに
+        // 無条件 true を返すので、 フィルタが無いと quickMoveStack の
+        // moveItemStackTo(stack, 0, 4, false) が先頭のこのスロットに何でも入れてしまう
+        // = モニター連携カードを shift クリックするとメモリーカード側に入る (2026-08-29 報告)。
+        addSlot(new Slot(blockEntity, 0, 0, 0) {
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return stack.getItem() instanceof com.trainsystemutilities.item.MemoryCardItem;
+            }
+        });
         // Slot 1: モニター連携カードスロット (CSS レイアウトで位置自動同期、JsonLayoutScreen.syncSlotPositions 経由)
         addSlot(new Slot(blockEntity, 1, 0, 0) {
             @Override
@@ -77,10 +86,10 @@ public class ManagementComputerMenu extends AbstractContainerMenu {
         if (lvl != null && !lvl.isClientSide()) return true; // server は常時有効
         return exportSlotsVisible;
     }
-    /** create:schedule で、まだ schedule 未書込 (= 空) のアイテムか。 */
+    /** create:schedule で、まだ schedule 未書込 (= 空) のアイテムか。
+     *  定義は BlockEntity 側 1 本 (mayPlace / beSlotFor / canPlaceItem がずれないように)。 */
     private static boolean isBlankSchedule(ItemStack stack) {
-        return !stack.isEmpty()
-                && stack.getItem() instanceof com.simibubi.create.content.trains.schedule.ScheduleItem;
+        return ManagementComputerBlockEntity.isBlankSchedule(stack);
     }
 
     @Override
@@ -136,24 +145,63 @@ public class ManagementComputerMenu extends AbstractContainerMenu {
         return false;
     }
 
+    /** BE スロット番号。 レイアウトの並び順ではなく Container の index。 */
+    public static final int SLOT_MEMORY_CARD = 0;
+    public static final int SLOT_MONITOR_CARD = 1;
+    public static final int SLOT_EXPORT_IN = 2;
+    public static final int SLOT_EXPORT_OUT = 3;
+
+    /**
+     * shift クリックでこのアイテムが入るべき BE スロット。 該当が無ければ -1。
+     *
+     * <p>各スロットの {@code mayPlace} と<b>同じ述語</b>をここに 1 本で持つ。
+     * 書き出し出力 ({@link #SLOT_EXPORT_OUT}) は取り出し専用なので行き先にならない。
+     */
+    static int beSlotFor(ItemStack stack) {
+        if (stack.getItem() instanceof com.trainsystemutilities.item.MemoryCardItem) {
+            return SLOT_MEMORY_CARD;
+        }
+        if (stack.getItem() instanceof com.trainsystemutilities.item.MonitorLinkCardItem) {
+            return SLOT_MONITOR_CARD;
+        }
+        if (isBlankSchedule(stack)) return SLOT_EXPORT_IN;
+        return -1;
+    }
+
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
         Slot slot = slots.get(index);
         if (!slot.hasItem()) return ItemStack.EMPTY;
         ItemStack stack = slot.getItem();
         ItemStack copy = stack.copy();
+        // メモリーカードを shift クリックで抜くと、 moveItemStackTo が live stack を split して
+        // count 0 にしてから setByPlayer が走るため、 Container.setItem 側の
+        // flushSettingsToCard() が「もう空」と見て何も書けない。 split の前に流し込む
+        // (独立レビュー 2026-08-29 の指摘。 removeItem / clearContent / onRemove は正常)。
+        if (index == 0 && blockEntity != null) blockEntity.flushSettingsToCard();
         // Slot 0..3 = BE slots (memory/monitor card + 書き出し in/out)、Slot 4..30 = inventory、Slot 31..39 = hotbar
         if (index < 4) {
             // BE スロット → プレイヤーインベントリ全体
             if (!moveItemStackTo(stack, 4, 40, true)) return ItemStack.EMPTY;
-        } else if (index < 31) {
-            // インベントリ → BE スロット or ホットバー
-            if (!moveItemStackTo(stack, 0, 4, false) && !moveItemStackTo(stack, 31, 40, false))
-                return ItemStack.EMPTY;
         } else {
-            // ホットバー → BE スロット or インベントリ
-            if (!moveItemStackTo(stack, 0, 4, false) && !moveItemStackTo(stack, 4, 31, false))
-                return ItemStack.EMPTY;
+            // プレイヤー → BE: **アイテム種別で行き先を決める** (鉄道管理ブロックと同じ形)。
+            //
+            // 範囲スキャン (moveItemStackTo(stack, 0, 4, false)) に任せてはいけない。
+            // vanilla の moveItemStackTo は 2 段構成で、 **先の「既存スタックへの統合」段は
+            // mayPlace を一切見ない** (AbstractContainerMenu l.637-663)。 そのため
+            // slot 0 に既に同種のスタック可能アイテムが入っていると、 mayPlace を付けても
+            // そこへ吸い込まれ続ける。 旧版の不具合で slot 0 に空の時刻表が入ってしまった
+            // ワールドでは、 mayPlace だけでは症状が直らない (独立レビュー 2026-08-29)。
+            int target = beSlotFor(stack);
+            boolean moved = target >= 0 && moveItemStackTo(stack, target, target + 1, false);
+            if (!moved) {
+                // 行き先が無い / 埋まっている → インベントリ ↔ ホットバーの既定挙動を保つ
+                if (index < 31) {
+                    if (!moveItemStackTo(stack, 31, 40, false)) return ItemStack.EMPTY;
+                } else {
+                    if (!moveItemStackTo(stack, 4, 31, false)) return ItemStack.EMPTY;
+                }
+            }
         }
         if (stack.isEmpty()) slot.setByPlayer(ItemStack.EMPTY);
         else slot.setChanged();

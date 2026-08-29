@@ -238,7 +238,7 @@ final class ManagementComputerDispatch {
                             : (scr.isSelectedSchedTrainPaused() ? ManagementComputerScreenV2.tr("tsu.mc.train_stopped") : ManagementComputerScreenV2.tr("tsu.mc.train_running"));
                     String base = net.minecraft.network.chat.Component.translatable(
                             "tsu.mc.train_summary_fmt",
-                            scr.selectedTrainCars, scr.selectedTrainSpeed, status).getString();
+                            scr.selectedTrainCars, String.format("%.0f", scr.selectedTrainSpeed), status).getString();
                     UUID src = scr.be().getTimetableShareSource(scr.scheduleSelectedTrainId);
                     if (src != null) {
                         base += " · " + net.minecraft.network.chat.Component.translatable(
@@ -445,10 +445,27 @@ final class ManagementComputerDispatch {
         return null;
     }
 
+    /** @see LabelWidth 2026-08-29 に 8 画面へ広がったので共有クラスへ出した。 */
+    private static int labelWidth(String langKey) {
+        return LabelWidth.of(langKey);
+    }
+
     static Integer getDynamicNumber(ManagementComputerScreenV2 scr, String[] classes, String key, int defaultValue) {
         if ("monitor-knob-x".equals(key)) return scr.monitorToggle.knobX(defaultValue);
         if ("export-all-knob-x".equals(key)) return scr.exportAllToggle.knobX(defaultValue);
         // hint-knob-x は JsonLayoutEngine が HintToggleHelper にルート (解決不要)
+        // glyph を外して icon + label に分けたボタンのラベル幅 (labelWidth の javadoc 参照)。
+        // sched-back と station-back は同じ lang key なので dynamicW の key も共用する。
+        if ("stop-all-label-w".equals(key)) return labelWidth("tsu.mc.stop_all_trains");
+        if ("resume-all-label-w".equals(key)) return labelWidth("tsu.mc.resume_all_trains");
+        if ("back-label-w".equals(key)) return labelWidth("tsu.mc.back_btn");
+        // 2026-08-29: lang から control glyph を外して icon + label にしたボタン群。
+        // sym-cancel は sched-editor と symbol-delete の 2 layout で同じ lang key を使う
+        // ので dynamicW の key も共用する (sched-back / station-back と同じ理由)。
+        if ("layout-save-label-w".equals(key)) return labelWidth("tsu.mc.layout_save");
+        if ("apply-label-w".equals(key)) return labelWidth("tsu.mc.apply");
+        if ("sym-cancel-label-w".equals(key)) return labelWidth("tsu.mc.sym_cancel");
+        if ("close-picker-label-w".equals(key)) return labelWidth("tsu.color.close_picker");
         if ("sched-count".equals(key)) {
             return Math.min(8, scr.selectedSchedEntries.size());
         }

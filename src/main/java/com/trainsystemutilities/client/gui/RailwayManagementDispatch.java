@@ -322,6 +322,8 @@ final class RailwayManagementDispatch {
             Integer n = scr.colorPopup.resolveNumber(key);
             if (n != null) return n;
         }
+        // R4.23.1 で glyph を外して icon + label にしたボタンのラベル幅 (LabelWidth 参照)。
+        if ("settings-label-w".equals(key)) return LabelWidth.of("tsu.common.settings");
         switch (key) {
             case "monitor-knob-x":     return scr.monitorToggle.knobX(defaultValue);
             // hint-knob-x は JsonLayoutEngine が HintToggleHelper にルート (解決不要)

@@ -50,6 +50,15 @@ Assigned to stations in the [Stations Tab](stations.md) → displayed on the [Ro
 Deleting an in-use symbol clears the symbol from every station it was assigned to.  
 Reassign from the [Stations Tab](stations.md).
 
+## The memory card must stay inserted
+
+Since **1.0.10** the line symbols you define here live on the **memory card** in the management
+computer's card slot, and stations only show a symbol while that card is inserted.
+
+- Breaking the computer no longer loses the symbols — place a new one and insert the same card.
+- Pulling the card out takes the symbols off the station monitors until it is put back.
+- See [Memory Card](../tools/memory-card.md).
+
 ## Related
 
 - [Symbol Editor](symbol-editor.md)

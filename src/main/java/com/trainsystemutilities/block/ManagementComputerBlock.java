@@ -112,8 +112,16 @@ public class ManagementComputerBlock extends BaseEntityBlock {
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean movedByPiston) {
         if (!state.is(newState.getBlock())) {
             BlockEntity be = level.getBlockEntity(pos);
-            if (be instanceof ManagementComputerBlockEntity) {
-                net.minecraft.world.Containers.dropContents(level, pos, (ManagementComputerBlockEntity) be);
+            if (be instanceof ManagementComputerBlockEntity computerBE) {
+                // 未書き戻しの設定をカードへ流し込んでから落とす (20 tick の書き戻し待ちの取りこぼし対策)。
+                // dropContents より前に行うこと — drop 後は memoryCard が EMPTY になり書けない。
+                computerBE.flushSettingsToCard();
+                // 壊された時点で自分が出していた路線記号を LineSymbolStore から取り下げる。
+                // 設定はメモリーカード側に残っているので、置き直してカードを差せば復元される。
+                // setRemoved() ではなくここで行う: setRemoved は chunk unload でも呼ばれ、
+                // unload のたびに全駅の記号が消えることになる。
+                computerBE.withdrawSymbolsFromStore();
+                net.minecraft.world.Containers.dropContents(level, pos, computerBE);
             }
         }
         super.onRemove(state, level, pos, newState, movedByPiston);

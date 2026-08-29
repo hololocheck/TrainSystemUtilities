@@ -1476,26 +1476,17 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         return result;
     }
 
-    /** 割り当てられた路線記号を取得。BE が直接持っていなければ ManagementComputer 経由で解決。 */
+    /**
+     * 割り当てられた路線記号を取得。
+     *
+     * <p>1.0.10: 同期済みの BE の値だけを読む。 以前は SP のときだけ server level と
+     * {@code ManagementComputerBlockEntity} を覗いて別解を返しており、 権威 (LineSymbolStore) が
+     * 取り下げた記号を GUI だけが表示し続けた。 §5.1 (client から server 状態を直読みしない) にも反する。
+     */
     com.trainsystemutilities.blockentity.LineSymbol getAssignedLineSymbol() {
         var be = be();
         String stationName = be.getLinkedStationName();
         if (stationName == null || stationName.isEmpty()) return null;
-        if (this.minecraft != null && this.minecraft.getSingleplayerServer() != null) {
-            var sl = this.minecraft.getSingleplayerServer().getLevel(be.getLevel().dimension());
-            if (sl != null) {
-                var sbe = sl.getBlockEntity(be.getBlockPos());
-                if (sbe instanceof com.trainsystemutilities.blockentity.RailwayManagementBlockEntity rmbe) {
-                    if (rmbe.getAssignedLineSymbol() != null) return rmbe.getAssignedLineSymbol();
-                    if (rmbe.getLinkedComputerPos() != null) {
-                        var cbe = sl.getBlockEntity(rmbe.getLinkedComputerPos());
-                        if (cbe instanceof com.trainsystemutilities.blockentity.ManagementComputerBlockEntity mcbe) {
-                            return mcbe.getSymbolForStation(stationName, be.getLinkedStationPos());
-                        }
-                    }
-                }
-            }
-        }
         return be.getAssignedLineSymbol();
     }
 

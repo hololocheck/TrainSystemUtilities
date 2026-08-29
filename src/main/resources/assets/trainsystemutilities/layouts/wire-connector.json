@@ -211,9 +211,13 @@
 			  "visibleKey": "sag-toggle-visible" }
 		  ] },
 
-		{ "tag": "span", "classes": ["custom-label"], "color": "#80deea",
-		  "translatableKey": "tsu.wire_connector.custom_thickness",
-		  "x": 234, "y": 222, "w": 90, "h": 11, "visibleKey": "custom-params-visible" },
+		{ "tag": "row", "classes": ["custom-label"], "color": "#80deea",
+		  "gap": 3, "justify": "start", "align": "center",
+		  "x": 234, "y": 222, "w": 90, "h": 11, "visibleKey": "custom-params-visible",
+		  "children": [
+		    { "tag": "icon", "w": 8, "h": 8, "color": "#80deea", "icon": "manta:arrow-up-down" },
+		    { "tag": "span", "h": 11, "w": 79, "color": "#80deea",
+		      "translatableKey": "tsu.wire_connector.custom_thickness" } ] },
 		{ "tag": "div", "classes": ["custom-thickness-value"],
 		  "bg": "rgba(79,195,247,0.10)", "borderColor": "#4fc3f7", "borderWidth": 1, "borderRadius": 2,
 		  "color": "#FFFFFF", "fontWeight": "bold",
@@ -221,9 +225,13 @@
 		  "visibleKey": "custom-params-visible", "clickable": true,
 		  "hoverBg": "rgba(79,195,247,0.20)" },
 
-		{ "tag": "span", "classes": ["custom-label"], "color": "#80deea",
-		  "translatableKey": "tsu.wire_connector.custom_offset",
-		  "x": 234, "y": 240, "w": 100, "h": 11, "visibleKey": "custom-params-visible" },
+		{ "tag": "row", "classes": ["custom-label"], "color": "#80deea",
+		  "gap": 3, "justify": "start", "align": "center",
+		  "x": 234, "y": 240, "w": 100, "h": 11, "visibleKey": "custom-params-visible",
+		  "children": [
+		    { "tag": "icon", "w": 8, "h": 8, "color": "#80deea", "icon": "manta:arrow-up-down" },
+		    { "tag": "span", "h": 11, "w": 89, "color": "#80deea",
+		      "translatableKey": "tsu.wire_connector.custom_offset" } ] },
 		{ "tag": "div", "classes": ["custom-offset-value"],
 		  "bg": "rgba(79,195,247,0.10)", "borderColor": "#4fc3f7", "borderWidth": 1, "borderRadius": 2,
 		  "color": "#FFFFFF", "fontWeight": "bold",
@@ -231,9 +239,13 @@
 		  "visibleKey": "custom-params-visible", "clickable": true,
 		  "hoverBg": "rgba(79,195,247,0.20)" },
 
-		{ "tag": "span", "classes": ["custom-label"], "color": "#80deea",
-		  "translatableKey": "tsu.wire_connector.custom_dropper",
-		  "x": 234, "y": 258, "w": 110, "h": 11, "visibleKey": "custom-params-visible" },
+		{ "tag": "row", "classes": ["custom-label"], "color": "#80deea",
+		  "gap": 3, "justify": "start", "align": "center",
+		  "x": 234, "y": 258, "w": 110, "h": 11, "visibleKey": "custom-params-visible",
+		  "children": [
+		    { "tag": "icon", "w": 8, "h": 8, "color": "#80deea", "icon": "manta:arrow-up-down" },
+		    { "tag": "span", "h": 11, "w": 99, "color": "#80deea",
+		      "translatableKey": "tsu.wire_connector.custom_dropper" } ] },
 		{ "tag": "div", "classes": ["custom-dropper-value"],
 		  "bg": "rgba(79,195,247,0.10)", "borderColor": "#4fc3f7", "borderWidth": 1, "borderRadius": 2,
 		  "color": "#FFFFFF", "fontWeight": "bold",

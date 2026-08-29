@@ -47,7 +47,7 @@ TSU 的社区分享功能。发布你自己创作的列车预设，并浏览 / �
 
 ## 如何访问 {#access}
 
-所有 Preset Place 界面都从**[列车预设工具](../train-preset-tool/browse.md)**打开。
+所有 Preset Place 界面都从[**列车预设工具**](../train-preset-tool/browse.md)打开。
 
 1. **手持****列车预设工具**。
 2. 用 **Alt + 鼠标滚轮**将工具切换到 **GUI 模式**（手持时，当前模式会显示在快捷栏上方）。

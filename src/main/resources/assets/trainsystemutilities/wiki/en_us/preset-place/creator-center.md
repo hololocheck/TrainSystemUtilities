@@ -12,7 +12,7 @@ Dashboard that displays detailed analytics for your own posts.
 
 ## Opening {#open}
 
-The Creator Center is opened from **your own [Profile](profile.md) page**.
+The Creator Center is opened from **your own **[**Profile**](profile.md)** page**.
 
 1. **Right-click** the [Train Preset Tool](../train-preset-tool/browse.md) in **GUI mode** to open the browse screen (switch modes with **Alt + wheel**).
 2. Set the mode to **`Place` (public)** and **left-click** your name/icon area at the top to open your own profile.

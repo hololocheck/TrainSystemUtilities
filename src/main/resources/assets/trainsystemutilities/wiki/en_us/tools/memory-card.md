@@ -18,7 +18,7 @@ A general-purpose link card for linking rail networks and station blocks to a **
 1. **Save**: **Right-click** the link source (track / railway management block / platform screen door, etc.) to record its position on the card.
 2. **Apply**: **Right-click** the link target (usually a Management Computer) to apply the recorded content.
 3. The card's current saved content can be checked in the item's **tooltip**.
-4. **Shift + right-click** (on empty space or a non-target block) to **reset the card**.
+4. **Shift + right-click** (on empty space or a non-target block) opens a **confirmation dialog**; confirming **resets the card**.
 
 ## What the Memory Card can operate on
 
@@ -30,7 +30,7 @@ A general-purpose link card for linking rail networks and station blocks to a **
 | **Platform Fence / Platform Screen Door** | **Register the connected fences / doors together as a group** | **Remove that member from the group** |
 
 > [!NOTE]
-> **Linking to a monitor uses the dedicated [Monitor Link Card](monitor-link-card.md)** (a separate item from the Memory Card). For train detection, use the [Train Detection Card](train-detection-card.md).
+> **Linking to a monitor uses the dedicated **[**Monitor Link Card**](monitor-link-card.md) (a separate item from the Memory Card). For train detection, use the [Train Detection Card](train-detection-card.md).
 
 ## Common procedures
 
@@ -54,6 +54,30 @@ A general-purpose link card for linking rail networks and station blocks to a **
 ## Mode-independent
 
 Linking / reading with the Memory Card works regardless of access mode (Private/Public).
+
+## Saving management computer settings
+
+Since **1.0.10** the memory card is where a management computer's settings live. Insert a card
+into the computer's card slot and everything you configure there — line symbols, station
+assignments, monitor layout and colours, electronic timetables, and the linked track network —
+is written onto the card.
+
+- **Insert a card that already holds settings** → the computer is restored from the card. The
+  card wins over whatever the computer had.
+- **Insert a blank card** → the computer's current settings are saved onto it. A computer with
+  nothing configured does not write an empty save.
+- **While a card is inserted** → later edits are written back to the card automatically.
+
+That means breaking the management computer no longer loses anything. Place a new one anywhere,
+insert the same card, and the setup comes back.
+
+> [!WARNING]
+> **With no card inserted, line symbols are not shown at stations.** The card is the authority,
+> so pulling it out (or breaking the computer) takes the symbols off the station monitors until
+> a card is inserted again. Assignments are not deleted — they come back with the card.
+
+The information is only lost in two ways: the card item itself is destroyed, or the card is
+reset (**Shift + right-click**, which asks for confirmation first).
 
 ## Related
 

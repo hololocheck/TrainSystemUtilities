@@ -83,6 +83,20 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
         return defaultValue;
     }
 
+    /** R4.23.1 で glyph を外して icon + label にしたボタンのラベル幅 (LabelWidth 参照)。
+     *  delete-yes は station-group-manage-delete.json 側のボタン。 */
+    @Override
+    public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
+        if ("btn-apply-label-w".equals(key)) return LabelWidth.of("tsu.station_tool.btn_apply");
+        if ("btn-delete-label-w".equals(key)) return LabelWidth.of("tsu.station_tool.btn_delete");
+        if ("delete-yes-label-w".equals(key)) return LabelWidth.of("tsu.station_tool.delete_yes");
+        // **null であって defaultValue ではない。** BoxResolver は null のときだけ
+        // HintBridgeRegistry へ回すので、defaultValue を返すと hint-knob-x が静的値に
+        // 固定され、色だけ ON になってつまみが動かない toggle になる。
+        // RailwayManagementDispatch も同じ理由で null を返している。
+        return null;
+    }
+
     @Override
     public String getDynamicText(String[] classes, String defaultText) {
         StationGroup g = selected();

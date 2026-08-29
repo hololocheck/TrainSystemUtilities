@@ -64,7 +64,7 @@ The FE Inverter body has no dedicated GUI (it's a simple buffer block). You can 
 
 - **Right-click a placed inverter with an empty hand** → shows that single unit's FE level / capacity in chat.
 - **Management Computer > Train Detail > Electrification Detail** → check the whole train's stored energy at a glance ([Electrification Detail popup](../management-computer/trains.md)).
-- **Right-click with the [Power Checker](power-checker.md)** → shows single-unit info when placed, or the total stored energy of the owning train when built into a train.
+- **Right-click with the **[**Power Checker**](power-checker.md) → shows single-unit info when placed, or the total stored energy of the owning train when built into a train.
 
 > [!TIP]
 > Even when a train goes out-of-chunk in a long-distance section, the FE Inverter's buffer level is preserved on the server (= chunk-load independent).

@@ -124,6 +124,8 @@
           "classes": [
             "time-bar"
           ],
+          "x": 10,
+          "y": 31,
           "w": 216,
           "h": 22,
           "gap": 4,
@@ -145,6 +147,8 @@
               "classes": [
                 "header-sym-space"
               ],
+              "x": 111,
+              "y": 31,
               "w": 22,
               "h": 22,
               "canvasKey": "railwaySymbol"

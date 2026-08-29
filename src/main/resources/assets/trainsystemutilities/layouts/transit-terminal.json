@@ -44,8 +44,15 @@
 
       {"bg":"#1f5e1f","color":"#FFFFFF","borderColor":"#66BB6A","borderWidth":1,"borderRadius":4,
        "fontWeight":"bold","isSlot":false,"text":"","tag":"div","classes":["tt-search-btn"],
-       "x":6,"y":74,"w":188,"h":16,"translatableKey":"tsu.transit_terminal.btn_search","textAlign":"center","clickable":true,
-       "hoverBg":"#2f7e2f"},
+       "x":6,"y":74,"w":188,"h":16,"clickable":true,
+       "hoverBg":"#2f7e2f",
+       "children":[
+         {"tag":"row","x":6,"y":74,"w":188,"h":16,"gap":3,"justify":"center","align":"center",
+          "children":[
+            {"tag":"icon","w":8,"h":8,"color":"#FFFFFF","icon":"manta:search"},
+            {"tag":"span","h":12,"color":"#FFFFFF","fontWeight":"bold",
+             "translatableKey":"tsu.transit_terminal.btn_search",
+             "dynamicW":"btn-search-label-w"}]}]},
 
       {"bg":"","color":"","borderColor":"","borderWidth":0,"borderRadius":0,
        "fontWeight":"","isSlot":false,"text":"","tag":"canvas","classes":["tt-top-content"],

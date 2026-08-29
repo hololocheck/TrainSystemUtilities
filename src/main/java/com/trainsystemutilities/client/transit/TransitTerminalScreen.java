@@ -1181,6 +1181,11 @@ public class TransitTerminalScreen extends belugalab.mcss3.screen.JsonLayoutPlai
         if (key == null) return defaultValue;
         // SETTINGS knob x position: BelugaExperience 標準 ToggleSwitchController.KNOB_TRAVEL_PX
         int travel = ToggleSwitchController.KNOB_TRAVEL_PX;
+        // R4.23.1 で glyph を外して icon + label にした検索ボタンのラベル幅。
+        if ("btn-search-label-w".equals(key)) {
+            return com.trainsystemutilities.client.gui.LabelWidth.of(
+                    "tsu.transit_terminal.btn_search");
+        }
         return switch (key) {
             case "tt-set-knob-24h-x"    -> TransitTerminalState.clock24h() ? defaultValue + travel : defaultValue;
             case "tt-set-knob-walk-x"   -> TransitTerminalState.walkGateEnabled() ? defaultValue + travel : defaultValue;

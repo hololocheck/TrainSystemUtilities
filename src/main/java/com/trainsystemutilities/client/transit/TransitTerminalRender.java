@@ -61,10 +61,17 @@ final class TransitTerminalRender {
         int btnBorder = !canSearch ? 0xFF445566 : 0xFF66BB6A;
         SmoothRenderer.fillRoundedRect(g, innerX, btnY, innerW, btnH, 5f, btnBorder);
         g.fill(innerX + 1, btnY + 1, innerX + innerW - 1, btnY + btnH - 1, btnBg);
+        // R4.23.1: 先頭の 🔍 を manta:search icon へ (clear_results と同じ形)。
+        // 幅は icon + gap + text で数えて塊ごと中央に置く — text 幅だけで中央を出すと
+        // icon の分だけ左にずれる。
         String btnLabel = Component.translatable("tsu.transit_terminal.btn_search").getString();
-        int bw = scr.fontAccess().width(btnLabel);
+        int bw = CLEAR_ICON_SIZE + CLEAR_ICON_GAP + scr.fontAccess().width(btnLabel);
         int btnTextColor = !canSearch ? 0xFF666666 : 0xFFFFFFFF;
-        g.drawString(scr.fontAccess(), btnLabel, innerX + (innerW - bw) / 2, btnY + 4, btnTextColor, false);
+        int btnX = innerX + (innerW - bw) / 2;
+        belugalab.experience.render.Icons.draw(g, "manta:search", btnX, btnY + 5,
+                CLEAR_ICON_SIZE, btnTextColor);
+        g.drawString(scr.fontAccess(), btnLabel,
+                btnX + CLEAR_ICON_SIZE + CLEAR_ICON_GAP, btnY + 4, btnTextColor, false);
 
         // 結果領域 (or 履歴 if no result)
         int resY = btnY + btnH + 6;

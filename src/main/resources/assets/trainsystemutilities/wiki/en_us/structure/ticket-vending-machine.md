@@ -17,7 +17,7 @@ A station ticket vending machine. It is a 2-block-tall cabinet; right-click it t
 
 1. Hold the ticket vending machine item.
 2. **Right-click** where you want to place it (the cabinet needs 2 blocks of vertical space, so leave 1 block empty above). It faces toward you.
-3. **Placing it inside the range of a station group created with the [Station Range Tool](../tools/station-range-tool.md) auto-links it to that station** (= that station becomes the origin).
+3. **Placing it inside the range of a station group created with the **[**Station Range Tool**](../tools/station-range-tool.md)** auto-links it to that station** (= that station becomes the origin).
 4. Placing it later inside an existing range also connects it. If you create the range afterwards, it re-links the next time the machine is opened.
 
 > [!WARNING]
@@ -41,7 +41,7 @@ An issued ticket records its **origin and destination**, shown in the item toolt
 
 ## Choosing which stations are sold
 
-The destinations listed at a machine are decided per station in the **[management computer's Tickets tab](../management-computer/tickets.md)**, by toggling each station sellable or not. The setting is shared network-wide and applies to every ticket machine.
+The destinations listed at a machine are decided per station in the [**management computer's Tickets tab**](../management-computer/tickets.md), by toggling each station sellable or not. The setting is shared network-wide and applies to every ticket machine.
 
 ## Related pages
 

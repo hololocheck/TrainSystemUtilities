@@ -12,7 +12,7 @@ tags: [preset-place, creator, analytics]
 
 ## 開啟 {#open}
 
-創作者中心從**你自己的[個人資料](profile.md)頁**開啟。
+創作者中心從**你自己的**[**個人資料**](profile.md)**頁**開啟。
 
 1. 在 **GUI 模式**下**右鍵**[列車預設工具](../train-preset-tool/browse.md)，開啟瀏覽介面（用 **Alt + 滾輪**切換模式）。
 2. 將模式設為 **`Place`（公開）**，並**左鍵**頂部的你的名字 / 圖示區域，開啟你自己的主頁。

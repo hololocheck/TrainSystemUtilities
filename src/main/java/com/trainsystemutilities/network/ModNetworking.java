@@ -195,6 +195,13 @@ public class ModNetworking {
                 StationRangeToolModePayload.STREAM_CODEC,
                 StationRangeToolModePayload::handle
         );
+
+        // 1.0.10: Client → Server: メモリーカードの初期化 (確認ダイアログ経由のみ)
+        registrar.playToServer(
+                MemoryCardResetPayload.TYPE,
+                MemoryCardResetPayload.STREAM_CODEC,
+                MemoryCardResetPayload::handle
+        );
         // Phase 14.1: 駅グループ list / rename / delete
         registrar.playToServer(
                 StationGroupListRequestPayload.TYPE,

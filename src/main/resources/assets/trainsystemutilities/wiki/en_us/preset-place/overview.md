@@ -47,7 +47,7 @@ Auth: Minecraft account linking (Microsoft account → JWT).
 
 ## How to access {#access}
 
-Every Preset Place screen is opened from the **[Train Preset Tool](../train-preset-tool/browse.md)**.
+Every Preset Place screen is opened from the [**Train Preset Tool**](../train-preset-tool/browse.md).
 
 1. **Hold** the **Train Preset Tool**.
 2. Switch the tool to **GUI mode** with **Alt + mouse wheel** (while held, the current mode is shown above the hotbar).

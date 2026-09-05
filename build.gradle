@@ -170,7 +170,10 @@ tasks.withType(ProcessResources).configureEach {
             mod_license            : mod_license,
             mod_version            : mod_version,
             mod_authors            : mod_authors,
-            mod_description        : mod_description
+            mod_description        : mod_description,
+            // The embedded Manta's version: neoforge.mods.toml declares its dependency range
+            // as [${manta_version},3), so the key must be expanded here too.
+            manta_version          : manta_version
     ]
     inputs.properties replaceProperties
 

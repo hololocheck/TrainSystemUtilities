@@ -1,11 +1,11 @@
 package com.trainsystemutilities.client.renderer;
-import belugalab.mcss3.anim.Animation;
-import belugalab.mcss3.anim.Easing;
-import belugalab.mcss3.ir.IrNode;
-import belugalab.mcss3.screen.JsonLayoutHandler;
+import com.manta.api.anim.Animation;
+import com.manta.api.anim.Easing;
+import com.manta.api.ir.IrNode;
+import com.manta.api.screen.JsonLayoutHandler;
 
-import belugalab.mcss3.world.CSSWorldRenderer;
-import belugalab.mcss3.draw.VectorRenderer;
+import com.manta.api.world.CSSWorldRenderer;
+import com.manta.api.draw.VectorRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.trainsystemutilities.TrainSystemUtilities;
@@ -86,7 +86,7 @@ public class MonitorWorldRenderer {
                             "layouts/renderers/railway-monitor.json");
                     com.google.gson.JsonObject root =
                             com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-                    ir = belugalab.mcss3.ir.compiler.JsonToIrCompiler.compile(root).root();
+                    ir = com.manta.api.ir.compiler.JsonToIrCompiler.compile(root).root();
                     sharedMonitorIr = ir;
                 }
             }
@@ -1141,10 +1141,10 @@ public class MonitorWorldRenderer {
         // flex centering を IR で表現する代わりに、 icon を中央位置に直接配置する。
         int iconLocalX = (renderW - totalSize) / 2;
         int iconLocalY = (renderH - totalSize) / 2;
-        belugalab.mcss3.ir.IrNode panelIr = belugalab.mcss3.ir.IrBuilder.div()
+        com.manta.api.ir.IrNode panelIr = com.manta.api.ir.IrBuilder.div()
                 .addClass("sym-root")
                 .rect(0, 0, renderW, renderH)
-                .child(belugalab.mcss3.ir.IrBuilder.div()
+                .child(com.manta.api.ir.IrBuilder.div()
                         .addClass("sym-icon")
                         .rect(iconLocalX, iconLocalY, totalSize, totalSize)
                         .bgColor(0xFFFFFFFF)
@@ -1176,14 +1176,14 @@ public class MonitorWorldRenderer {
         int numW = font.width(numStr);
 
         // 区切り線（midY ～ midY+divH）
-        var vcDiv = belugalab.mcss3.draw.VectorRenderer.getWorldBufferText(bufferSource);
+        var vcDiv = com.manta.api.draw.VectorRenderer.getWorldBufferText(bufferSource);
         float divLocalX = iconLocalX + borderW + (iconSize - divW) / 2f;
-        belugalab.mcss3.draw.VectorRenderer.textFillRect(vcDiv, poseStack.last().pose(),
+        com.manta.api.draw.VectorRenderer.textFillRect(vcDiv, poseStack.last().pose(),
                 divLocalX, midY, divW, divH, borderColorInt, textZ);
 
         // 縁色枠: V3 IR の border stroke は world で角丸コーナーが欠けるため、 他パネル枠 (isShowBorder)
         // と同じ VectorRenderer.strokeRoundedRect で描画する (非発光 text バッファ)。
-        belugalab.mcss3.draw.VectorRenderer.strokeRoundedRect(vcDiv, poseStack.last().pose(),
+        com.manta.api.draw.VectorRenderer.strokeRoundedRect(vcDiv, poseStack.last().pose(),
                 iconLocalX, iconLocalY, totalSize, totalSize, borderColorInt, (float) borderW, (float) radiusPx, textZ);
 
         // テキスト描画 (z=textZでprivate translate)
@@ -1474,7 +1474,7 @@ public class MonitorWorldRenderer {
         if (path == null) return null;
         String json = com.trainsystemutilities.client.gui.TsuLayouts.load(path);
         com.google.gson.JsonObject root = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-        IrNode ir = belugalab.mcss3.ir.compiler.JsonToIrCompiler.compile(root).root();
+        IrNode ir = com.manta.api.ir.compiler.JsonToIrCompiler.compile(root).root();
         computerIrCache.put(type, ir);
         return ir;
     }

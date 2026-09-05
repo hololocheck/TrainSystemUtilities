@@ -7,7 +7,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 /**
- * 列車プリセット設置結果 HUD: 共通 {@link belugalab.tsu.api.HudToast} に委譲する thin wrapper。
+ * 列車プリセット設置結果 HUD: 共通 {@link com.manta.api.hud.HudToast} に委譲する thin wrapper。
  */
 @EventBusSubscriber(modid = TrainSystemUtilities.MOD_ID, value = Dist.CLIENT)
 public final class TrainPresetPlaceResultHudRenderer {
@@ -15,11 +15,11 @@ public final class TrainPresetPlaceResultHudRenderer {
     private TrainPresetPlaceResultHudRenderer() {}
 
     public static void show(String title, String detail) {
-        belugalab.tsu.api.HudToast.success(title, detail).show();
+        com.manta.api.hud.HudToast.success(title, detail).show();
     }
 
     @SubscribeEvent
     public static void onRenderGui(RenderGuiEvent.Post event) {
-        belugalab.tsu.api.HudToast.render(event.getGuiGraphics());
+        com.manta.api.hud.HudToast.render(event.getGuiGraphics());
     }
 }

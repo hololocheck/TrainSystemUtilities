@@ -82,7 +82,7 @@ public record OverheadPoleAutoSettingsPayload(int field, int value) implements C
     }
 
     private static ItemStack findHeldTool(net.minecraft.world.entity.player.Player player) {
-        return belugalab.tsu.api.HeldTools.find(player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
+        return com.manta.api.hud.HeldTools.find(player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
     }
 
     @Override

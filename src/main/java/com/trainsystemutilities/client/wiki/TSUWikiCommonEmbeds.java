@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.wiki;
 
-import belugalab.mcss3.wiki.WikiEmbedRegistry;
+import com.manta.api.wiki.WikiEmbedRegistry;
 import com.trainsystemutilities.TrainSystemUtilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -135,7 +135,7 @@ public final class TSUWikiCommonEmbeds {
                 int row = Math.min(totalRows - 1, Math.max(0, relY / scaledCellH));
                 int i = row * finalCols + col;
                 if (i < 0 || i >= links.length || links[i] == null) return false;
-                belugalab.mcss3.wiki.Wiki.open(links[i]);
+                com.manta.api.wiki.Wiki.open(links[i]);
                 return true;
             };
 

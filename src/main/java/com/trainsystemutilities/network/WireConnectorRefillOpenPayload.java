@@ -27,7 +27,7 @@ public record WireConnectorRefillOpenPayload() implements CustomPacketPayload {
     public static void handle(WireConnectorRefillOpenPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
-            ItemStack tool = belugalab.tsu.api.HeldTools.find(player, ModItems.WIRE_CONNECTOR.get());
+            ItemStack tool = com.manta.api.hud.HeldTools.find(player, ModItems.WIRE_CONNECTOR.get());
             if (tool.isEmpty()) {
                 player.displayClientMessage(Component.translatable("tsu.tool.no_tool")
                         .withStyle(ChatFormatting.RED), true);

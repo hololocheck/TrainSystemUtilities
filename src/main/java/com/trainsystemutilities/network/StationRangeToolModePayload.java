@@ -1,6 +1,6 @@
 package com.trainsystemutilities.network;
 
-import belugalab.mcss3.util.codec.BoundedStreamCodec;
+import com.manta.api.util.codec.BoundedStreamCodec;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.item.StationRangeToolItem;
 import com.trainsystemutilities.registry.ModItems;
@@ -60,7 +60,7 @@ public record StationRangeToolModePayload(int action, int delta) implements Cust
     }
 
     private static ItemStack findHeldTool(net.minecraft.world.entity.player.Player player) {
-        return belugalab.tsu.api.HeldTools.find(player, ModItems.STATION_RANGE_TOOL.get());
+        return com.manta.api.hud.HeldTools.find(player, ModItems.STATION_RANGE_TOOL.get());
     }
 
     @Override

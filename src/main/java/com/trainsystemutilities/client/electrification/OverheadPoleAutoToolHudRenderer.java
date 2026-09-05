@@ -1,10 +1,10 @@
 package com.trainsystemutilities.client.electrification;
 
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.tsu.api.HudAnimState;
-import belugalab.tsu.api.HudChrome;
-import belugalab.tsu.api.HudConstants;
-import belugalab.tsu.api.TabHighlightAnimator;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.hud.HudAnimState;
+import com.manta.api.hud.HudChrome;
+import com.manta.api.hud.HudConstants;
+import com.manta.api.hud.TabHighlightAnimator;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.electrification.autoplace.AutoPlaceConfig;
 import com.trainsystemutilities.preset.TrainPresetMaterials;
@@ -253,7 +253,7 @@ public class OverheadPoleAutoToolHudRenderer {
 
 
     private static ItemStack findHeldTool(Minecraft mc) {
-        return belugalab.tsu.api.HeldTools.find(mc.player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
+        return com.manta.api.hud.HeldTools.find(mc.player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
     }
 
 }

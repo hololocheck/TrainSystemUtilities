@@ -146,7 +146,7 @@ public final class TrainArrivalCalculator {
     // P0-1 #11: StaticCacheRegistry に自身の purge callback を登録。
     // server 側 LevelEvent.Unload で {@link StaticCacheRegistry#purgeAll} 経由で発火される。
     static {
-        belugalab.mcss3.util.concurrent.StaticCacheRegistry.register(
+        com.manta.api.util.concurrent.StaticCacheRegistry.register(
                 TrainArrivalCalculator::purgeAllMeasurements,
                 "TrainArrivalCalculator");
     }

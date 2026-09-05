@@ -33,8 +33,8 @@ public class StationRangeRenderer {
 
     private static final double MAX_LOOK_DISTANCE = 64.0;
     /** 視線追従スムージング (= BelugaExperience 標準 SmoothFollow、 LERP_SPEED 12)。 */
-    private static final belugalab.tsu.api.SmoothFollow SMOOTH =
-            new belugalab.tsu.api.SmoothFollow();
+    private static final com.manta.api.hud.SmoothFollow SMOOTH =
+            new com.manta.api.hud.SmoothFollow();
 
     @SubscribeEvent
     public static void onRenderLevelStage(RenderLevelStageEvent event) {

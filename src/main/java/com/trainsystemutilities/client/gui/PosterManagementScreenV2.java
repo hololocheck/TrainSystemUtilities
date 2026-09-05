@@ -1,12 +1,12 @@
 package com.trainsystemutilities.client.gui;
-import belugalab.mcss3.anim.Transition;
-import belugalab.mcss3.anim.Easing;
-import belugalab.mcss3.anim.Animation;
+import com.manta.api.anim.Transition;
+import com.manta.api.anim.Easing;
+import com.manta.api.anim.Animation;
 
-import belugalab.mcss3.screen.JsonLayoutEngine;
-import belugalab.mcss3.screen.JsonLayoutHandler;
-import belugalab.mcss3.screen.JsonLayoutScreen;
-import belugalab.experience.controller.ToggleSwitchController;
+import com.manta.api.screen.JsonLayoutEngine;
+import com.manta.api.screen.JsonLayoutHandler;
+import com.manta.api.screen.JsonLayoutScreen;
+import com.manta.api.controller.ToggleSwitchController;
 import com.trainsystemutilities.blockentity.PosterManagementBlockEntity;
 import com.trainsystemutilities.blockentity.PosterManagementBlockEntity.AnimationType;
 import com.trainsystemutilities.gui.PosterManagementMenu;
@@ -61,8 +61,8 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
                     .withVisualState(() -> monitorEnabled() && be().getLinkedMonitorGroupCount() > 0);
     private final Map<Integer, Boolean> localImageEnabled = new HashMap<>();
     /** 画像リスト scroll (= §4.19 ScrollViewport, ScrollMath を排除)。 */
-    private final belugalab.experience.controller.ScrollViewport imageScroll =
-            new belugalab.experience.controller.ScrollViewport(() -> be().getImageIds().size(), VISIBLE_ROWS);
+    private final com.manta.api.controller.ScrollViewport imageScroll =
+            new com.manta.api.controller.ScrollViewport(() -> be().getImageIds().size(), VISIBLE_ROWS);
     private int hoveredImageIndex = -1;
     private long previewShowNano = 0;
     private static final long PREVIEW_ANIM_NS = 150_000_000L;
@@ -192,35 +192,35 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
     }
 
     @Override
-    public belugalab.mcss3.anim.Animation getDynamicAnimation(String[] classes, String key) {
-        belugalab.mcss3.anim.Animation base = super.getDynamicAnimation(classes, key);
+    public com.manta.api.anim.Animation getDynamicAnimation(String[] classes, String key) {
+        com.manta.api.anim.Animation base = super.getDynamicAnimation(classes, key);
         if (base != null) return base;
         if ("image-row-shuffle".equals(key)) {
             // swap で動いた 2 行だけ方向付きで slide-in、それ以外は無アニメ。
-            int repeatIdx = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+            int repeatIdx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
             if (repeatIdx < 0) return null;
             int realIdx = repeatIdx + imageScroll.offset();
             if (realIdx == lastSwapMovedUpIdx) {
                 // 下から上に上がった → translateY +19→0 (下からスライドイン)
-                return belugalab.mcss3.anim.Animation.of(220)
-                        .easing(belugalab.mcss3.anim.Easing.EASE_OUT)
+                return com.manta.api.anim.Animation.of(220)
+                        .easing(com.manta.api.anim.Easing.EASE_OUT)
                         .translateY(19f, 0f)
                         .build();
             }
             if (realIdx == lastSwapMovedDownIdx) {
-                return belugalab.mcss3.anim.Animation.of(220)
-                        .easing(belugalab.mcss3.anim.Easing.EASE_OUT)
+                return com.manta.api.anim.Animation.of(220)
+                        .easing(com.manta.api.anim.Easing.EASE_OUT)
                         .translateY(-19f, 0f)
                         .build();
             }
             return null;
         }
-        if ("preview-flip".equals(key)) return belugalab.mcss3.anim.Animation.flipX(420);
+        if ("preview-flip".equals(key)) return com.manta.api.anim.Animation.flipX(420);
         return null;
     }
 
     @Override
-    public belugalab.mcss3.anim.Transition getDynamicTransition(String[] classes, String key) {
+    public com.manta.api.anim.Transition getDynamicTransition(String[] classes, String key) {
         // toggle-bg / toggle-knob は基底 JsonLayoutScreen が解決。
         return super.getDynamicTransition(classes, key);
     }
@@ -241,7 +241,7 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         }
         // Owner face box border: Private = 赤、Public = 緑
         if ("owner-border".equals(key)) {
-            return belugalab.tsu.api.OwnerAccess.ringColor(be().isPrivateMode());
+            return com.manta.api.hud.OwnerAccess.ringColor(be().isPrivateMode());
         }
         // Anim popup の type ボタン: 選択中だけ primary 配色で強調 (V1 anim-type-selected 相当)
         if (key.startsWith("anim-type-") && (key.endsWith("-bg") || key.endsWith("-color"))) {
@@ -478,7 +478,7 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
     }
 
     private void drawOwnerFace(GuiGraphics g, int x, int y, int w, int h) {
-        belugalab.tsu.api.OwnerFacePainter.draw(g, x, y, w, h, be().getOwnerUUID());
+        com.manta.api.hud.OwnerFacePainter.draw(g, x, y, w, h, be().getOwnerUUID());
     }
 
     /**
@@ -541,8 +541,8 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         if (py > maxScreenY) py = maxScreenY;
 
         // パネル枠 (cyan border) + 半透明背景
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, px, py, panelW, panelH, 5f, 0xFF4fc3f7);
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, px + 1, py + 1, panelW - 2, panelH - 2, 4f, 0xDD1a1a2e);
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, px, py, panelW, panelH, 5f, 0xFF4fc3f7);
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, px + 1, py + 1, panelW - 2, panelH - 2, 4f, 0xDD1a1a2e);
         if (tex != null) {
             // MCSS のバッファ描画では DynamicTexture の blit を flush で挟んで texture binding を
             // 確定させる必要がある (ImageNode と同じ定石)。flush 無しだと binding が確定せず空白になる。
@@ -571,8 +571,8 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
             animPreviewStartNano = System.nanoTime();
         }
         // 背景パネル
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, 0xFF000000);
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, 0xFF12122a);
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, 0xFF000000);
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, 0xFF12122a);
 
         // 2 枚のサンプル (cyan / orange) を切替えながら anim 再生。
         // canvas 領域から食み出ないよう scissor で内部 rect にクリップする。

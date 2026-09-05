@@ -141,7 +141,7 @@ public final class SubstationTickHandler {
             // P0-11 Critical fix: int overflow で cost が負値 → fe < cost が常に false 化
             // し、 大量 wire (~2B) 構築で FE 無制限抽出可能 (WF-B security-19)。 SafeMath で
             // saturating 化、 overflow 時は Integer.MAX_VALUE に頭打ちで cost check は確実に reject。
-            int cost = belugalab.mcss3.util.math.SafeMath.saturatingMul(
+            int cost = com.manta.api.util.math.SafeMath.saturatingMul(
                     netConnections.size(), SubstationBlockEntity.FE_PER_CONNECTION_PER_TICK);
             if (fe < cost) {
                 skippedCost++;

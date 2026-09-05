@@ -1,8 +1,8 @@
 package com.trainsystemutilities.client.renderer;
 
-import belugalab.mcss3.anim.Animation;
-import belugalab.mcss3.anim.Easing;
-import belugalab.mcss3.screen.JsonLayoutHandler;
+import com.manta.api.anim.Animation;
+import com.manta.api.anim.Easing;
+import com.manta.api.screen.JsonLayoutHandler;
 import com.trainsystemutilities.blockentity.ManagementComputerBlockEntity;
 import com.trainsystemutilities.blockentity.MonitorLayoutPanel;
 import com.trainsystemutilities.network.TrackNetworkScanner;

@@ -1,9 +1,9 @@
 package com.trainsystemutilities.client.renderer;
 
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.tsu.api.HudAnimState;
-import belugalab.tsu.api.HudChrome;
-import belugalab.tsu.api.HudConstants;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.hud.HudAnimState;
+import com.manta.api.hud.HudChrome;
+import com.manta.api.hud.HudConstants;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.electrification.item.WireConnectorItem;
 import com.trainsystemutilities.electrification.wire.WireType;
@@ -192,7 +192,7 @@ public class WireConnectorHudRenderer {
     }
 
     private static ItemStack findHeldTool(Minecraft mc) {
-        return belugalab.tsu.api.HeldTools.find(mc.player, ModItems.WIRE_CONNECTOR.get());
+        return com.manta.api.hud.HeldTools.find(mc.player, ModItems.WIRE_CONNECTOR.get());
     }
 
 }

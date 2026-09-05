@@ -1,7 +1,7 @@
 package com.trainsystemutilities.compat.jei;
 
 import com.trainsystemutilities.TrainSystemUtilities;
-import belugalab.mcss3.screen.JsonLayoutScreen;
+import com.manta.api.screen.JsonLayoutScreen;
 import com.trainsystemutilities.client.gui.ManagementComputerScreenV2;
 import com.trainsystemutilities.client.gui.PosterManagementScreenV2;
 import com.trainsystemutilities.client.gui.RailwayManagementScreenV2;

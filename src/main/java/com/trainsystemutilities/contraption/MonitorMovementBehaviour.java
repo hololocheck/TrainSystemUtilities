@@ -1,10 +1,10 @@
 package com.trainsystemutilities.contraption;
-import belugalab.mcss3.anim.Animation;
-import belugalab.mcss3.anim.Easing;
-import belugalab.mcss3.ir.IrNode;
-import belugalab.mcss3.screen.JsonLayoutHandler;
+import com.manta.api.anim.Animation;
+import com.manta.api.anim.Easing;
+import com.manta.api.ir.IrNode;
+import com.manta.api.screen.JsonLayoutHandler;
 
-import belugalab.mcss3.world.CSSWorldRenderer;
+import com.manta.api.world.CSSWorldRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.content.contraptions.Contraption;
@@ -107,7 +107,7 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
                             "layouts/renderers/movement-monitor.json");
                     com.google.gson.JsonObject root =
                             com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-                    ir = belugalab.mcss3.ir.compiler.JsonToIrCompiler.compile(root).root();
+                    ir = com.manta.api.ir.compiler.JsonToIrCompiler.compile(root).root();
                     sharedIr = ir;
                 }
             }

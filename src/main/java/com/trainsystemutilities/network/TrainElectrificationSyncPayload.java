@@ -1,7 +1,7 @@
 package com.trainsystemutilities.network;
 
-import belugalab.mcss3.util.codec.BoundedStreamCodec;
-import belugalab.mcss3.util.safe.SafeLog;
+import com.manta.api.util.codec.BoundedStreamCodec;
+import com.manta.api.util.safe.SafeLog;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.entity.Carriage;

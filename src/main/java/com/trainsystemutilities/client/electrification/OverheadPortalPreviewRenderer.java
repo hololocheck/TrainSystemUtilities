@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.electrification;
 
-import belugalab.mcss3.preview.GuiBlock3DRenderer;
-import belugalab.mcss3.preview.GuiBlock3DRenderer.Block3DEntry;
+import com.manta.api.preview.GuiBlock3DRenderer;
+import com.manta.api.preview.GuiBlock3DRenderer.Block3DEntry;
 import com.trainsystemutilities.electrification.block.InsulatorBlock;
 import com.trainsystemutilities.electrification.block.OverheadPoleBlock;
 import com.trainsystemutilities.electrification.block.OverheadTrussBlock;

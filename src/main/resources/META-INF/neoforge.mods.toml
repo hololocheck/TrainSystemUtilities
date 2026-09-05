@@ -19,12 +19,18 @@ description = '''${mod_description}'''
 # → 1.0.2、1.0.6 から MantaImage hard 参照 → 1.0.7)。
 # 2026-07-19 改訂: 下限 = 内包 Manta の版 (gradle.properties の manta_version が単一の正、
 # processResources が展開)。全 consumer がこの規約に従うと、新旧 mod 混在時に古い内包 Manta が
-# range 共通部分から脱落し、最新の内包 Manta が決定的に選ばれる。古い mod は Manta の 2.0 未満
-# binary compatibility の上で動く。下回ると NoClassDefFoundError になる。
+# range 共通部分から脱落し、最新の内包 Manta が決定的に選ばれる。下回ると NoClassDefFoundError。
+# 2026-08-30 訂正: 旧文は「古い mod は Manta の 2.0 未満 binary compatibility の上で動く」と
+# 書いていたが、Manta 2.0 で公開面を com.manta.api.** へ畳み belugalab.** を公開面から外した
+# (出荷 jar では repackage、readable jar には internals として残る) ので
+# **1.x の consumer は 2.x では動かない**。上限を 3) にしたのはこの版の TSU が 2.x を要求する
+# ためであって、1.x 互換の主張ではない。1.x を内包する配布済み TSU/SAS と混ぜると
+# range 共通部分が空になり、NeoForge が明示エラーで止まる (無言の NoClassDefFoundError ではない)。
+# 正本 = manta/notes/MANTA_API_FACADE_PLAN.md §D。
 [[dependencies.${mod_id}]]
     modId = "manta"
     type = "required"
-    versionRange = "[${manta_version},2)"
+    versionRange = "[${manta_version},3)"
     ordering = "AFTER"
     side = "BOTH"
 

@@ -68,7 +68,7 @@ public final class WikiLiveCapture {
         TransitTerminalState.Tab savedTransitTab = TransitTerminalState.tab(); // global state 退避
         int n = 0;
         // overlay/dialog の入場アニメを止めて完成状態で撮る
-        belugalab.mcss3.screen.JsonLayoutScreen.WIKI_CAPTURE_MODE = true;
+        com.manta.api.screen.JsonLayoutScreen.WIKI_CAPTURE_MODE = true;
         try {
             for (String lang : new String[]{"ja_jp", "en_us"}) {
                 try {
@@ -127,7 +127,7 @@ public final class WikiLiveCapture {
         } finally {
             net.minecraft.locale.Language.inject(original); // 元の言語に戻す
             TransitTerminalState.setTab(savedTransitTab); // global tab を元に戻す
-            belugalab.mcss3.screen.JsonLayoutScreen.WIKI_CAPTURE_MODE = false;
+            com.manta.api.screen.JsonLayoutScreen.WIKI_CAPTURE_MODE = false;
         }
         return n;
     }

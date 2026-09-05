@@ -193,7 +193,7 @@ public final class ElectrificationCarListRenderer {
         int color = lerpColor(gray, active, T);
 
         // === マウント基部 (細い丸キャップの台座) ===
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(
                 g, cx - 3.5f, bodyTopY - 1.5f, 7f, 2.5f, 1.25f, color);
 
         // === 関節位置と集電バー位置を T で滑らかに補間 ===
@@ -202,24 +202,24 @@ public final class ElectrificationCarListRenderer {
         float barY   = bodyTopY + (-13f * T);
 
         // === 下アーム (細い棒) ===
-        belugalab.mcss3.draw.SmoothRenderer.drawLine(
+        com.manta.api.draw.SmoothRenderer.drawLine(
                 g, cx, bodyTopY - 1f, jointX, jointY, 1.6f, color);
         // === 上アーム (細い棒) ===
-        belugalab.mcss3.draw.SmoothRenderer.drawLine(
+        com.manta.api.draw.SmoothRenderer.drawLine(
                 g, jointX, jointY, cx, barY + 1f, 1.6f, color);
         // === 関節 (= ピボットの円) ===
-        belugalab.mcss3.draw.SmoothRenderer.fillCircle(g, jointX, jointY, 1.2f, color);
+        com.manta.api.draw.SmoothRenderer.fillCircle(g, jointX, jointY, 1.2f, color);
 
         // === 集電バー (= 上端の水平バー、ベクター矩形) ===
         float barLen = 13f * (0.4f + 0.6f * T); // 折畳寄りでは短い
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(
                 g, cx - barLen * 0.5f, barY, barLen, 2.2f, 1.1f, color);
 
         // === 接触スパーク (展開ほぼ完了時のみ) ===
         if (inContact && T > 0.8f) {
             int spark = 0xFFFFEB3B;
-            belugalab.mcss3.draw.SmoothRenderer.fillCircle(g, cx, barY - 2f, 1.5f, spark);
-            belugalab.mcss3.draw.SmoothRenderer.drawLine(
+            com.manta.api.draw.SmoothRenderer.fillCircle(g, cx, barY - 2f, 1.5f, spark);
+            com.manta.api.draw.SmoothRenderer.drawLine(
                     g, cx - 1.5f, barY - 3.5f, cx + 1.5f, barY - 0.5f, 0.8f, spark);
         }
     }
@@ -239,11 +239,11 @@ public final class ElectrificationCarListRenderer {
     /** トグルスイッチ — MCSS の AA 付き fillRoundedRect で **真の角丸カプセル** + 円形 knob を描画。
      *  ヒントトグル (= JSON の hint-toggle) と完全に同じ視覚スタイル。 */
     private void drawEdToggle(GuiGraphics g, int x, int y, boolean on, net.minecraft.core.BlockPos key) {
-        int trackBg = belugalab.tsu.api.ToggleColors.trackBg(on);
-        int knobBg  = belugalab.tsu.api.ToggleColors.knobBg(on);
+        int trackBg = com.manta.api.hud.ToggleColors.trackBg(on);
+        int knobBg  = com.manta.api.hud.ToggleColors.knobBg(on);
 
         // === トラック (= カプセル形、radius = h/2) ===
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(
                 g, x, y, ED_TOGGLE_W, ED_TOGGLE_H, ED_TOGGLE_H * 0.5f, trackBg);
 
         // === knob X 補間 (= ぬるぬる) ===
@@ -260,7 +260,7 @@ public final class ElectrificationCarListRenderer {
         // === knob (= 円形、AA 付き) ===
         float knobCenterX = x + 2 + curKnobX + ED_TOGGLE_KNOB * 0.5f;
         float knobCenterY = y + ED_TOGGLE_H * 0.5f;
-        belugalab.mcss3.draw.SmoothRenderer.fillCircle(
+        com.manta.api.draw.SmoothRenderer.fillCircle(
                 g, knobCenterX, knobCenterY, ED_TOGGLE_KNOB * 0.5f, knobBg);
     }
 }

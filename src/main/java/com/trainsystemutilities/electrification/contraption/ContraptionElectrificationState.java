@@ -1,6 +1,6 @@
 package com.trainsystemutilities.electrification.contraption;
 
-import belugalab.mcss3.util.concurrent.MutableIntCell;
+import com.manta.api.util.concurrent.MutableIntCell;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.trainsystemutilities.registry.ModBlocks;

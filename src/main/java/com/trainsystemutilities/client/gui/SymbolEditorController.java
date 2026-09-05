@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.mcss3.screen.JsonLayoutEngine;
+import com.manta.api.screen.JsonLayoutEngine;
 import com.trainsystemutilities.blockentity.LineSymbol;
 import net.minecraft.network.chat.Component;
 

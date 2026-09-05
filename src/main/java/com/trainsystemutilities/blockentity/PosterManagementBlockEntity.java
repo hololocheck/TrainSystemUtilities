@@ -1,5 +1,5 @@
 package com.trainsystemutilities.blockentity;
-import belugalab.mcss3.anim.Animation;
+import com.manta.api.anim.Animation;
 
 import com.trainsystemutilities.item.MonitorLinkCardItem;
 import com.trainsystemutilities.registry.ModBlockEntities;

@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.electrification;
 
-import belugalab.tsu.api.HeldTools;
-import belugalab.tsu.api.ModifierKeys;
+import com.manta.api.hud.HeldTools;
+import com.manta.api.hud.ModifierKeys;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.electrification.autoplace.AutoPlaceConfig;
 import com.trainsystemutilities.network.OverheadPoleAutoToolPayload;
@@ -27,8 +27,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public class OverheadPoleAutoToolClientHandler {
 
     /** スクロール 2 重発火対策 (= 高頻度の 8 方向回転操作のため標準 180ms より短い 120ms)。 */
-    private static final belugalab.tsu.api.ScrollCooldown SCROLL_COOLDOWN =
-            new belugalab.tsu.api.ScrollCooldown(120_000_000L);
+    private static final com.manta.api.hud.ScrollCooldown SCROLL_COOLDOWN =
+            new com.manta.api.hud.ScrollCooldown(120_000_000L);
 
     @SubscribeEvent
     public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {

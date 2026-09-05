@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.mcss3.screen.JsonLayoutEngine;
+import com.manta.api.screen.JsonLayoutEngine;
 import com.trainsystemutilities.schedule.TrainTypes;
 import net.minecraft.network.chat.Component;
 
@@ -563,37 +563,37 @@ final class RailwayManagementDispatch {
         }
         // Owner face box border: Private = 赤、Public = 緑
         if ("owner-border".equals(key)) {
-            return belugalab.tsu.api.OwnerAccess.ringColor(scr.be().isPrivateMode());
+            return com.manta.api.hud.OwnerAccess.ringColor(scr.be().isPrivateMode());
         }
         return null;
     }
 
-    static belugalab.mcss3.anim.Animation animation(RailwayManagementScreenV2 scr, String[] classes, String key) {
+    static com.manta.api.anim.Animation animation(RailwayManagementScreenV2 scr, String[] classes, String key) {
         return switch (key) {
             // 列車行のスライドイン: 距離だけ違う同パターン → preset 1 行で完結。
-            case "next-row-enter"     -> belugalab.mcss3.anim.Animation.slideInFromRight(260, 80f);
-            case "arrived-row-enter"  -> belugalab.mcss3.anim.Animation.slideInFromRight(280, 60f);
+            case "next-row-enter"     -> com.manta.api.anim.Animation.slideInFromRight(260, 80f);
+            case "arrived-row-enter"  -> com.manta.api.anim.Animation.slideInFromRight(280, 60f);
             // 色ドロップダウン: scaleY + translateY -h/2 で上端固定の下方向展開 + バウンス。
             // dropdown panel h = 11*10 + 4 = 114。
             // dropdown helper の prefix="color-target" → animationKey は "color-target-open"
-            case "color-target-open" -> belugalab.mcss3.anim.Animation.dropdownDown(280, 114);
+            case "color-target-open" -> com.manta.api.anim.Animation.dropdownDown(280, 114);
             // 条件 dropdown (NONE / PASS / STOP の 3 項目): panel h = 34
-            case "ann-cond-dd-open"  -> belugalab.mcss3.anim.Animation.dropdownDown(220 + (scr.conditionDropdownOpenSerial & 1), 34);
+            case "ann-cond-dd-open"  -> com.manta.api.anim.Animation.dropdownDown(220 + (scr.conditionDropdownOpenSerial & 1), 34);
             // 機能 dropdown (ホームドア / アナウンス 2 項目): 下展開、 anchor top、 panel h = 36
-            case "function-dd-open"  -> belugalab.mcss3.anim.Animation.dropdownDown(220 + (scr.functionDropdownOpenSerial & 1), 36);
+            case "function-dd-open"  -> com.manta.api.anim.Animation.dropdownDown(220 + (scr.functionDropdownOpenSerial & 1), 36);
             // 帯色 picker (= popup on popup): popIn 軽量
-            case "sd-color-picker-open" -> belugalab.mcss3.anim.Animation.popIn(200);
+            case "sd-color-picker-open" -> com.manta.api.anim.Animation.popIn(200);
             case "ann-entry-shuffle" -> {
                 int repeatIdx = scr.annEntryRealIdx();
                 float distance = scr.announcementEntryShuffleDistance(repeatIdx);
                 if (distance == 0f) yield null;
-                yield belugalab.mcss3.anim.Animation.of(220)
-                        .easing(belugalab.mcss3.anim.Easing.EASE_OUT)
+                yield com.manta.api.anim.Animation.of(220)
+                        .easing(com.manta.api.anim.Easing.EASE_OUT)
                         .translateY(distance, 0f)
                         .build();
             }
             // モニタープレビューのカードフリップ (scaleX 0→1)。
-            case "preview-flip"        -> belugalab.mcss3.anim.Animation.flipX(500);
+            case "preview-flip"        -> com.manta.api.anim.Animation.flipX(500);
             default -> null;
         };
     }
@@ -941,7 +941,7 @@ final class RailwayManagementDispatch {
                 case "owner-face-canvas": // 中央の顔 canvas が innermost auto-clickable で実クリックはこちらに来る
                     // サーバ側で button id 9000 経由で togglePrivateMode 呼び出し。
                     // client は getUpdateTag 同期で反映 (client 直 mutate を廃止)。
-                    scr.clickButton(belugalab.tsu.api.OwnerAccess.TOGGLE_BUTTON);
+                    scr.clickButton(com.manta.api.hud.OwnerAccess.TOGGLE_BUTTON);
                     return;
             }
         }
@@ -991,7 +991,7 @@ final class RailwayManagementDispatch {
         float t = elapsedNs >= RailwayManagementScreenV2.ANNOUNCEMENT_OPEN_ANIM_NS
                 ? 1f
                 : Math.max(0f, Math.min(1f, elapsedNs / (float) RailwayManagementScreenV2.ANNOUNCEMENT_OPEN_ANIM_NS));
-        float ease = belugalab.mcss3.anim.Easing.EASE_OUT_BACK.apply(t);
+        float ease = com.manta.api.anim.Easing.EASE_OUT_BACK.apply(t);
         float scale = 0.7f + (1.0f - 0.7f) * ease;
 
         // popup の中心 (アニメの anchor) — overlay2X/Y + popup root size。
@@ -1084,11 +1084,11 @@ final class RailwayManagementDispatch {
         int right = left + 18;
         int bottom = top + 18;
         int border = hovered ? 0xFF4FC3F7 : 0xFF2A2A3A;
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, left, top, 18, 18, 5f, 0x8C000000);
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, left, top, 18, 18, 5f, 0x8C000000);
         if (hovered) {
-            belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, left + 1, top + 1, 16, 16, 4f, 0x264FC3F7);
+            com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, left + 1, top + 1, 16, 16, 4f, 0x264FC3F7);
         }
-        belugalab.mcss3.draw.SmoothRenderer.strokeRoundedRect(g, left, top, 18, 18, 5f, 1f, border);
+        com.manta.api.draw.SmoothRenderer.strokeRoundedRect(g, left, top, 18, 18, 5f, 1f, border);
     }
 
     /** 共有先になっているスロット (16x16) に × 状の斜線を描画する。

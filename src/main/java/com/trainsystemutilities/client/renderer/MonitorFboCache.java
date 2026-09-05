@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.renderer;
 
-import belugalab.mcss3.world.CSSWorldRenderer;
-import belugalab.mcss3.world.CapturedDraw;
+import com.manta.api.world.CSSWorldRenderer;
+import com.manta.api.world.CapturedDraw;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;

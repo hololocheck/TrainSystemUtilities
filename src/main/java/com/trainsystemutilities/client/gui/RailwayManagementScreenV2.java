@@ -1,13 +1,13 @@
 package com.trainsystemutilities.client.gui;
-import belugalab.mcss3.anim.Transition;
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.mcss3.anim.Easing;
-import belugalab.mcss3.anim.Animation;
+import com.manta.api.anim.Transition;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.anim.Easing;
+import com.manta.api.anim.Animation;
 
-import belugalab.mcss3.screen.JsonLayoutEngine;
-import belugalab.mcss3.screen.JsonLayoutScreen;
-import belugalab.experience.controller.ColorTargetController;
-import belugalab.experience.controller.ScrollViewport;
+import com.manta.api.screen.JsonLayoutEngine;
+import com.manta.api.screen.JsonLayoutScreen;
+import com.manta.api.controller.ColorTargetController;
+import com.manta.api.controller.ScrollViewport;
 import com.trainsystemutilities.blockentity.RailwayManagementBlockEntity;
 import com.trainsystemutilities.schedule.TrainTypes;
 import com.trainsystemutilities.gui.RailwayManagementMenu;
@@ -80,8 +80,8 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     boolean showFunctionDropdown = false;
     int functionDropdownOpenSerial = 0;
     /** Condition dropdown が開いている entry index。-1 = 閉じている。 */
-    final belugalab.experience.controller.IndexedOverlayController conditionDropdown =
-            new belugalab.experience.controller.IndexedOverlayController();
+    final com.manta.api.controller.IndexedOverlayController conditionDropdown =
+            new com.manta.api.controller.IndexedOverlayController();
     /** Condition dropdown 再 open のたびに増やし anim spec を変える (= function dropdown と同じ再生 trigger)。 */
     int conditionDropdownOpenSerial = 0;
     /** popup を開いた瞬間の nanoTime。アイテムを popup 開放アニメ (popIn 220ms) と同期 scale させるため。 */
@@ -120,46 +120,46 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     boolean showBackFace = false;
     private Boolean localBatchApply = null;
     /** Batch apply toggle (= local optimistic state + clickButton(1) で server 反映)。 */
-    final belugalab.experience.controller.ToggleSwitchController batchToggle =
-            new belugalab.experience.controller.ToggleSwitchController(
+    final com.manta.api.controller.ToggleSwitchController batchToggle =
+            new com.manta.api.controller.ToggleSwitchController(
                     "batch-toggle-track", "batch-toggle-knob",
                     this::batchApply,
                     v -> { localBatchApply = v; resetLocalOverrides(); clickButton(1); });
     /** Announcement master toggle (= cfg.isEnabled、TOGGLE_ENABLED payload で server 反映)。 */
-    final belugalab.experience.controller.ToggleSwitchController annMasterToggle =
-            new belugalab.experience.controller.ToggleSwitchController(
+    final com.manta.api.controller.ToggleSwitchController annMasterToggle =
+            new com.manta.api.controller.ToggleSwitchController(
                     "ann-master-toggle-track", "ann-master-toggle-knob",
                     () -> { var c = announcementConfig(); return c != null && c.isEnabled(); },
                     v -> sendAnnouncementCmd(
                             com.trainsystemutilities.network.AnnouncementCommandPayload.OP_TOGGLE_ENABLED, 0, 0, 0));
     /** Range frame toggle (= client-only state)。 */
-    final belugalab.experience.controller.ToggleSwitchController annRangeFrameToggle =
-            new belugalab.experience.controller.ToggleSwitchController(
+    final com.manta.api.controller.ToggleSwitchController annRangeFrameToggle =
+            new com.manta.api.controller.ToggleSwitchController(
                     "ann-rangeframe-toggle-track", "ann-rangeframe-toggle-knob",
                     () -> com.trainsystemutilities.client.gui.RangeFrameToggleState.isEnabled(be().getBlockPos()),
                     v -> com.trainsystemutilities.client.gui.RangeFrameToggleState.toggle(be().getBlockPos()));
     /** Phase 21: ホームドア group highlight toggle (= client-only)。 */
-    final belugalab.experience.controller.ToggleSwitchController sdHighlightToggle =
-            new belugalab.experience.controller.ToggleSwitchController(
+    final com.manta.api.controller.ToggleSwitchController sdHighlightToggle =
+            new com.manta.api.controller.ToggleSwitchController(
                     "sd-highlight-toggle-track", "sd-highlight-toggle-knob",
                     () -> com.trainsystemutilities.client.gui.ScreenDoorHighlightToggleState.isEnabled(be().getBlockPos()),
                     v -> com.trainsystemutilities.client.gui.ScreenDoorHighlightToggleState.toggle(be().getBlockPos()));
     /** Attenuation toggle (= cfg.isAttenuationMode、未受信時 default ON)。 */
-    final belugalab.experience.controller.ToggleSwitchController annAttenuationToggle =
-            new belugalab.experience.controller.ToggleSwitchController(
+    final com.manta.api.controller.ToggleSwitchController annAttenuationToggle =
+            new com.manta.api.controller.ToggleSwitchController(
                     "ann-attenuation-toggle-track", "ann-attenuation-toggle-knob",
                     () -> { var c = announcementConfig(); return c == null || c.isAttenuationMode(); },
                     v -> sendAnnouncementCmd(
                             com.trainsystemutilities.network.AnnouncementCommandPayload.OP_TOGGLE_ATTENUATION, 0, 0, 0));
     /** Monitor toggle (= localMonitorEnabled + clickButton(0)、derived visual: monitorEnabled && groups > 0)。 */
-    final belugalab.experience.controller.ToggleSwitchController monitorToggle =
-            new belugalab.experience.controller.ToggleSwitchController(
+    final com.manta.api.controller.ToggleSwitchController monitorToggle =
+            new com.manta.api.controller.ToggleSwitchController(
                     "monitor-toggle-track", "monitor-toggle-knob",
                     this::monitorEnabled, v -> { localMonitorEnabled = v; clickButton(0); })
                     .withVisualState(() -> monitorEnabled() && be().getLinkedMonitorGroupCount() > 0);
     /** Per-station detection sharing toggle (= repeat idx ごと、サーバ payload で反映)。 */
-    final belugalab.experience.controller.IndexedToggleSwitchController annShareDetToggle =
-            new belugalab.experience.controller.IndexedToggleSwitchController(
+    final com.manta.api.controller.IndexedToggleSwitchController annShareDetToggle =
+            new com.manta.api.controller.IndexedToggleSwitchController(
                     "ann-share-det-toggle", "ann-share-det-knob",
                     idx -> {
                         var sts = getShareCandidateStations();
@@ -170,8 +170,8 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                     idx -> sendShareToggle(idx,
                             com.trainsystemutilities.network.AnnouncementShareTogglePayload.TYPE_DETECTION));
     /** Per-station range sharing toggle (= repeat idx ごと)。 */
-    final belugalab.experience.controller.IndexedToggleSwitchController annShareRngToggle =
-            new belugalab.experience.controller.IndexedToggleSwitchController(
+    final com.manta.api.controller.IndexedToggleSwitchController annShareRngToggle =
+            new com.manta.api.controller.IndexedToggleSwitchController(
                     "ann-share-rng-toggle", "ann-share-rng-knob",
                     idx -> {
                         var sts = getShareCandidateStations();
@@ -707,7 +707,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         long elapsed = System.nanoTime() - announcementShuffleStartedAtNanos;
         if (elapsed >= ANNOUNCEMENT_SHUFFLE_ANIM_NS) return 0f;
         float t = Math.max(0f, Math.min(1f, elapsed / (float) ANNOUNCEMENT_SHUFFLE_ANIM_NS));
-        float eased = belugalab.mcss3.anim.Easing.EASE_OUT.apply(t);
+        float eased = com.manta.api.anim.Easing.EASE_OUT.apply(t);
         return from + (0f - from) * eased;
     }
 
@@ -1108,11 +1108,11 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         }
         // BelugaExperience 標準ヘッダ部品 (R4.17): hint / wiki本 / × を base より先に処理。
         // railway は 4-arg を super 無しで override しているため、ここで明示的にルートする。
-        if (belugalab.tsu.api.HintToggleHelper.handleClick(classes)) return;
+        if (com.manta.api.hud.HintToggleHelper.handleClick(classes)) return;
         for (String c : classes) {
             if ("wiki-btn".equals(c)) {
                 String pid = wikiPageId();
-                if (pid != null && !pid.isEmpty()) belugalab.mcss3.wiki.Wiki.open(pid);
+                if (pid != null && !pid.isEmpty()) com.manta.api.wiki.Wiki.open(pid);
                 return;
             }
             if ("mc-popup-close".equals(c)) { if (closeOpenOverlay()) return; onClose(); return; }
@@ -1271,13 +1271,13 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
 
     /** layout の repeat index を実 entry index に変換 (= scroll offset を加算)。 */
     int sdCondRealIdx() {
-        return belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex()
+        return com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex()
                 + sdCondScroll.offset();
     }
 
     /** 共有リストの repeat index を実 candidate index に変換 (= scroll offset を加算)。 */
     int annShareRealIdx() {
-        return belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex()
+        return com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex()
                 + annShareScroll.offset();
     }
 
@@ -1289,7 +1289,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
      * #1 が消える等) ので、アナウンス popup の repeat 内で index を使う箇所は全部これを通す。
      */
     int annEntryRealIdx() {
-        return belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex()
+        return com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex()
                 + annEntryScroll.offset();
     }
 
@@ -1375,8 +1375,8 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
      *  - 時計は番線パネル下部 (h=60 でディメンションテキストとは重ならない位置) */
     private void drawMonitorPreview(GuiGraphics g, int x, int y, int w, int h) {
         // 外枠
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, 0xFF000000);
-        belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, 0xFF0a0a18);
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, 0xFF000000);
+        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, 0xFF0a0a18);
 
         int trackNumber = currentTrackNumber();
         int trackPosition = currentTrackPosition();
@@ -1400,9 +1400,9 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                 int iconSize = 16;
                 int iconX = sideX + (sidePanelW - iconSize) / 2;
                 int borderColor = parseHexArgb(sym.getBorderColor(), 0xFF4fc3f7);
-                belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g,
+                com.manta.api.draw.SmoothRenderer.fillRoundedRect(g,
                         iconX, curY, iconSize, iconSize, 5f, 0xFFFFFFFF);
-                belugalab.mcss3.draw.SmoothRenderer.strokeRoundedRect(g,
+                com.manta.api.draw.SmoothRenderer.strokeRoundedRect(g,
                         iconX, curY, iconSize, iconSize, 5f, 1.5f, borderColor);
                 curY += iconSize + 2;
             }
@@ -1440,7 +1440,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     }
 
     private void drawOwnerFace(GuiGraphics g, int x, int y, int w, int h) {
-        belugalab.tsu.api.OwnerFacePainter.draw(g, x, y, w, h, be().getOwnerUUID());
+        com.manta.api.hud.OwnerFacePainter.draw(g, x, y, w, h, be().getOwnerUUID());
     }
 
     /** ヘッダの路線記号アイコンを LineSymbolPainter (TSU 共通) で描画。 */
@@ -1491,25 +1491,25 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     }
 
     @Override
-    public belugalab.mcss3.anim.Transition getDynamicTransition(String[] classes, String key) {
+    public com.manta.api.anim.Transition getDynamicTransition(String[] classes, String key) {
         // toggle-bg / toggle-knob は基底 JsonLayoutScreen が解決するので super に委譲。
-        belugalab.mcss3.anim.Transition base = super.getDynamicTransition(classes, key);
+        com.manta.api.anim.Transition base = super.getDynamicTransition(classes, key);
         if (base != null) return base;
         return switch (key) {
             case "ann-entry-active" ->
-                    belugalab.mcss3.anim.Transition.of(160, belugalab.mcss3.anim.Easing.EASE_OUT);
+                    com.manta.api.anim.Transition.of(160, com.manta.api.anim.Easing.EASE_OUT);
             case "ann-playing-frame-move" ->
-                    belugalab.mcss3.anim.Transition.of(220, belugalab.mcss3.anim.Easing.EASE_OUT);
+                    com.manta.api.anim.Transition.of(220, com.manta.api.anim.Easing.EASE_OUT);
             default -> null;
         };
     }
 
     @Override
-    public belugalab.mcss3.anim.Animation getDynamicAnimation(String[] classes, String key) {
+    public com.manta.api.anim.Animation getDynamicAnimation(String[] classes, String key) {
         // 基底クラスが dialog-open / *-popup-open を処理。それ以外は本 Screen 固有。
         // ann-share-popup-open は "-popup-open" で終わるので base が popIn(220) を返す
         // → 他の popup (settings/color/announcement) と完全に同じ展開アニメ。
-        belugalab.mcss3.anim.Animation base = super.getDynamicAnimation(classes, key);
+        com.manta.api.anim.Animation base = super.getDynamicAnimation(classes, key);
         if (base != null) return base;
         return RailwayManagementDispatch.animation(this, classes, key);
     }

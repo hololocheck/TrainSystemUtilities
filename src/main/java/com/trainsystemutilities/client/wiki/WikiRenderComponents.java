@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.wiki;
 
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.mcss3.draw.VectorRenderer;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.draw.VectorRenderer;
 import com.trainsystemutilities.blockentity.LineSymbol;
 import com.trainsystemutilities.network.TrackNetworkScanner;
 import net.minecraft.client.gui.Font;

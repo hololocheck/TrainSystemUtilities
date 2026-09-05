@@ -35,7 +35,7 @@ public record OverheadPoleLinkChestPayload(BlockPos pos) implements CustomPacket
     public static void handle(OverheadPoleLinkChestPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> {
             if (!(context.player() instanceof ServerPlayer player)) return;
-            ItemStack tool = belugalab.tsu.api.HeldTools.find(player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
+            ItemStack tool = com.manta.api.hud.HeldTools.find(player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
             if (tool.isEmpty()) return;
 
             var level = player.serverLevel();

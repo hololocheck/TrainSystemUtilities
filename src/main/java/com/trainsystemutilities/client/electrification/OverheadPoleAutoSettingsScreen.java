@@ -1,9 +1,9 @@
 package com.trainsystemutilities.client.electrification;
 
-import belugalab.experience.controller.ToggleSwitchController;
-import belugalab.mcss3.anim.Animation;
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
+import com.manta.api.controller.ToggleSwitchController;
+import com.manta.api.anim.Animation;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.screen.JsonLayoutPlainScreen;
 import com.trainsystemutilities.client.gui.TsuLayouts;
 import com.trainsystemutilities.electrification.autoplace.AutoPlaceConfig;
 import com.trainsystemutilities.network.OverheadPoleAutoSettingsPayload;
@@ -258,11 +258,11 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
         if (cantToggle.handleClick(classes))  return;
         if (trussToggle.handleClick(classes)) return;
         if (insToggle.handleClick(classes))   return;
-        if (belugalab.tsu.api.HintToggleHelper.handleClick(classes)) return;
+        if (com.manta.api.hud.HintToggleHelper.handleClick(classes)) return;
         for (String c : classes) {
             if ("wiki-btn".equals(c)) {
                 String pid = wikiPageId();
-                if (pid != null && !pid.isEmpty()) belugalab.mcss3.wiki.Wiki.open(pid);
+                if (pid != null && !pid.isEmpty()) com.manta.api.wiki.Wiki.open(pid);
                 return;
             }
             if ("mc-popup-close".equals(c)) { onClose(); return; }
@@ -295,7 +295,7 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
         // wiki capture は 1 フレームで完成状態を撮るためゲートを skip する。
         if (openNano == 0L) openNano = System.nanoTime();
         long elapsed = System.nanoTime() - openNano;
-        boolean wikiCapture = belugalab.mcss3.screen.JsonLayoutScreen.WIKI_CAPTURE_MODE;
+        boolean wikiCapture = com.manta.api.screen.JsonLayoutScreen.WIKI_CAPTURE_MODE;
         if (elapsed < PREVIEW_GATE_NS && !wikiCapture) return;
 
         // canvas は dialog-relative。 PresetPreviewRenderer と同じく

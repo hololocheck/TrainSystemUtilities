@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.experience.controller.ColorPickerController;
-import belugalab.experience.render.HoverTilePreview;
+import com.manta.api.controller.ColorPickerController;
+import com.manta.api.render.HoverTilePreview;
 import com.trainsystemutilities.blockentity.ManagementComputerBlockEntity;
 import com.trainsystemutilities.schedule.CreateScheduleIds;
 import net.minecraft.client.gui.GuiGraphics;
@@ -146,19 +146,19 @@ final class ManagementComputerRender {
                 scr.drawSymbolBadge(g, x, y, Math.min(w, h), scr.symEditor.buildSymbol());
             }
             case "sym-tile-badge" -> {
-                int ri = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                 var syms = scr.serverBE().getLineSymbols();
                 if (ri >= 0 && ri < syms.size()) {
                     scr.drawSymbolBadge(g, x, y, Math.min(w, h), syms.get(ri));
                 }
             }
             case "map" -> scr.mapRenderer.draw(g, x, y, w, h, scr.fontOrNull(), scr.leftPosAccess(), scr.topPosAccess(), scr.mapNodes, scr.mapEdges, scr.mapStations, scr.mapSignals, scr.mapTrains);
-            case "owner-face" -> belugalab.tsu.api.OwnerFacePainter.draw(
+            case "owner-face" -> com.manta.api.hud.OwnerFacePainter.draw(
                     g, x, y, w, h, scr.be().getOwnerUUID());
             case "train-model" -> scr.trainModel.draw(g, x, y, w, h, scr.minecraftAccess(), scr.fontOrNull(), scr.selectedTrainId, scr.overlayX(), scr.overlayY());
             case "ed-car-list" -> scr.edCarList.draw(g, x, y, w, h, scr.fontOrNull(), scr.selectedTrainId);
             case "station-row-badge" -> {
-                int rii = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                int rii = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                 if (rii >= 0) {
                     var stations = scr.stationsForList();
                     int realIdx = rii + scr.stationScroll.offset();
@@ -177,7 +177,7 @@ final class ManagementComputerRender {
                 }
             }
             case "assign-item-badge" -> {
-                int ri = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                 var syms = scr.serverBE().getLineSymbols();
                 if (ri >= 0 && ri < syms.size()) {
                     scr.drawSymbolBadge(g, x, y, Math.min(w, h), syms.get(ri));

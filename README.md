@@ -38,7 +38,7 @@ Manta UI runtime.
 | Minecraft | 1.21.1 |
 | NeoForge | 21.1.220+ |
 | [Create](https://www.curseforge.com/minecraft/mc-mods/create) | 6.0.10+ |
-| Manta | 1.0.0+ |
+| Manta | 2.5.0+ (embedded in the released jar; do not install separately) |
 | [GeckoLib](https://www.curseforge.com/minecraft/mc-mods/geckolib) | 4.7+ |
 
 ## Open core & Preset Place

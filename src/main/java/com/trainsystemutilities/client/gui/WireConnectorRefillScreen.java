@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.mcss3.screen.JsonLayoutScreen;
+import com.manta.api.screen.JsonLayoutScreen;
 import com.trainsystemutilities.electrification.item.WireConnectorItem;
 import com.trainsystemutilities.gui.WireConnectorMenu;
 import com.trainsystemutilities.registry.ModItems;

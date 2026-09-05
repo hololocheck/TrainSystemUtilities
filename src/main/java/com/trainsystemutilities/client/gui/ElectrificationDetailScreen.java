@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.JsonLayoutPlainScreen;
 import com.trainsystemutilities.client.electrification.ClientTrainElectrificationCache;
 import com.trainsystemutilities.electrification.contraption.TrainElectrificationView;
 import com.trainsystemutilities.network.PantographTogglePayload;

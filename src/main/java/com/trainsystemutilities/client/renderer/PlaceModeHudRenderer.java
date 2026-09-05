@@ -1,9 +1,9 @@
 package com.trainsystemutilities.client.renderer;
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.tsu.api.HudChrome;
-import belugalab.tsu.api.HudConstants;
-import belugalab.tsu.api.HudText;
-import belugalab.tsu.api.TabHighlightAnimator;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.hud.HudChrome;
+import com.manta.api.hud.HudConstants;
+import com.manta.api.hud.HudText;
+import com.manta.api.hud.TabHighlightAnimator;
 
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.item.TrainPresetToolItem;
@@ -45,8 +45,8 @@ public class PlaceModeHudRenderer {
     // 退場アニメ (PLACE → 他モード遷移時。データはサーバ側で消去されるためスナップショット保持)
     private static int lastToolMode = -1;
     /** PLACE モード中: visible=true、抜けたら visible=false で MCSS の HudAnimState が exit を駆動。 */
-    private static final belugalab.tsu.api.HudAnimState placeAnim =
-            new belugalab.tsu.api.HudAnimState(ENTRY_ANIM_NANOS, EXIT_ANIM_NANOS);
+    private static final com.manta.api.hud.HudAnimState placeAnim =
+            new com.manta.api.hud.HudAnimState(ENTRY_ANIM_NANOS, EXIT_ANIM_NANOS);
     private static int exitSub = -1;
     private static int exitRotY = 0;
     private static BlockPos exitOrigin = null;
@@ -391,7 +391,7 @@ public class PlaceModeHudRenderer {
                     // MANTA_5 Wave 7 / W7-1 (R4.23.1): \u2714 \u306f\u72b6\u614b iconography \u306a\u306e\u3067
                     // registry icon \u3067\u63cf\u304f\u3002**\u3053\u306e site \u306f unicode escape \u3067\u66f8\u304b\u308c\u3066\u3044\u305f\u305f\u3081
                     // control-glyph gate \u304b\u3089\u4e0d\u53ef\u8996**\u3060\u3063\u305f (gate \u306f 2026-07-26 \u306b escape \u5fa9\u53f7\u3092\u8ffd\u52a0)\u3002
-                    belugalab.experience.render.Icons.draw(g, "manta:check",
+                    com.manta.api.render.Icons.draw(g, "manta:check",
                             cellX + 12, cellY + 9, 8f, 8f,
                             ((int) (0xFF * fade) << 24) | 0xFF66bb6a);
                 }
@@ -408,7 +408,7 @@ public class PlaceModeHudRenderer {
             g.drawString(mc.font, name, cellX + 24, cellY + 3, textColor, false);
             int countX = cellX + 24;
             if (ready) {
-                belugalab.experience.render.Icons.draw(g, "manta:check",
+                com.manta.api.render.Icons.draw(g, "manta:check",
                         countX, cellY + 11.5f, 7f, 7f,
                         ((int) (0xFF * fade) << 24) | countColor);
                 countX += 9;
@@ -425,7 +425,7 @@ public class PlaceModeHudRenderer {
     }
 
     private static ItemStack findHeldTool(Minecraft mc) {
-        return belugalab.tsu.api.HeldTools.find(mc.player, ModItems.TRAIN_PRESET_TOOL.get());
+        return com.manta.api.hud.HeldTools.find(mc.player, ModItems.TRAIN_PRESET_TOOL.get());
     }
 
 }

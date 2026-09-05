@@ -1,6 +1,6 @@
 package com.trainsystemutilities.network;
 
-import belugalab.mcss3.util.codec.BoundedStreamCodec;
+import com.manta.api.util.codec.BoundedStreamCodec;
 import com.simibubi.create.Create;
 import com.simibubi.create.content.trains.entity.Train;
 import com.trainsystemutilities.TrainSystemUtilities;

@@ -1,13 +1,13 @@
 package com.trainsystemutilities.client.gui;
-import belugalab.mcss3.anim.Animation;
+import com.manta.api.anim.Animation;
 
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
-import belugalab.experience.controller.DropdownController;
-import belugalab.experience.controller.NumberWheelInput;
-import belugalab.experience.controller.ScrollViewport;
-import belugalab.experience.controller.TextInputController;
-import belugalab.experience.controller.ToggleSwitchController;
-import belugalab.experience.render.TextCaretRenderer;
+import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.controller.DropdownController;
+import com.manta.api.controller.NumberWheelInput;
+import com.manta.api.controller.ScrollViewport;
+import com.manta.api.controller.TextInputController;
+import com.manta.api.controller.ToggleSwitchController;
+import com.manta.api.render.TextCaretRenderer;
 import com.trainsystemutilities.electrification.item.WireConnectorItem;
 import com.trainsystemutilities.electrification.wire.WireConnection;
 import com.trainsystemutilities.electrification.wire.WireType;
@@ -177,10 +177,10 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
     protected boolean closeTransientOverlays() { return filterDropdown.close(); }
 
     @Override
-    public belugalab.mcss3.anim.Animation getDynamicAnimation(String[] classes, String key) {
+    public com.manta.api.anim.Animation getDynamicAnimation(String[] classes, String key) {
         if ("filter-menu-open".equals(key)) {
             // dropdown 展開アニメ (= train-preset-browse の mode-menu と同じバウンス)
-            return belugalab.mcss3.anim.Animation.dropdownDown(220, 46);
+            return com.manta.api.anim.Animation.dropdownDown(220, 46);
         }
         return super.getDynamicAnimation(classes, key);
     }
@@ -241,11 +241,11 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
     @Override
     public void onElementClick(String[] classes, int mouseX, int mouseY, int button) {
         // BelugaExperience 標準ヘッダ部品 (R4.17): hint / wiki本 を先に処理 (× は下の switch)
-        if (belugalab.tsu.api.HintToggleHelper.handleClick(classes)) return;
+        if (com.manta.api.hud.HintToggleHelper.handleClick(classes)) return;
         for (String c : classes) {
             if ("wiki-btn".equals(c)) {
                 String pid = wikiPageId();
-                if (pid != null && !pid.isEmpty()) belugalab.mcss3.wiki.Wiki.open(pid);
+                if (pid != null && !pid.isEmpty()) com.manta.api.wiki.Wiki.open(pid);
                 return;
             }
         }

@@ -86,7 +86,7 @@ Create が用意している「線路 / 駅 / スケジュール / 信号」を�
 
 ## アーキテクチャ要素 (上級者向け)
 
-- **BelugaExperience UI System**: V3 GUI の widget framework (controller + json builder + auto-sizing)。`belugalab.experience.*` パッケージ
+- **BelugaExperience UI System**: V3 GUI の widget framework (controller + json builder + auto-sizing)。`com.manta.api.controller.*` / `com.manta.api.render.*` パッケージ
 - **MCSS Wiki**: in-game markdown wiki + JSON 駆動 embed (`embed:screen` / `embed:item` / `embed:items`)
 - **GUI capture pipeline**: ログイン時に全 layout JSON を off-screen FBO 経由でキャプチャ → DynamicTexture として wiki に即時反映
 - **i18n**: ja_jp / en_us 切替時に `/tsu-wiki-prebuild` で言語別キャプチャ再生成

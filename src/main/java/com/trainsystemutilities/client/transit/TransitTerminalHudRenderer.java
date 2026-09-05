@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.transit;
 
-import belugalab.tsu.api.HudAnimState;
-import belugalab.tsu.api.HudChrome;
+import com.manta.api.hud.HudAnimState;
+import com.manta.api.hud.HudChrome;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.registry.ModItems;
 import com.trainsystemutilities.station.routing.ComposedRouteFinder;
@@ -77,15 +77,15 @@ public class TransitTerminalHudRenderer {
         }
         // 右下に「開く」アイコン — W7-1: raw ▶ を manta:play icon へ (fade の alpha はそのまま乗る)。
         int rightArrowC = ((int) (0xFF * fade) << 24) | 0xFFD54F;
-        belugalab.experience.render.Icons.draw(g, "manta:play", x + W - 13, y + 16, 9, rightArrowC);
+        com.manta.api.render.Icons.draw(g, "manta:play", x + W - 13, y + 16, 9, rightArrowC);
         HudChrome.popUiScale(g);
     }
 
     private static String truncate(Minecraft mc, String s, int w) {
-        return belugalab.tsu.api.HudText.clip(mc.font, s, w);
+        return com.manta.api.hud.HudText.clip(mc.font, s, w);
     }
 
     private static ItemStack findHeld(Minecraft mc) {
-        return belugalab.tsu.api.HeldTools.find(mc.player, ModItems.TRANSIT_TERMINAL.get());
+        return com.manta.api.hud.HeldTools.find(mc.player, ModItems.TRANSIT_TERMINAL.get());
     }
 }

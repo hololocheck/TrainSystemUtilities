@@ -1,10 +1,10 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
-import belugalab.experience.controller.PixelScrollViewport;
-import belugalab.experience.controller.TextInputController;
-import belugalab.experience.controller.TileGrid;
-import belugalab.experience.render.TextCaretRenderer;
+import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.controller.PixelScrollViewport;
+import com.manta.api.controller.TextInputController;
+import com.manta.api.controller.TileGrid;
+import com.manta.api.render.TextCaretRenderer;
 import com.trainsystemutilities.network.StationGroupDeletePayload;
 import com.trainsystemutilities.network.StationGroupListRequestPayload;
 import com.trainsystemutilities.network.StationGroupRenamePayload;
@@ -142,11 +142,11 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
             }
             return; // overlay 外クリックは無視 (close 操作のみ受付)
         }
-        if (belugalab.tsu.api.HintToggleHelper.handleClick(classes)) return;
+        if (com.manta.api.hud.HintToggleHelper.handleClick(classes)) return;
         for (String c : classes) {
             if ("wiki-btn".equals(c)) {
                 String pid = wikiPageId();
-                if (pid != null && !pid.isEmpty()) belugalab.mcss3.wiki.Wiki.open(pid);
+                if (pid != null && !pid.isEmpty()) com.manta.api.wiki.Wiki.open(pid);
                 return;
             }
             if ("mc-popup-close".equals(c)) { onClose(); return; }
@@ -242,8 +242,8 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
             int bg = active ? 0xFF1A3050 : (hover ? 0xFF2A2A40 : 0xFF1A1A2A);
             int border = active ? 0xFF4FC3F7 : 0xFF333344;
             // §2.4 SmoothRenderer 二層角丸 (border 5f + bg 4f inset 1px、 つよめ)。 旧 g.fill 4枚枠を置換
-            belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, x, tileY, w, TILE_H, 5f, border);
-            belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, x + 1, tileY + 1, w - 2, TILE_H - 2, 4f, bg);
+            com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x, tileY, w, TILE_H, 5f, border);
+            com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x + 1, tileY + 1, w - 2, TILE_H - 2, 4f, bg);
             // 名前
             g.drawString(this.font, grp.name(), x + 6, tileY + 3,
                     active ? 0xFFFFFFFF : 0xFFE0E0E0, false);

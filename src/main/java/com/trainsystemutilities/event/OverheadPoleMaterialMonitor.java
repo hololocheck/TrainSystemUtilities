@@ -43,7 +43,7 @@ public final class OverheadPoleMaterialMonitor {
         if (server == null) return;
 
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            ItemStack tool = belugalab.tsu.api.HeldTools.find(player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
+            ItemStack tool = com.manta.api.hud.HeldTools.find(player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
             if (tool.isEmpty()) continue;
             // 設置 (SELECTION) モードのみ監視。 GUI モードは不要。
             if (AutoPlaceConfig.getToolMode(tool) != AutoPlaceConfig.TOOL_MODE_SELECTION) continue;

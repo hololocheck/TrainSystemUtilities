@@ -1,9 +1,9 @@
 package com.trainsystemutilities.client.renderer;
 
-import belugalab.mcss3.ir.IrBuilder;
-import belugalab.mcss3.ir.IrNode;
-import belugalab.mcss3.screen.JsonLayoutHandler;
-import belugalab.mcss3.world.CSSWorldRenderer;
+import com.manta.api.ir.IrBuilder;
+import com.manta.api.ir.IrNode;
+import com.manta.api.screen.JsonLayoutHandler;
+import com.manta.api.world.CSSWorldRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.trainsystemutilities.TrainSystemUtilities;
@@ -162,11 +162,11 @@ public class StationSignWorldRenderer {
             poseStack.translate(0, 0, 0.04f);
             br.renderV3FromIr(buildBadgeBgIr(radius), null, poseStack, bufferSource);
 
-            var vc = belugalab.mcss3.draw.VectorRenderer.getWorldBufferText(bufferSource);
-            belugalab.mcss3.draw.VectorRenderer.strokeRoundedRect(vc, poseStack.last().pose(),
+            var vc = com.manta.api.draw.VectorRenderer.getWorldBufferText(bufferSource);
+            com.manta.api.draw.VectorRenderer.strokeRoundedRect(vc, poseStack.last().pose(),
                     BADGE_X, BADGE_Y, BADGE_SIZE, BADGE_SIZE, borderColor,
                     (float) BADGE_BORDER, (float) radius, 0.05f);
-            belugalab.mcss3.draw.VectorRenderer.textFillRect(vc, poseStack.last().pose(),
+            com.manta.api.draw.VectorRenderer.textFillRect(vc, poseStack.last().pose(),
                     BADGE_X + (BADGE_SIZE - dividerW) / 2f, BADGE_Y + BADGE_SIZE / 2f - 1f,
                     dividerW, 2f, borderColor, 0.05f);
 
@@ -248,7 +248,7 @@ public class StationSignWorldRenderer {
     private static IrNode compileLayout(String path) {
         String json = com.trainsystemutilities.client.gui.TsuLayouts.load(path);
         com.google.gson.JsonObject root = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-        return belugalab.mcss3.ir.compiler.JsonToIrCompiler.compile(root).root();
+        return com.manta.api.ir.compiler.JsonToIrCompiler.compile(root).root();
     }
 
     static int parseHexColor(String hex, int fallback) {

@@ -1,10 +1,10 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.experience.controller.ScrollViewport;
-import belugalab.experience.controller.TextInputController;
-import belugalab.experience.render.TextCaretRenderer;
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.mcss3.screen.JsonLayoutEngine;
+import com.manta.api.controller.ScrollViewport;
+import com.manta.api.controller.TextInputController;
+import com.manta.api.render.TextCaretRenderer;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.screen.JsonLayoutEngine;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -634,21 +634,21 @@ public final class ScheduleEditorController {
             // W7-1: 削除 glyph を manta:x icon へ。**icon はボタン全体に敷く** —
             // lucide は 24x24 viewBox の内側 50% にしか描かないので、box を満たせば
             // glyph は自動的に中央の適正サイズになる (手動 offset だと中央からずれる)。
-            belugalab.experience.render.Icons.draw(g, "manta:x", delX, btnY, btnW, btnH, TEXT_RED);
+            com.manta.api.render.Icons.draw(g, "manta:x", delX, btnY, btnW, btnH, TEXT_RED);
             entryDelBtns.add(new int[]{delX, btnY, btnW, btnH, i});
 
             int downX = delX - btnW - 2;
             if (i < total - 1) {
                 boolean hh = inBtn(mouseX, mouseY, downX, btnY, btnW, btnH);
                 roundedBtn(g, downX, btnY, btnW, btnH, hh ? BTN_CYAN_HV : BTN_CYAN);
-                belugalab.experience.render.Icons.draw(g, "manta:chevron-down", downX, btnY, btnW, btnH, TEXT_CYAN);
+                com.manta.api.render.Icons.draw(g, "manta:chevron-down", downX, btnY, btnW, btnH, TEXT_CYAN);
                 entryDownBtns.add(new int[]{downX, btnY, btnW, btnH, i});
             }
             int upX = downX - btnW - 2;
             if (i > 0) {
                 boolean hh = inBtn(mouseX, mouseY, upX, btnY, btnW, btnH);
                 roundedBtn(g, upX, btnY, btnW, btnH, hh ? BTN_CYAN_HV : BTN_CYAN);
-                belugalab.experience.render.Icons.draw(g, "manta:chevron-up", upX, btnY, btnW, btnH, TEXT_CYAN);
+                com.manta.api.render.Icons.draw(g, "manta:chevron-up", upX, btnY, btnW, btnH, TEXT_CYAN);
                 entryUpBtns.add(new int[]{upX, btnY, btnW, btnH, i});
             }
 
@@ -664,7 +664,7 @@ public final class ScheduleEditorController {
             // manta:arrow-up-down を置く (旧: ラベル文字列末尾の "↕")。
             // truncate 後の実幅から位置を出すので、切り詰められても重ならない。
             if ("throttle".equals(entry.type)) {
-                belugalab.experience.render.Icons.draw(g, "manta:arrow-up-down",
+                com.manta.api.render.Icons.draw(g, "manta:arrow-up-down",
                         x + 6 + this.font.width(labelTrunc) + 2, yy + 5f, 7f, 7f, textColor);
             }
 
@@ -696,7 +696,7 @@ public final class ScheduleEditorController {
                 int cdW = 11, cdX = condX + condW - cdW - 2, cdY = yy + 1;
                 boolean hcd = inBtn(mouseX, mouseY, cdX, cdY, cdW, condRowH - 2);
                 roundedBtn(g, cdX, cdY, cdW, condRowH - 2, hcd ? BTN_RED_HV : 0xFF3a1a1a);
-                belugalab.experience.render.Icons.draw(g, "manta:x", cdX, cdY, cdW, condRowH - 2, TEXT_RED);
+                com.manta.api.render.Icons.draw(g, "manta:x", cdX, cdY, cdW, condRowH - 2, TEXT_RED);
                 entryCondDelBtns.add(new int[]{cdX, cdY, cdW, condRowH - 2, i, ci});
 
                 if (!valueText.isEmpty()) {
@@ -712,7 +712,7 @@ public final class ScheduleEditorController {
                     int vc = editable ? TEXT_VALUE : TEXT_CYAN;
                     g.drawString(this.font, valueText, vx + 3, yy + 2, vc, false);
                     if (editable) {
-                        belugalab.experience.render.Icons.draw(g, "manta:arrow-up-down",
+                        com.manta.api.render.Icons.draw(g, "manta:arrow-up-down",
                                 vx + 3 + this.font.width(valueText) + 2, yy + 2.5f, 7f, 7f, vc);
                     }
                     entryCondHoverBounds.add(new int[]{vx, yy, vw, condRowH, i, ci});

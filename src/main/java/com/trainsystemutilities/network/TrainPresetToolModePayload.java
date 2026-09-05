@@ -81,7 +81,7 @@ public record TrainPresetToolModePayload(int action, int delta) implements Custo
     }
 
     private static ItemStack findHeldTool(net.minecraft.world.entity.player.Player player) {
-        return belugalab.tsu.api.HeldTools.find(player, ModItems.TRAIN_PRESET_TOOL.get());
+        return com.manta.api.hud.HeldTools.find(player, ModItems.TRAIN_PRESET_TOOL.get());
     }
 
     @Override

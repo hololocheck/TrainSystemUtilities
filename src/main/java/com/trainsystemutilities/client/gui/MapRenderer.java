@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.mcss3.draw.VectorRenderer;
+import com.manta.api.draw.VectorRenderer;
 import com.trainsystemutilities.network.TrackNetworkScanner;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;

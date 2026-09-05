@@ -1,6 +1,6 @@
 package com.trainsystemutilities.event;
 
-import belugalab.mcss3.util.concurrent.StaticCacheRegistry;
+import com.manta.api.util.concurrent.StaticCacheRegistry;
 import com.trainsystemutilities.TrainSystemUtilities;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;

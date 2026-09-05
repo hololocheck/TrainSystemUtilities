@@ -1,8 +1,8 @@
 package com.trainsystemutilities.client.transit;
 
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.tsu.api.HudAnimState;
-import belugalab.tsu.api.HudChrome;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.hud.HudAnimState;
+import com.manta.api.hud.HudChrome;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.station.routing.ComposedRouteFinder;
 import com.trainsystemutilities.station.routing.TrainRouter;
@@ -88,7 +88,7 @@ public final class TransitDetailHudRenderer {
 
     /** alpha チャンネルに fade を掛ける (= R2.5.2: alpha は fade 連動。 実装は HudChrome に集約)。 */
     private static int fa(int argb, float fade) {
-        return belugalab.tsu.api.HudChrome.fadeAlpha(argb, fade);
+        return com.manta.api.hud.HudChrome.fadeAlpha(argb, fade);
     }
 
     private static void renderPanel(GuiGraphics g, Minecraft mc,
@@ -103,7 +103,7 @@ public final class TransitDetailHudRenderer {
         // ヘッダ: 戻る ボタンっぽいダミー (実際の interaction は Screen 側で)
         // W7-1: 戻る glyph を manta:arrow-left icon へ (fade の alpha はそのまま乗る)。
         int hdrC = fa(0xFF80DEEA, fade);
-        belugalab.experience.render.Icons.draw(g, "manta:arrow-left", innerX, dy, 9, hdrC);
+        com.manta.api.render.Icons.draw(g, "manta:arrow-left", innerX, dy, 9, hdrC);
         g.drawString(mc.font, Component.translatable("tsu.transit_terminal.hud_title").getString(),
                 innerX + 11, dy, hdrC, false);
         dy += 12;
@@ -194,7 +194,7 @@ public final class TransitDetailHudRenderer {
                     SmoothRenderer.fillRect(g, barColX + 5, dy, 2, 10, fa(0xFF606080, fade));
                     // W7-1: 待機 glyph を manta:refresh-cw icon へ。
                     int waitC = fa(0xFFAAAAAA, fade);
-                    belugalab.experience.render.Icons.draw(g, "manta:refresh-cw", barColX + 14, dy + 2, 8, waitC);
+                    com.manta.api.render.Icons.draw(g, "manta:refresh-cw", barColX + 14, dy + 2, 8, waitC);
                     g.drawString(mc.font, waitText, barColX + 25, dy + 2, waitC, false);
                     dy += 12;
                 }
@@ -250,6 +250,6 @@ public final class TransitDetailHudRenderer {
     }
 
     private static String truncate(Minecraft mc, String s, int w) {
-        return belugalab.tsu.api.HudText.clip(mc.font, s, w);
+        return com.manta.api.hud.HudText.clip(mc.font, s, w);
     }
 }

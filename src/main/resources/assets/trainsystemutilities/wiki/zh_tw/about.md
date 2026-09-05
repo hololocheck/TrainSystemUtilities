@@ -86,7 +86,7 @@ id: about
 
 ## 架構元件（面向進階使用者）
 
-- **BelugaExperience UI 系統**：V3 GUI 部件框架（控制器 + JSON 構建器 + 自動尺寸）。位於 `belugalab.experience.*` 包中。
+- **BelugaExperience UI 系統**：V3 GUI 部件框架（控制器 + JSON 構建器 + 自動尺寸）。位於 `com.manta.api.controller.*` / `com.manta.api.render.*` 包中。
 - **MCSS Wiki**：遊戲內 markdown wiki + JSON 驅動的 embed（`embed:screen` / `embed:item` / `embed:items`）
 - **GUI 擷取管線**：登入時所有佈局 JSON 透過離屏 FBO 擷取 → 作為 DynamicTexture 立即反映到 wiki 中
 - **i18n**：在 ja_jp / en_us 之間切換時，執行 `/tsu-wiki-prebuild` 重新生成各語言的擷取內容

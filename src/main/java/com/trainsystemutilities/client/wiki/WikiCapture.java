@@ -1,8 +1,8 @@
 package com.trainsystemutilities.client.wiki;
 
-import belugalab.mcss3.debug.GuiScreenCapture;
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
-import belugalab.mcss3.screen.JsonLayoutScreen;
+import com.manta.api.debug.GuiScreenCapture;
+import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.JsonLayoutScreen;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.trainsystemutilities.TrainSystemUtilities;

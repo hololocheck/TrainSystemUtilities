@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.mcss3.screen.JsonLayoutScreen;
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.JsonLayoutScreen;
+import com.manta.api.screen.JsonLayoutPlainScreen;
 
 /**
  * TSU 共通: 自 mod のレイアウト JSON を読み込む 1 行ヘルパ。

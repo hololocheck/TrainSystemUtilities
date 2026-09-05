@@ -1,8 +1,8 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.experience.controller.PixelScrollViewport;
-import belugalab.experience.controller.TileGrid;
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
+import com.manta.api.controller.PixelScrollViewport;
+import com.manta.api.controller.TileGrid;
+import com.manta.api.screen.JsonLayoutPlainScreen;
 import com.trainsystemutilities.network.BuyTicketPayload;
 import com.trainsystemutilities.network.OpenTicketVendingPayload;
 import net.minecraft.client.Minecraft;
@@ -77,11 +77,11 @@ public class TicketVendingMachineScreen extends JsonLayoutPlainScreen {
 
     @Override
     public void onElementClick(String[] classes, int mouseX, int mouseY, int button) {
-        if (belugalab.tsu.api.HintToggleHelper.handleClick(classes)) return;
+        if (com.manta.api.hud.HintToggleHelper.handleClick(classes)) return;
         for (String c : classes) {
             if ("wiki-btn".equals(c)) {
                 String pid = wikiPageId();
-                if (pid != null && !pid.isEmpty()) belugalab.mcss3.wiki.Wiki.open(pid);
+                if (pid != null && !pid.isEmpty()) com.manta.api.wiki.Wiki.open(pid);
                 return;
             }
             if ("mc-popup-close".equals(c)) { onClose(); return; }
@@ -149,8 +149,8 @@ public class TicketVendingMachineScreen extends JsonLayoutPlainScreen {
             // 行き先ボタン (= hover で点灯)。 SmoothRenderer 二層角丸 (border 5f + bg 4f inset 1px)
             int bg = hover ? 0xFF234A66 : 0xFF14202E;
             int border = hover ? 0xFF4FC3F7 : 0xFF35506A;
-            belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, bx, by, btnW, BTN_H, 5f, border);
-            belugalab.mcss3.draw.SmoothRenderer.fillRoundedRect(g, bx + 1, by + 1, btnW - 2, BTN_H - 2, 4f, bg);
+            com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, bx, by, btnW, BTN_H, 5f, border);
+            com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, bx + 1, by + 1, btnW - 2, BTN_H - 2, 4f, bg);
             // 着駅名 (中央、 幅オーバーは省略)
             String name = trimToWidth(destinations.get(i).name(), btnW - 10);
             int nw = this.font.width(name);

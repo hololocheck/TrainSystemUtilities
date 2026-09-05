@@ -1,7 +1,7 @@
 package com.trainsystemutilities.network;
 
-import belugalab.mcss3.util.codec.BoundedStreamCodec;
-import belugalab.mcss3.util.safe.SafeLog;
+import com.manta.api.util.codec.BoundedStreamCodec;
+import com.manta.api.util.safe.SafeLog;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.station.StationGroup;
 import com.trainsystemutilities.station.StationGroupClientCache;

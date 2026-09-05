@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.electrification;
 
-import belugalab.tsu.api.HeldTools;
-import belugalab.tsu.api.ModifierKeys;
+import com.manta.api.hud.HeldTools;
+import com.manta.api.hud.ModifierKeys;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.network.WireConnectorTypePayload;
 import com.trainsystemutilities.registry.ModItems;
@@ -24,8 +24,8 @@ public final class WireConnectorClientHandler {
     private WireConnectorClientHandler() {}
 
     /** スクロール 2 重発火対策 (= BelugaExperience 標準 ScrollCooldown 180ms)。 */
-    private static final belugalab.tsu.api.ScrollCooldown SCROLL_COOLDOWN =
-            new belugalab.tsu.api.ScrollCooldown();
+    private static final com.manta.api.hud.ScrollCooldown SCROLL_COOLDOWN =
+            new com.manta.api.hud.ScrollCooldown();
 
     @SubscribeEvent
     public static void onMouseScroll(InputEvent.MouseScrollingEvent event) {

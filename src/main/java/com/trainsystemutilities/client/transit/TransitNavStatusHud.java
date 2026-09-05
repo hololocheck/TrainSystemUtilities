@@ -1,8 +1,8 @@
 package com.trainsystemutilities.client.transit;
 
-import belugalab.tsu.api.HudAnimState;
-import belugalab.tsu.api.HudChrome;
-import belugalab.tsu.api.HudConstants;
+import com.manta.api.hud.HudAnimState;
+import com.manta.api.hud.HudChrome;
+import com.manta.api.hud.HudConstants;
 import com.trainsystemutilities.TrainSystemUtilities;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;

@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.tsu.api.HintRegistry;
+import com.manta.api.hud.HintRegistry;
 
 /**
  * V2 screen の class 名 → ヒント i18n key + wiki page 登録を中央集約。

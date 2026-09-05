@@ -83,7 +83,7 @@ final class ScreenDoorPreviewController {
               Font font, AbstractContainerMenu menu, Level level, boolean colorPickerOpen) {
         if (colorPickerOpen) return;
         ItemStack card = cardFrom(menu);
-        java.util.List<belugalab.mcss3.preview.GuiBlock3DRenderer.Block3DEntry> entries =
+        java.util.List<com.manta.api.preview.GuiBlock3DRenderer.Block3DEntry> entries =
                 new java.util.ArrayList<>();
         if (!card.isEmpty()
                 && card.has(net.minecraft.core.component.DataComponents.CUSTOM_DATA)) {
@@ -97,7 +97,7 @@ final class ScreenDoorPreviewController {
                         net.minecraft.core.BlockPos p = net.minecraft.core.BlockPos.of(packed);
                         net.minecraft.world.level.block.state.BlockState st = level.getBlockState(p);
                         if (!st.isAir()) {
-                            entries.add(new belugalab.mcss3.preview.GuiBlock3DRenderer.Block3DEntry(p, st));
+                            entries.add(new com.manta.api.preview.GuiBlock3DRenderer.Block3DEntry(p, st));
                         }
                     }
                 }
@@ -111,7 +111,7 @@ final class ScreenDoorPreviewController {
             g.drawString(font, msg, x + (w - tw) / 2, y + h / 2 - 4, 0xFF888888, false);
             return;
         }
-        belugalab.mcss3.preview.GuiBlock3DRenderer.render(
+        com.manta.api.preview.GuiBlock3DRenderer.render(
                 g, x, y, w, h, entries,
                 rotY, rotX, zoom, panX, panY);
     }

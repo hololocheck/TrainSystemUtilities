@@ -132,6 +132,6 @@ public class WireConnectorMenu extends AbstractContainerMenu {
     }
 
     private static ItemStack findHeldTool(Player player) {
-        return belugalab.tsu.api.HeldTools.find(player, ModItems.WIRE_CONNECTOR.get());
+        return com.manta.api.hud.HeldTools.find(player, ModItems.WIRE_CONNECTOR.get());
     }
 }

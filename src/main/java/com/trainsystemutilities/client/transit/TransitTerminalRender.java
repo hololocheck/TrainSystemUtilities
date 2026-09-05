@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.transit;
 
-import belugalab.mcss3.draw.SmoothRenderer;
+import com.manta.api.draw.SmoothRenderer;
 import com.trainsystemutilities.station.StationGroup;
 import com.trainsystemutilities.station.routing.ComposedRouteFinder;
 import com.trainsystemutilities.station.routing.TrainRouter;
@@ -30,8 +30,8 @@ final class TransitTerminalRender {
         scr.topBoxY = boxY; scr.topBoxX = boxX; scr.topBoxW = boxW;
 
         // 出発駅 bullet / 到着駅 bullet — W7-1: raw glyph を manta registry icon へ置換。
-        belugalab.experience.render.Icons.draw(g, "manta:circle-dot", innerX + 4, boxY + 2, 8, 0xFF4FC3F7);
-        belugalab.experience.render.Icons.draw(g, "manta:square", innerX + 4, boxY + 24, 8, 0xFFFF8A65);
+        com.manta.api.render.Icons.draw(g, "manta:circle-dot", innerX + 4, boxY + 2, 8, 0xFF4FC3F7);
+        com.manta.api.render.Icons.draw(g, "manta:square", innerX + 4, boxY + 24, 8, 0xFFFF8A65);
 
         // Swap ボタン (↕): 右側に縦長の小ボタン、2 つの input の中間に
         int swapX = innerX + innerW - 16;
@@ -46,7 +46,7 @@ final class TransitTerminalRender {
         // lucide は viewBox の内側 50% にしか描かないので、枠に合わせれば中央の適正サイズになる。
         // 縦長ボタン (14x22) なので正方形に切り出して中央へ置く (縦に潰さない)。
         int swapIco = Math.min(swapW, swapH);
-        belugalab.experience.render.Icons.draw(g, "manta:arrow-up-down",
+        com.manta.api.render.Icons.draw(g, "manta:arrow-up-down",
                 swapX + (swapW - swapIco) / 2f, swapY + (swapH - swapIco) / 2f,
                 swapIco, swapIco, 0xFFFFFFFF);
 
@@ -68,7 +68,7 @@ final class TransitTerminalRender {
         int bw = CLEAR_ICON_SIZE + CLEAR_ICON_GAP + scr.fontAccess().width(btnLabel);
         int btnTextColor = !canSearch ? 0xFF666666 : 0xFFFFFFFF;
         int btnX = innerX + (innerW - bw) / 2;
-        belugalab.experience.render.Icons.draw(g, "manta:search", btnX, btnY + 5,
+        com.manta.api.render.Icons.draw(g, "manta:search", btnX, btnY + 5,
                 CLEAR_ICON_SIZE, btnTextColor);
         g.drawString(scr.fontAccess(), btnLabel,
                 btnX + CLEAR_ICON_SIZE + CLEAR_ICON_GAP, btnY + 4, btnTextColor, false);
@@ -93,7 +93,7 @@ final class TransitTerminalRender {
                    clHover ? 0xFFAA1F1F : 0xFF333344);
             int clX = innerX + innerW - clW - 3;
             int clC = clHover ? 0xFFFFFFFF : 0xFFAAAAAA;
-            belugalab.experience.render.Icons.draw(g, "manta:x", clX, resY + 1, clIco, clC);
+            com.manta.api.render.Icons.draw(g, "manta:x", clX, resY + 1, clIco, clC);
             g.drawString(scr.fontAccess(), clearText, clX + clIco + CLEAR_ICON_GAP, resY, clC, false);
             resY += 14;
             resH -= 14;
@@ -180,7 +180,7 @@ final class TransitTerminalRender {
             SmoothRenderer.fillRoundedRect(g, x, rowY, w - delBtnW - 2, rowH, 5f, 0xFF2a4a60);
             g.fill(x + 1, rowY + 1, x + w - delBtnW - 3, rowY + rowH - 1, bg);
             // W7-1: 時刻 glyph を manta:clock icon へ。
-            belugalab.experience.render.Icons.draw(g, "manta:clock", x + 4, rowY + 6, 9, 0xFF80808F);
+            com.manta.api.render.Icons.draw(g, "manta:clock", x + 4, rowY + 6, 9, 0xFF80808F);
             String txt = TransitTerminalScreen.truncate(e.fromName() + " → " + e.toName(), w - delBtnW - 22);
             g.drawString(scr.fontAccess(), txt, x + 16, rowY + 7, 0xFFE0E0E0, false);
             // 削除ボタン (× ボックス、20×rowH の独立タイル)
@@ -194,7 +194,7 @@ final class TransitTerminalRender {
             // W7-1: 行削除の ✕ を manta:x icon へ。icon はボタン枠を満たす (中央寄せは
             // lucide の viewBox 余白が担う)。hover 色は従来どおり追従。
             int delIco = Math.min(delBtnW, rowH);
-            belugalab.experience.render.Icons.draw(g, "manta:x",
+            com.manta.api.render.Icons.draw(g, "manta:x",
                     delX + (delBtnW - delIco) / 2f, rowY + (rowH - delIco) / 2f,
                     delIco, delIco,
                     delHover ? 0xFFFFFFFF : 0xFFAAAAAA);
@@ -239,7 +239,7 @@ final class TransitTerminalRender {
             String walkText = Component.translatable("tsu.transit_terminal.walk_fmt",
                     r.fromGroupName(), walkSec).getString();
             // W7-1: 徒歩 glyph を manta:user icon へ。 text は icon 幅ぶん右へずらす。
-            belugalab.experience.render.Icons.draw(g, "manta:user", x, rowY, 9, 0xFF80DEEA);
+            com.manta.api.render.Icons.draw(g, "manta:user", x, rowY, 9, 0xFF80DEEA);
             g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(walkText, w - 14),
                     x + 11, rowY, 0xFF80DEEA, false);
             rowY += 12;
@@ -359,7 +359,7 @@ final class TransitTerminalRender {
         boolean backHover = mouseX >= x && mouseX < x + 40 && mouseY >= y && mouseY < y + 12;
         // W7-1: 戻る glyph を manta:arrow-left icon へ (control glyph、hover 色は共通)。
         int backC = backHover ? 0xFFFFD54F : 0xFF80DEEA;
-        belugalab.experience.render.Icons.draw(g, "manta:arrow-left", x, y, 9, backC);
+        com.manta.api.render.Icons.draw(g, "manta:arrow-left", x, y, 9, backC);
         g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.back").getString(),
                 x + 11, y, backC, false);
 
@@ -514,7 +514,7 @@ final class TransitTerminalRender {
                             waitSec / 60, waitSec % 60).getString();
                     g.fill(barColX + 5, dy, barColX + 7, dy + 14, 0xFF606080);
                     // W7-1: 待機 glyph を manta:refresh-cw icon へ。
-                    belugalab.experience.render.Icons.draw(g, "manta:refresh-cw", barColX + 14, dy + 2, 8, 0xFFAAAAAA);
+                    com.manta.api.render.Icons.draw(g, "manta:refresh-cw", barColX + 14, dy + 2, 8, 0xFFAAAAAA);
                     g.drawString(scr.fontAccess(), waitText, barColX + 25, dy + 2, 0xFFAAAAAA, false);
                     dy += 14;
                 }
@@ -531,7 +531,7 @@ final class TransitTerminalRender {
         int innerW = TransitTerminalScreen.PANEL_W - TransitTerminalScreen.CONTENT_PAD * 2;
         // search box already drawn by EditBox child
         // W7-1: search glyph を manta:search icon へ (control glyph)。
-        belugalab.experience.render.Icons.draw(g, "manta:search", innerX + 2, y + 11, 9, 0xFF4FC3F7);
+        com.manta.api.render.Icons.draw(g, "manta:search", innerX + 2, y + 11, 9, 0xFF4FC3F7);
 
         int listY = y + 28;
         int listH = h - 30;
@@ -572,7 +572,7 @@ final class TransitTerminalRender {
             g.fill(innerX, rowY, innerX + listInnerW, rowY + rowH, 0xFF111928);
             g.fill(innerX, rowY, innerX + listInnerW, rowY + 1, 0xFF2a4a60);
             // W7-1: 列車 glyph を manta:train-front icon へ。
-            belugalab.experience.render.Icons.draw(g, "manta:train-front", innerX + 2, rowY + 2, 8, 0xFFFFFFFF);
+            com.manta.api.render.Icons.draw(g, "manta:train-front", innerX + 2, rowY + 2, 8, 0xFFFFFFFF);
             g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(snap.trainName(), listInnerW - 16),
                     innerX + 13, rowY + 2, 0xFFFFFFFF, false);
             String next = snap.nextGroupId() == null ? "—" : TransitTerminalScreen.nameOf(snap.nextGroupId());
@@ -659,14 +659,14 @@ final class TransitTerminalRender {
                         (int) ((innerX + innerW) * mscX) + mscTx, (int) ((y + h - 4) * mscY) + mscTy);
 
         // 線路セグメント (vector)
-        var vc = belugalab.mcss3.draw.VectorRenderer.getGuiBuffer(g.bufferSource());
+        var vc = com.manta.api.draw.VectorRenderer.getGuiBuffer(g.bufferSource());
         var matrix = g.pose().last().pose();
         for (int[] s : segments) {
             float x1 = (float) (centerSX + (s[0] + mapPanX) * mapZoom);
             float y1 = (float) (centerSY + (s[1] + mapPanZ) * mapZoom);
             float x2 = (float) (centerSX + (s[2] + mapPanX) * mapZoom);
             float y2 = (float) (centerSY + (s[3] + mapPanZ) * mapZoom);
-            belugalab.mcss3.draw.VectorRenderer.drawLine(vc, matrix, x1, y1, x2, y2, 0xFF6688AA, 2.0f);
+            com.manta.api.draw.VectorRenderer.drawLine(vc, matrix, x1, y1, x2, y2, 0xFF6688AA, 2.0f);
         }
         g.bufferSource().endBatch();
 
@@ -821,14 +821,14 @@ final class TransitTerminalRender {
         g.enableScissor((int) (x * smX) + sx, (int) (y * smY) + sy,
                         (int) ((x + w) * smX) + sx, (int) ((y + h) * smY) + sy);
         // 線路セグメント
-        var vc = belugalab.mcss3.draw.VectorRenderer.getGuiBuffer(g.bufferSource());
+        var vc = com.manta.api.draw.VectorRenderer.getGuiBuffer(g.bufferSource());
         var matrix = g.pose().last().pose();
         for (int[] s : segments) {
             float x1 = (float) (centerSX + (s[0] + mapPanX) * mapZoom);
             float y1 = (float) (centerSY + (s[1] + mapPanZ) * mapZoom);
             float x2 = (float) (centerSX + (s[2] + mapPanX) * mapZoom);
             float y2 = (float) (centerSY + (s[3] + mapPanZ) * mapZoom);
-            belugalab.mcss3.draw.VectorRenderer.drawLine(vc, matrix, x1, y1, x2, y2, 0xFF6688AA, 2.0f);
+            com.manta.api.draw.VectorRenderer.drawLine(vc, matrix, x1, y1, x2, y2, 0xFF6688AA, 2.0f);
         }
         g.bufferSource().endBatch();
         // 列車
@@ -902,7 +902,7 @@ final class TransitTerminalRender {
             g.fill(x, rowY, x + listInnerW, rowY + TransitTerminalScreen.SCHEDULE_ROW_H, 0xFF111928);
             g.fill(x, rowY, x + listInnerW, rowY + 1, 0xFF2a4a60);
             // W7-1: 列車 glyph を manta:train-front icon へ。
-            belugalab.experience.render.Icons.draw(g, "manta:train-front", x + 2, rowY + 2, 8, 0xFFFFFFFF);
+            com.manta.api.render.Icons.draw(g, "manta:train-front", x + 2, rowY + 2, 8, 0xFFFFFFFF);
             g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(snap.trainName(), listInnerW - 16),
                     x + 13, rowY + 2, 0xFFFFFFFF, false);
             String next = snap.nextGroupId() == null ? "—" : TransitTerminalScreen.nameOf(snap.nextGroupId());

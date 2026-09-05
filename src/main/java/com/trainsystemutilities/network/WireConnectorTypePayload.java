@@ -1,6 +1,6 @@
 package com.trainsystemutilities.network;
 
-import belugalab.mcss3.util.codec.BoundedStreamCodec;
+import com.manta.api.util.codec.BoundedStreamCodec;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.electrification.item.WireConnectorItem;
 import com.trainsystemutilities.electrification.wire.WireType;

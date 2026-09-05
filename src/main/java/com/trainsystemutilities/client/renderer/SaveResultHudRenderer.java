@@ -7,7 +7,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RenderGuiEvent;
 
 /**
- * プリセット保存成功 / 失敗の HUD: 共通 {@link belugalab.tsu.api.HudToast} に委譲する thin wrapper。
+ * プリセット保存成功 / 失敗の HUD: 共通 {@link com.manta.api.hud.HudToast} に委譲する thin wrapper。
  */
 @EventBusSubscriber(modid = TrainSystemUtilities.MOD_ID, value = Dist.CLIENT)
 public final class SaveResultHudRenderer {
@@ -21,14 +21,14 @@ public final class SaveResultHudRenderer {
                            : "\u4fdd\u5b58\u306b\u5931\u6557\u3057\u307e\u3057\u305f")
                 : name;
         if (success) {
-            belugalab.tsu.api.HudToast.success(title, detail).show();
+            com.manta.api.hud.HudToast.success(title, detail).show();
         } else {
-            belugalab.tsu.api.HudToast.error(title, detail).show();
+            com.manta.api.hud.HudToast.error(title, detail).show();
         }
     }
 
     @SubscribeEvent
     public static void onRenderGui(RenderGuiEvent.Post event) {
-        belugalab.tsu.api.HudToast.render(event.getGuiGraphics());
+        com.manta.api.hud.HudToast.render(event.getGuiGraphics());
     }
 }

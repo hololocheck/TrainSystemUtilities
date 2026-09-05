@@ -1,7 +1,7 @@
 package com.trainsystemutilities.network;
 
-import belugalab.mcss3.util.codec.BoundedStreamCodec;
-import belugalab.mcss3.util.safe.SafePath;
+import com.manta.api.util.codec.BoundedStreamCodec;
+import com.manta.api.util.safe.SafePath;
 import com.trainsystemutilities.TrainSystemUtilities;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

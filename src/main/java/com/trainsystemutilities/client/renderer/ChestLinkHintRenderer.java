@@ -21,12 +21,12 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
 public class ChestLinkHintRenderer {
 
     private static final int HOTBAR_TOP_OFFSET = 110;
-    private static final int HINT_W = belugalab.tsu.api.HudConstants.BADGE_W;
+    private static final int HINT_W = com.manta.api.hud.HudConstants.BADGE_W;
     private static final int HINT_H = 16;
 
     // MCSS 共通アニメ追跡
-    private static final belugalab.tsu.api.HudAnimState anim =
-            new belugalab.tsu.api.HudAnimState(220_000_000L, 160_000_000L);
+    private static final com.manta.api.hud.HudAnimState anim =
+            new com.manta.api.hud.HudAnimState(220_000_000L, 160_000_000L);
     /** ラベル左に描く registry icon (空 = icon なし)。W7-1 で ✔ glyph から移行。 */
     private static String lastIconId = "";
     /** icon の実寸と text までの間隔 (px)。 */
@@ -84,8 +84,8 @@ public class ChestLinkHintRenderer {
         int borderA = (int) (0xFF * fade);
         int fgA = (int) (0xFF * fade);
         // 「常にサイズ2相当」: 中央アンカーを pivot に counter-scale (G=2 で無変更)。
-        belugalab.tsu.api.HudChrome.pushUiScale(g, sw / 2f, y + HINT_H / 2f);
-        belugalab.tsu.api.HudChrome.drawRoundedRect(g, x, y, HINT_W, HINT_H,
+        com.manta.api.hud.HudChrome.pushUiScale(g, sw / 2f, y + HINT_H / 2f);
+        com.manta.api.hud.HudChrome.drawRoundedRect(g, x, y, HINT_W, HINT_H,
                 (bgA << 24) | bgRgb, (borderA << 24) | borderRgb);
         // icon がある状態では「icon + gap + text」を 1 グループとして中央寄せする
         // (text だけを中央に置くと icon 幅ぶん左右非対称になる)。
@@ -93,15 +93,15 @@ public class ChestLinkHintRenderer {
         int lw = mc.font.width(lastLabel);
         int gx = x + (HINT_W - (iconW + lw)) / 2;
         if (!lastIconId.isEmpty()) {
-            belugalab.experience.render.Icons.draw(g, lastIconId, gx,
+            com.manta.api.render.Icons.draw(g, lastIconId, gx,
                     y + (HINT_H - ICON_PX) / 2f, ICON_PX, ICON_PX, (fgA << 24) | fgRgb);
         }
         g.drawString(mc.font, lastLabel, gx + iconW, y + (HINT_H - 9) / 2,
                 (fgA << 24) | fgRgb, false);
-        belugalab.tsu.api.HudChrome.popUiScale(g);
+        com.manta.api.hud.HudChrome.popUiScale(g);
     }
 
     private static ItemStack findHeldTool(Minecraft mc) {
-        return belugalab.tsu.api.HeldTools.find(mc.player, ModItems.TRAIN_PRESET_TOOL.get());
+        return com.manta.api.hud.HeldTools.find(mc.player, ModItems.TRAIN_PRESET_TOOL.get());
     }
 }

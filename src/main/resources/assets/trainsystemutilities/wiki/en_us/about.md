@@ -86,7 +86,7 @@ Not good for:
 
 ## Architectural pieces (for advanced users)
 
-- **BelugaExperience UI System**: V3 GUI widget framework (controller + json builder + auto-sizing). In the `belugalab.experience.*` package.
+- **BelugaExperience UI System**: V3 GUI widget framework (controller + json builder + auto-sizing). In the `com.manta.api.controller.*` / `com.manta.api.render.*` package.
 - **MCSS Wiki**: in-game markdown wiki + JSON-driven embeds (`embed:screen` / `embed:item` / `embed:items`)
 - **GUI capture pipeline**: on login, all layout JSONs are captured via an off-screen FBO → reflected in the wiki immediately as DynamicTextures
 - **i18n**: when switching between ja_jp / en_us, run `/tsu-wiki-prebuild` to regenerate the language-specific captures

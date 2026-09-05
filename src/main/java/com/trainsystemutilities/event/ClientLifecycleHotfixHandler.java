@@ -1,6 +1,6 @@
 package com.trainsystemutilities.event;
 
-import belugalab.mcss3.util.concurrent.ClientCacheRegistry;
+import com.manta.api.util.concurrent.ClientCacheRegistry;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.client.gui.MonitorClientCache;
 import com.trainsystemutilities.client.gui.RailwayAnnouncementClientState;

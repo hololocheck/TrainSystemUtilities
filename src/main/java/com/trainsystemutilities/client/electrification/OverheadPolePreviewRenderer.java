@@ -1,8 +1,8 @@
 package com.trainsystemutilities.client.electrification;
 
-import belugalab.mcss3.preview.WorldGhostBlockRenderer;
-import belugalab.mcss3.preview.WorldGhostBlockRenderer.GhostItem;
-import belugalab.mcss3.preview.WorldGhostBlockRenderer.GhostOutline;
+import com.manta.api.preview.WorldGhostBlockRenderer;
+import com.manta.api.preview.WorldGhostBlockRenderer.GhostItem;
+import com.manta.api.preview.WorldGhostBlockRenderer.GhostOutline;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.electrification.autoplace.AutoPlaceConfig;
 import com.trainsystemutilities.electrification.autoplace.AutoPlaceExecutor;

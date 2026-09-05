@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.experience.controller.ColorPickerController;
+import com.manta.api.controller.ColorPickerController;
 import com.trainsystemutilities.blockentity.ManagementComputerBlockEntity;
 import com.trainsystemutilities.schedule.TrainTypes;
 import net.minecraft.core.BlockPos;
@@ -16,7 +16,7 @@ final class ManagementComputerDispatch {
     static String getDynamicText(ManagementComputerScreenV2 scr, String[] classes, String defaultText) {
         // 券売機タブ: タイトル (販売可 N/M) + 行ごとの駅名
         if (scr.tabs.is("tickets")) {
-            int rt = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+            int rt = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
             var groups = scr.ticketGroups();
             for (String c : classes) {
                 if ("tickets-title".equals(c)) {
@@ -69,12 +69,12 @@ final class ManagementComputerDispatch {
         }
         // Monitor 色設定 popup texts — controller に委譲
         if (scr.showMonitorColorSettings) {
-            int rIdx = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+            int rIdx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
             String t = scr.monitorColorPopup.resolveText(classes, rIdx);
             if (t != null) return t;
         }
         // Train detail popup repeat-context texts
-        int ri = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+        int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
         if (ri >= 0 && scr.selectedTrainId != null) {
             for (String c : classes) {
                 // W7-1 (R4.23.1): 現在行マーカー ▶ / 他行 ○ の**対**を registry icon へ。
@@ -516,7 +516,7 @@ final class ManagementComputerDispatch {
             return scr.ticketScroll.rowCount();
         }
         if ("ticket-toggle-knob-x".equals(key)) {
-            int rt = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+            int rt = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
             if (rt >= 0) return scr.ticketToggle.knobXFor(rt, defaultValue);
         }
         if ("tickets-scrollbar-thumb-y".equals(key)) {
@@ -557,7 +557,7 @@ final class ManagementComputerDispatch {
         // repeat 行なので currentRepeatIndex + scroll offset で実 index を出す
         // (旧実装は "⏸ " を列車名へ前置していた)。wikiMode は同期フラグを持たないので false。
         if ("sched-row-paused".equals(key)) {
-            int ri = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+            int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
             if (ri < 0 || scr.wikiMode) return false;
             var live = scr.trainsForList();
             int realIdx = ri + scr.schedListScroll.offset();
@@ -679,12 +679,12 @@ final class ManagementComputerDispatch {
             case "export-all-toggle-bg": return scr.exportAllToggle.trackBg();
             case "export-all-knob-bg":   return scr.exportAllToggle.knobBg();
             case "owner-border":
-                return belugalab.tsu.api.OwnerAccess.ringColor(scr.be().isPrivateMode());
+                return com.manta.api.hud.OwnerAccess.ringColor(scr.be().isPrivateMode());
             case "mc-monitor-status-dot-bg":
             case "mc-monitor-info-color":
                 return scr.isOnline() ? 0xFF4caf50 : 0xFFef5350;
         }
-        int ri = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+        int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
         // 券売機タブ: per-row 販売可トグル
         if ("ticket-toggle-track-bg".equals(key) && ri >= 0) return scr.ticketToggle.trackBgFor(ri);
         if ("ticket-toggle-knob-bg".equals(key) && ri >= 0) return scr.ticketToggle.knobBgFor(ri);
@@ -940,18 +940,18 @@ final class ManagementComputerDispatch {
 
     static void onElementClick(ManagementComputerScreenV2 scr, String[] classes, int mouseX, int mouseY, int button) {
         // Phase 9: 4-arg を完全 override しているため base の hint/wiki 処理を明示呼び出し
-        if (belugalab.tsu.api.HintToggleHelper.handleClick(classes)) return;
+        if (com.manta.api.hud.HintToggleHelper.handleClick(classes)) return;
         // Monitor toggle (= track/knob + alias 旧名)
         if (scr.monitorToggle.handleClick(classes)) return;
         if (scr.exportAllToggle.handleClick(classes)) return;
         if (scr.showScheduleShare && scr.schedShareToggle.handleClick(classes, scr.schedShareRealIdx())) return;
         // 券売機タブ: 販売可トグル (repeat 行ごと)
-        if (scr.ticketToggle.handleClick(classes, belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex())) return;
+        if (scr.ticketToggle.handleClick(classes, com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex())) return;
         for (String c : classes) {
             if ("wiki-btn".equals(c)) {
                 String pid = scr.wikiPageId();
                 if (pid != null && !pid.isEmpty()) {
-                    belugalab.mcss3.wiki.Wiki.open(pid);
+                    com.manta.api.wiki.Wiki.open(pid);
                 }
                 return;
             }
@@ -961,7 +961,7 @@ final class ManagementComputerDispatch {
                 scr::schedStationNames, scr::applyScheduleEdit, scr::clearOverlayAnimByClass)) return;
         // HSV picker (highest popup priority)
         if (scr.showColorPicker) {
-            int ri = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+            int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
             for (String c : classes) {
                 if ("cp-close".equals(c) || "cp-close-btn".equals(c) || "mc-popup-close".equals(c)) {
                     scr.showColorPicker = false; return;
@@ -1017,14 +1017,14 @@ final class ManagementComputerDispatch {
         }
         // Station assign dropdown (controller 委譲)
         if (scr.stationAssign.isOpen()) {
-            int ri = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+            int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
             if (scr.stationAssign.handleClick(classes, ri, () -> scr.serverBE().getLineSymbols(),
                     (n, p, sym) -> scr.assignSymbolOnServer(n, p, sym == null ? null : sym.getId()))) return;
             // fallthrough → main GUI
         }
         // Monitor color settings popup — ColorTargetController に dispatch
         if (scr.showMonitorColorSettings) {
-            int dIdx = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+            int dIdx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
             // popup-close は controller では false を返す (popup 自体を閉じる責務は screen)
             for (String c : classes) {
                 if ("mcol-popup-close".equals(c) || "mc-popup-close".equals(c)) {
@@ -1200,7 +1200,7 @@ final class ManagementComputerDispatch {
                 case "sym-tile":
                 case "sym-tile-badge":   // canvas は auto-clickable のため innermost-rule でこちらに来る
                 case "sym-tile-name": {
-                    int ri = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                    int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                     if (ri >= 0 && ri < scr.serverBE().getLineSymbols().size()) {
                         if (button == 1) {
                             scr.symbolDelete.open(ri);
@@ -1211,7 +1211,7 @@ final class ManagementComputerDispatch {
                     return;
                 }
                 case "train-row": {
-                    int idx = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                    int idx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                     if (idx >= 0) {
                         var live = scr.trainsForList();
                         int realIdx = idx + scr.trainScroll.offset();
@@ -1220,7 +1220,7 @@ final class ManagementComputerDispatch {
                     return;
                 }
                 case "sched-row": {
-                    int idx = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                    int idx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                     if (idx >= 0) {
                         var live = scr.trainsForList();
                         int realIdx = idx + scr.schedListScroll.offset();
@@ -1258,7 +1258,7 @@ final class ManagementComputerDispatch {
                     scr.showScheduleShare = false;
                     return;
                 case "station-row": {
-                    int idx = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                    int idx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                     if (idx >= 0) {
                         var stations = scr.stationsForList();
                         int realIdx = idx + scr.stationScroll.offset();
@@ -1277,7 +1277,7 @@ final class ManagementComputerDispatch {
                     return;
                 }
                 case "station-row-assign": {
-                    int idx = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                    int idx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                     if (idx >= 0) {
                         var stations = scr.stationsForList();
                         int realIdx = idx + scr.stationScroll.offset();
@@ -1305,7 +1305,7 @@ final class ManagementComputerDispatch {
                     scr.selectedStationKey = "";
                     return;
                 case "door-btn": {
-                    int idx = belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex();
+                    int idx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
                     if (idx >= 0 && idx < ManagementComputerScreenV2.DOOR_OPTS.length) {
                         var s = scr.selectedStation();
                         if (s != null) {

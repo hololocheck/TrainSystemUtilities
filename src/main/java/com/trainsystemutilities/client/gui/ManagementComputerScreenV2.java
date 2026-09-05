@@ -1,18 +1,18 @@
 package com.trainsystemutilities.client.gui;
-import belugalab.experience.controller.DragDropPalette;
-import belugalab.experience.render.HoverTilePreview;
+import com.manta.api.controller.DragDropPalette;
+import com.manta.api.render.HoverTilePreview;
 
-import belugalab.mcss3.anim.Animation;
-import belugalab.mcss3.anim.Easing;
-import belugalab.mcss3.screen.JsonLayoutHandler;
-import belugalab.mcss3.screen.JsonLayoutScreen;
-import belugalab.experience.controller.ColorPickerController;
-import belugalab.experience.controller.ColorTargetController;
-import belugalab.experience.controller.ScrollViewport;
-import belugalab.experience.controller.OverlayController;
-import belugalab.experience.controller.TabController;
-import belugalab.mcss3.anim.Transition;
-import belugalab.mcss3.draw.VectorRenderer;
+import com.manta.api.anim.Animation;
+import com.manta.api.anim.Easing;
+import com.manta.api.screen.JsonLayoutHandler;
+import com.manta.api.screen.JsonLayoutScreen;
+import com.manta.api.controller.ColorPickerController;
+import com.manta.api.controller.ColorTargetController;
+import com.manta.api.controller.ScrollViewport;
+import com.manta.api.controller.OverlayController;
+import com.manta.api.controller.TabController;
+import com.manta.api.anim.Transition;
+import com.manta.api.draw.VectorRenderer;
 import com.trainsystemutilities.blockentity.ManagementComputerBlockEntity;
 import com.trainsystemutilities.gui.ManagementComputerMenu;
 import com.trainsystemutilities.schedule.CreateScheduleIds;
@@ -65,8 +65,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     private Boolean localMonitorEnabled = null;
     /** Monitor enable toggle (= local + cache + server sync)。
      *  alias で旧名 mc-monitor-toggle-track/knob にも対応。 */
-    final belugalab.experience.controller.ToggleSwitchController monitorToggle =
-            new belugalab.experience.controller.ToggleSwitchController(
+    final com.manta.api.controller.ToggleSwitchController monitorToggle =
+            new com.manta.api.controller.ToggleSwitchController(
                     "monitor-toggle-track", "monitor-toggle-knob",
                     this::monitorEnabled,
                     v -> {
@@ -81,8 +81,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                     .aliasClasses("mc-monitor-toggle-track", "mc-monitor-toggle-knob");
 
     /** すべて書き出しトグル (= 入力スタック分まとめ書き出し)。 server 反映は menu button 20600 (MP 安全)。 */
-    final belugalab.experience.controller.ToggleSwitchController exportAllToggle =
-            new belugalab.experience.controller.ToggleSwitchController(
+    final com.manta.api.controller.ToggleSwitchController exportAllToggle =
+            new com.manta.api.controller.ToggleSwitchController(
                     "export-all-toggle-track", "export-all-toggle-knob",
                     () -> be().isExportAll(),
                     v -> { if (this.minecraft != null && this.minecraft.gameMode != null)
@@ -139,8 +139,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     final ScrollViewport schedShareScroll =
             new ScrollViewport(() -> schedShareCandidates().size(), SCHED_SHARE_VISIBLE);
     /** 共有 popup の per-row トグル (= 候補列車を follower にする ON/OFF)。 */
-    final belugalab.experience.controller.IndexedToggleSwitchController schedShareToggle =
-            new belugalab.experience.controller.IndexedToggleSwitchController(
+    final com.manta.api.controller.IndexedToggleSwitchController schedShareToggle =
+            new com.manta.api.controller.IndexedToggleSwitchController(
                     "sched-share-toggle-track", "sched-share-toggle-knob",
                     idx -> {
                         var c = schedShareCandidates();
@@ -168,8 +168,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     static final int TICKETS_LIST_THUMB_H = 20;
     /** 駅一覧スクロール (= BelugaExperience 標準 ScrollViewport, §4.19)。
      *  activeWhen で券売機タブ表示中のみ scrollbar を出す (= 他タブへの残存を構造的に防止)。 */
-    final belugalab.experience.controller.ScrollViewport ticketScroll =
-            new belugalab.experience.controller.ScrollViewport(
+    final com.manta.api.controller.ScrollViewport ticketScroll =
+            new com.manta.api.controller.ScrollViewport(
                     () -> ticketGroups().size(),
                     TICKETS_MAX_VISIBLE)
                     .activeWhen(() -> tabs.is("tickets"));
@@ -191,8 +191,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         return (real >= 0 && real < groups.size()) ? groups.get(real) : null;
     }
     /** 行ごとの販売可トグル (= IndexedToggleSwitchController, §4.14 repeat 内トグル)。 */
-    final belugalab.experience.controller.IndexedToggleSwitchController ticketToggle =
-            new belugalab.experience.controller.IndexedToggleSwitchController(
+    final com.manta.api.controller.IndexedToggleSwitchController ticketToggle =
+            new com.manta.api.controller.IndexedToggleSwitchController(
                     "ticket-toggle-track", "ticket-toggle-knob",
                     idx -> {
                         var g = ticketGroupAt(idx);
@@ -876,7 +876,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
 
     /** 共有 popup repeat の実 index (= repeat idx + scroll offset)。 */
     int schedShareRealIdx() {
-        return belugalab.mcss3.screen.JsonLayoutEngine.currentRepeatIndex() + schedShareScroll.offset();
+        return com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex() + schedShareScroll.offset();
     }
 
     int schedShareThumbH() {

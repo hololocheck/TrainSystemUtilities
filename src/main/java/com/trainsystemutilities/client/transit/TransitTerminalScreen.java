@@ -1,14 +1,14 @@
 package com.trainsystemutilities.client.transit;
-import belugalab.mcss3.draw.VectorRenderer;
-import belugalab.mcss3.anim.Animation;
+import com.manta.api.draw.VectorRenderer;
+import com.manta.api.anim.Animation;
 
-import belugalab.experience.render.OverlayPopIn;
-import belugalab.mcss3.screen.JsonLayoutEngine;
-import belugalab.mcss3.screen.JsonLayoutHandler;
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
-import belugalab.mcss3.draw.SmoothRenderer;
-import belugalab.tsu.api.ToggleColors;
-import belugalab.mcss3.anim.Transition;
+import com.manta.api.render.OverlayPopIn;
+import com.manta.api.screen.JsonLayoutEngine;
+import com.manta.api.screen.JsonLayoutHandler;
+import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.draw.SmoothRenderer;
+import com.manta.api.hud.ToggleColors;
+import com.manta.api.anim.Transition;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.station.StationGroup;
 import com.trainsystemutilities.station.StationGroupClientCache;
@@ -16,9 +16,9 @@ import com.trainsystemutilities.station.routing.ComposedRouteFinder;
 import com.trainsystemutilities.station.routing.TrainRouter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import belugalab.experience.controller.TextInputController;
-import belugalab.experience.controller.ToggleSwitchController;
-import belugalab.experience.render.TextCaretRenderer;
+import com.manta.api.controller.TextInputController;
+import com.manta.api.controller.ToggleSwitchController;
+import com.manta.api.render.TextCaretRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
@@ -49,7 +49,7 @@ import java.util.UUID;
  * これで「歩きながら検索ボックスに W が入る」問題が根本解決する。
  */
 @OnlyIn(Dist.CLIENT)
-public class TransitTerminalScreen extends belugalab.mcss3.screen.JsonLayoutPlainScreen {
+public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainScreen {
 
     static final int PANEL_W = 200;
     private static final int PANEL_H = 340;
@@ -179,7 +179,7 @@ public class TransitTerminalScreen extends belugalab.mcss3.screen.JsonLayoutPlai
     private float slideOffsetY() {
         // wiki capture: init 直後の 1 フレームを撮るため、 スライド途中 (openedAtNano≈now →
         // パネルが画面下端外) を撮ると空白になる。 capture 中は resting (offY=0) で撮る。
-        if (belugalab.mcss3.screen.JsonLayoutScreen.WIKI_CAPTURE_MODE) return 0f;
+        if (com.manta.api.screen.JsonLayoutScreen.WIKI_CAPTURE_MODE) return 0f;
         float dist = this.height - getDialogScreenY(); // パネルを画面下端の完全外まで押し下げる距離
         if (closing) return dist * easeOut(closeProgress());
         long elapsed = System.nanoTime() - openedAtNano;
@@ -295,8 +295,8 @@ public class TransitTerminalScreen extends belugalab.mcss3.screen.JsonLayoutPlai
             // 長い駅名が枠外へはみ出さないよう収める: 編集中は末尾(caret 側)、非編集は head + "…"。
             int availW = r[2] - 6;
             String shown = (acField == f)
-                    ? belugalab.tsu.api.HudText.tailFit(this.font, val, availW)
-                    : belugalab.tsu.api.HudText.ellipsize(this.font, val, availW);
+                    ? com.manta.api.hud.HudText.tailFit(this.font, val, availW)
+                    : com.manta.api.hud.HudText.ellipsize(this.font, val, availW);
             g.drawString(this.font, shown, tx, ty, 0xFFFFFFFF, false);
         }
         if (acField == f) {
@@ -436,7 +436,7 @@ public class TransitTerminalScreen extends belugalab.mcss3.screen.JsonLayoutPlai
             String icon = navIcon(tabs[i]);
             String label = navLabel(tabs[i]);
             int iw = NAV_ICON_SIZE;
-            belugalab.experience.render.Icons.draw(g, icon, cx + (cw - iw) / 2, cy + 3, iw, color);
+            com.manta.api.render.Icons.draw(g, icon, cx + (cw - iw) / 2, cy + 3, iw, color);
             int lw = this.font.width(label);
             g.drawString(this.font, label, cx + (cw - lw) / 2, cy + 14, color, false);
         }
@@ -1072,7 +1072,7 @@ public class TransitTerminalScreen extends belugalab.mcss3.screen.JsonLayoutPlai
     }
 
     static String truncate(String s, int maxWidth) {
-        return belugalab.tsu.api.HudText.ellipsize(Minecraft.getInstance().font, s, maxWidth);
+        return com.manta.api.hud.HudText.ellipsize(Minecraft.getInstance().font, s, maxWidth);
     }
 
     static StationGroup findGroup(UUID id) {
@@ -1295,7 +1295,7 @@ public class TransitTerminalScreen extends belugalab.mcss3.screen.JsonLayoutPlai
                     clHover ? 0xFFAA1F1F : 0xFF333344);
             int clX = x + w - clW - 3;
             int clC = clHover ? 0xFFFFFFFF : 0xFFAAAAAA;
-            belugalab.experience.render.Icons.draw(g, "manta:x", clX, resY + 1, clIco, clC);
+            com.manta.api.render.Icons.draw(g, "manta:x", clX, resY + 1, clIco, clC);
             g.drawString(this.font, clearText,
                     clX + clIco + TransitTerminalRender.CLEAR_ICON_GAP, resY, clC, false);
             resY += 14;

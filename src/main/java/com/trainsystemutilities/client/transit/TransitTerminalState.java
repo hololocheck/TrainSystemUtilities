@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.transit;
 
-import belugalab.experience.controller.TabController;
+import com.manta.api.controller.TabController;
 import com.trainsystemutilities.station.StationGroup;
 import com.trainsystemutilities.station.StationGroupClientCache;
 import com.trainsystemutilities.station.routing.ComposedRouteFinder;
@@ -55,8 +55,8 @@ public final class TransitTerminalState {
     /** SCHEDULE list の可視行数 (= TransitTerminalScreen の canvas h=256 / row stride 24)。 */
     private static final int SCHEDULE_VISIBLE_ROWS = 256 / 24;
     /** §4.19 標準 ScrollViewport (row-based)。static field のまま (= 画面再オープンで保持)。 */
-    private static final belugalab.experience.controller.ScrollViewport scheduleScroll =
-            new belugalab.experience.controller.ScrollViewport(
+    private static final com.manta.api.controller.ScrollViewport scheduleScroll =
+            new com.manta.api.controller.ScrollViewport(
                     TransitTerminalState::scheduleFilteredRowCount, SCHEDULE_VISIBLE_ROWS);
 
     // --- MAP タブ ---
@@ -154,7 +154,7 @@ public final class TransitTerminalState {
     }
 
     public static String scheduleQuery() { return scheduleQuery.toString(); }
-    public static belugalab.experience.controller.ScrollViewport scheduleScroll() { return scheduleScroll; }
+    public static com.manta.api.controller.ScrollViewport scheduleScroll() { return scheduleScroll; }
     public static int scheduleScrollY() { return scheduleScroll.offset(); }
     public static void setScheduleScrollY(int v) { scheduleScroll.setOffset(v); }
 

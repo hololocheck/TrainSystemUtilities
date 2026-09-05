@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import belugalab.mcss3.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.JsonLayoutPlainScreen;
 import com.trainsystemutilities.blockentity.ManagementComputerSettings;
 import com.trainsystemutilities.item.MemoryCardItem;
 import com.trainsystemutilities.network.MemoryCardResetPayload;

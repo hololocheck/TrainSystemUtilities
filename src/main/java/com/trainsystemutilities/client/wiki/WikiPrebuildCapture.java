@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client.wiki;
 
-import belugalab.mcss3.screen.JsonLayoutEngine;
-import belugalab.mcss3.screen.JsonLayoutHandler;
+import com.manta.api.screen.JsonLayoutEngine;
+import com.manta.api.screen.JsonLayoutHandler;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.pipeline.RenderTarget;

@@ -147,31 +147,19 @@ public final class TSUWikiCommonEmbeds {
                                             int x, int y, int w, int h, int size, boolean label) {
         int ix = x + (w - size) / 2;
         int iy = y + 2;
-        // 標準 16×16 → size に scale
-        float scale = size / 16f;
-        g.pose().pushPose();
-        g.pose().translate(ix, iy, 100);
-        g.pose().scale(scale, scale, 1f);
-        g.renderItem(stack, 0, 0);
-        g.renderItemDecorations(font, stack, 0, 0);
-        g.pose().popPose();
+        // 標準 16×16 → size に scale (装飾も同じ pose の中)
+        com.manta.api.render.ItemDraw.stackScaled(g, font, stack, ix, iy, size / 16f, 100f);
         if (label) {
             String name = stack.isEmpty()
                     ? Component.literal("(unknown)").getString()
                     : stack.getHoverName().getString();
             // cell 幅を超える場合は省略 (...) で truncate
-            int maxW = Math.max(20, w - 4);
-            String display = name;
-            if (font.width(display) > maxW) {
-                while (display.length() > 1 && font.width(display + "...") > maxW) {
-                    display = display.substring(0, display.length() - 1);
-                }
-                display = display + "...";
-            }
-            int textW = font.width(display);
+            // 省略記号は UI 全体で 1 種類に保つ ("..." ではなく "…")。
+            String display = com.manta.api.hud.HudText.ellipsize(font, name, Math.max(20, w - 4));
+            int textW = com.manta.api.text.MantaText.uiWidth(font, display);
             int tx = x + (w - textW) / 2;
             int ty = iy + size + 2;
-            g.drawString(font, display, tx, ty, 0xFFE0E0E0, true);
+            com.manta.api.text.MantaText.draw(g, font, display, tx, ty, 0xFFE0E0E0, true);
         }
     }
 
@@ -232,12 +220,12 @@ public final class TSUWikiCommonEmbeds {
             String modid = ctx.option("modid", TrainSystemUtilities.MOD_ID);
             int w = ctx.renderWidth();
             // 1) explicit ratio (e.g. ratio=4:3)
-            // 2) prebuild が記録した native dims から aspect ratio
+            // 2) キャプチャが記録した native dims から aspect ratio
             // 3) fallback 16:9
             int h;
             String ratio = ctx.option("ratio", "");
-            int[] nativeDims = WikiPrebuildCapture.LAYOUT_DIMS.get(id + "__" + state);
-            if (nativeDims == null) nativeDims = WikiPrebuildCapture.LAYOUT_DIMS.get(id);
+            int[] nativeDims = WikiCapture.LAYOUT_DIMS.get(id + "__" + state);
+            if (nativeDims == null) nativeDims = WikiCapture.LAYOUT_DIMS.get(id);
             if (!ratio.isEmpty() && ratio.contains(":")) {
                 String[] rs = ratio.split(":");
                 try {
@@ -289,13 +277,13 @@ public final class TSUWikiCommonEmbeds {
         // Try order:
         //   1. id__state__lang     (auto-capture: 古い形式 + state 区別)
         //   2. id__state__en_us    (lang fallback)
-        //   3. id__lang            (prebuild の標準形式)
-        //   4. id__en_us           (prebuild lang fallback)
+        //   3. id__lang            (main state の形式)
+        //   4. id__en_us           (main state の lang fallback)
         //   5. id__state           (legacy)
         //   6. id-state__lang      (legacy overlay capture)
         //   7. id-state__en_us     (legacy overlay fallback)
         //   8. id-state            (legacy overlay no-lang)
-        //   9. id                  (legacy / no-lang prebuild)
+        //   9. id                  (legacy / no-lang main state)
         String[] candidates = {
                 id + "__" + state + "__" + currentLang,
                 id + "__" + state + "__en_us",
@@ -314,7 +302,7 @@ public final class TSUWikiCommonEmbeds {
         // 全て失敗 → エラー表示
         g.fill(x, y, x + w, y + h, 0xFF1a1a25);
         String msg = "[screen: " + id + "__" + state + " (no capture, press F8 in screen)]";
-        g.drawString(font, msg, x + 6, y + 6, 0xFFFF8888, true);
+        com.manta.api.text.MantaText.draw(g, font, msg, x + 6, y + 6, 0xFFFF8888, true);
     }
 
     /** texture が利用可能なら描画して true。利用不可なら false。

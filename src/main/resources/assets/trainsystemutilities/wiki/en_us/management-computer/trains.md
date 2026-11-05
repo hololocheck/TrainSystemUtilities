@@ -6,70 +6,18 @@ tags: [management-computer, train]
 
 # Trains Tab
 
-![](bws:trainsystemutilities:wiki/screens/management-computer__trains__ja_jp.png)
+![](bws:trainsystemutilities:wiki/screens/management-computer__trains__en_us.png)
 
-The Trains tab of the Management Computer. List of all trains + detail view.
+Lists the trains of the registered network. Choose "Trains" at the top left of the Management Computer.
 
 [[TOC]]
 
-## How to open
+The list shows each train's name, number of cars and destination, and the station it is stopped at or its speed while running. Click a row to see the consist's 3D preview and its schedule.
 
-1. **Place** the **Management Computer** block and **right-click** it to open the screen.
-2. **Click** the top-left dropdown and choose **"🚂 Trains"**.
-3. When there are too many trains to fit the list, turn the **mouse wheel** over the list to scroll.
+![](bws:trainsystemutilities:wiki/screens/management-computer-train-detail__en_us.png)
 
-## Displayed content
+In the 3D preview, left-drag to rotate, Shift + drag to move, and use the mouse wheel to zoom. "View Electrification" shows, for each car, the stored power, the pantographs and the FE inverters, and whether the pantographs are touching the overhead wire.
 
-| Column | Content |
-|---|---|
-| Train name | From the Create schedule |
-| Car count | Number of coupled cars |
-| Current position | Station name or segment in transit |
-| Speed | Real-time speed |
-| Next station | Next scheduled stop |
-| Electrification | Pantograph / FE buffer ON/OFF |
+![](bws:trainsystemutilities:wiki/screens/management-computer-electrification-detail__en_us.png)
 
-## Train detail popup
-
-![](bws:trainsystemutilities:wiki/screens/management-computer-train-detail__ja_jp.png)
-
-**Click a train's row** in the list to open a detail popup to the right of the screen (or to the left if it does not fit).
-
-| Info | Content |
-|---|---|
-| Train name / car count | Basic info |
-| Schedule | Current entry and next entry |
-| Vehicle composition (3D model) | 3D preview of the consist |
-| Electrification | Open the [Electrification Detail popup](#電化詳細-popup) from the "⚡ View Electrification Status" button |
-| Line symbol | Assigned symbol |
-
-**Controls inside the popup:**
-
-- **Rotate the 3D model**: **hold the left mouse button and drag** over the model. **Hold Shift and drag** to translate (pan); **mouse wheel** to zoom.
-- **Open electrification status**: **click the "⚡ View Electrification Status" button** in the popup.
-- **Close**: **click the ✕ (close) button** at the top-right of the popup.
-
-## Electrification detail popup {#電化詳細-popup}
-
-![](bws:trainsystemutilities:wiki/screens/management-computer-electrification-detail__ja_jp.png)
-
-**Clicking the "⚡ View Electrification Status" button** in the train detail popup opens it overlaid at the center of the screen. It shows the train's FE buffer / pantograph / catenary connection status.
-
-- Buffer capacity + remaining (per car)
-- List of cars with a pantograph
-- List of cars with an FE inverter
-- Currently powered segment / source substation
-
-**Controls:**
-
-- **Raise / lower the pantograph**: **click the pantograph icon** drawn per car in the list to raise/lower that car's pantograph (toggle current collection ON/OFF).
-- **Close**: **click the ✕ (close) button** at the top-right of the popup (returns to the original train detail popup).
-
-Details: [Electrification System](../electrification/pantograph.md)
-
-## Related
-
-- [Schedule Tab](schedule.md)
-- [Route Map](route-map.md)
-- [Coupling / Decoupling](../trains/coupling.md)
-- [Pantograph](../electrification/pantograph.md)
+In the electrification details, while you are within 64 blocks of the train, click a [Pantograph](../electrification/pantograph.md) icon to raise or lower it. The close button takes you back to the train details.

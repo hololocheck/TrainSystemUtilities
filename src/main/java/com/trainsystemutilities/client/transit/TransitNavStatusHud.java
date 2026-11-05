@@ -48,7 +48,7 @@ public final class TransitNavStatusHud {
             String name = TransitNavClientState.targetName();
             lastLine1 = "🧭 " + Component.translatable("tsu.transit_terminal.nav_to_fmt", name).getString();
             lastLine2 = Component.translatable("tsu.transit_terminal.nav_remaining_fmt", remaining).getString();
-            lastBoxW = Math.max(mc.font.width(lastLine1), mc.font.width(lastLine2)) + 16;
+            lastBoxW = Math.max(com.manta.api.text.MantaText.uiWidth(mc.font, lastLine1), com.manta.api.text.MantaText.uiWidth(mc.font, lastLine2)) + 16;
         }
 
         anim.update(show);
@@ -67,8 +67,8 @@ public final class TransitNavStatusHud {
         HudChrome.pushUiScale(g, sw / 2f, (float) y);
         HudChrome.drawRoundedRect(g, x, y, boxW, boxH,
                 HudChrome.fadeAlpha(0xE612122A, fade), HudChrome.fadeAlpha(0xFF4FC3F7, fade));
-        g.drawString(mc.font, lastLine1, x + 8, y + 4, HudChrome.fadeAlpha(0xFFFFFFFF, fade), false);
-        g.drawString(mc.font, lastLine2, x + 8, y + 16, HudChrome.fadeAlpha(0xFF80DEEA, fade), false);
+        com.manta.api.text.MantaText.draw(g, mc.font, lastLine1, x + 8, y + 4, HudChrome.fadeAlpha(0xFFFFFFFF, fade));
+        com.manta.api.text.MantaText.draw(g, mc.font, lastLine2, x + 8, y + 16, HudChrome.fadeAlpha(0xFF80DEEA, fade));
         HudChrome.popUiScale(g);
     }
 }

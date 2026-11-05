@@ -1,0 +1,13 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {"target": {"classes": ["tab-dropdown"]}, "do": "click", "say": "trainsystemutilities.wiki.play.mc.tabs", "holdMs": 1100},
+    {"target": {"classes": ["mc-dd-item", "tab-item-trains"]}, "do": "click", "say": "trainsystemutilities.wiki.play.mc.trains", "holdMs": 1800},
+    {"target": {"classes": ["tab-dropdown"]}, "do": "click", "say": "trainsystemutilities.wiki.play.mc.tabs", "holdMs": 900},
+    {"target": {"classes": ["mc-dd-item", "tab-item-stations"]}, "do": "click", "say": "trainsystemutilities.wiki.play.mc.stations", "holdMs": 1800},
+    {"target": {"classes": ["tab-dropdown"]}, "do": "click", "holdMs": 900},
+    {"target": {"classes": ["mc-dd-item", "tab-item-map"]}, "do": "click", "say": "trainsystemutilities.wiki.play.mc.map", "holdMs": 1500}
+  ]
+}

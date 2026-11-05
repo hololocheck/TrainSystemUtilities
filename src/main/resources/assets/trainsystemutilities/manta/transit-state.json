@@ -1,0 +1,227 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "route-reason": {
+        "type": "string",
+        "maxLen": 640,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "route-day-hi": {
+        "type": "int",
+        "min": -2147483648,
+        "max": 2147483647,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "route-day-lo": {
+        "type": "int",
+        "min": -2147483648,
+        "max": 2147483647,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "routes": {
+        "type": "list",
+        "maxLength": 3,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "route-total": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "route-from": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "route-from-name": {
+            "type": "string",
+            "maxLen": 128
+          },
+          "route-to": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "route-to-name": {
+            "type": "string",
+            "maxLen": 128
+          },
+          "route-walk": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        }
+      },
+      "legs": {
+        "type": "list",
+        "maxLength": 128,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "leg-route": {
+            "type": "int",
+            "min": 0,
+            "max": 2
+          },
+          "leg-from": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "leg-to": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "leg-train": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "leg-travel": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "leg-dep": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "leg-board": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "leg-alight": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "leg-sym-letters": {
+            "type": "string",
+            "maxLen": 72
+          },
+          "leg-sym-number": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "leg-sym-color": {
+            "type": "string",
+            "maxLen": 32
+          },
+          "leg-samples": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "leg-stddev": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "leg-delay": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        }
+      },
+      "route-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "nav-target": {
+        "type": "string",
+        "maxLen": 36,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "nav-name": {
+        "type": "string",
+        "maxLen": 128,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "nav-ticks": {
+        "type": "int",
+        "min": -2147483648,
+        "max": 2147483647,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "nav-error": {
+        "type": "string",
+        "maxLen": 256,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "nav-path": {
+        "type": "list",
+        "maxLength": 1024,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "nav-x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "nav-y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "nav-z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          }
+        }
+      },
+      "nav-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      }
+    },
+    "actions": {
+      "search": {
+        "params": {
+          "from": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "to": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      },
+      "nav": {
+        "params": {
+          "target": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "platform": {
+            "type": "int",
+            "min": 0,
+            "max": 4096
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      }
+    }
+  }
+}

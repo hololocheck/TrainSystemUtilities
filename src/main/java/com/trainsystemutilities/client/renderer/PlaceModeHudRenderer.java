@@ -216,45 +216,15 @@ public class PlaceModeHudRenderer {
 
     private static void renderModeBar(GuiGraphics g, Minecraft mc, int x, int y, int w, int h,
                                         float fade, int curSub, int rotY) {
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
-        int bg = (bgA << 24) | 0x1a1a2e;
-        int border = (borderA << 24) | 0x4fc3f7;
-        HudChrome.drawRoundedRect(g, x, y, w, h, bg, border);
-
-        int n = TrainPresetToolItem.SUB_COUNT;
-        // タブ領域は枠の内側 1px から始まり、5 タブで等分。最後の余りは最終タブに足す。
-        int tabAreaX = x + 1;
-        int tabAreaY = y + 1;
-        int tabAreaW = w - 2;
-        int tabAreaH = h - 2;
-        int tabW = tabAreaW / n;
-        int lastTabW = tabAreaW - tabW * (n - 1); // 余り吸収
-
-        // ハイライト位置 (= 共通 animator が prev→cur 補間 + 最終タブ余り吸収を担当, R2.7.1)
-        int hlX = subTabAnim.highlightX(tabAreaX, tabW);
-        int hlW = subTabAnim.highlightW(tabW, lastTabW, n);
-
-        int hlBgA = (int) (0xFF * fade);
-        int hlBg = (hlBgA << 24) | 0x4fc3f7;
-        int hlBorderA = (int) (0xFF * fade);
-        int hlBorder = (hlBorderA << 24) | 0x80deea;
-        SmoothRenderer.fillRoundedRect(g, hlX, tabAreaY, hlW, tabAreaH, 5f, hlBorder);
-        SmoothRenderer.fillRoundedRect(g, hlX + 1, tabAreaY + 1, hlW - 2, tabAreaH - 2, 4f, hlBg);
-
-        for (int i = 0; i < n; i++) {
-            int tx = tabAreaX + i * tabW;
-            int tw = (i == n - 1) ? lastTabW : tabW;
-            boolean active = i == curSub;
-            int fgRgb = active ? 0x000000 : 0x80deea;
-            int fgA = (int) (0xFF * fade);
-            int fg = (fgA << 24) | fgRgb;
-            String label = TrainPresetToolItem.subModeLabel(i);
-            if (i == TrainPresetToolItem.SUB_ROT_Y && active) {
-                label = label + " " + (rotY * 90) + "\u00b0";
-            }
-            HudChrome.drawCenteredLabel(g, mc.font, label, tx, tabAreaY, tw, tabAreaH, fg);
-        }
+        com.manta.api.hud.HudTabStrip.draw(g, mc.font, x, y, w, h,
+                TrainPresetToolItem.SUB_COUNT, curSub, subTabAnim, fade,
+                i -> {
+                    String label = TrainPresetToolItem.subModeLabel(i);
+                    // 選択中の ROT_Y タブだけは角度を後ろに付ける。
+                    return (i == TrainPresetToolItem.SUB_ROT_Y && i == curSub)
+                            ? label + " " + (rotY * 90) + "\u00b0"
+                            : label;
+                });
     }
 
     /** GUI / Selection モード時の単行 badge。PLACE モードと位置を揃えてホットバー上に表示。 */
@@ -271,11 +241,7 @@ public class PlaceModeHudRenderer {
         int x = (sw - badgeW) / 2;
         int y = sh - HOTBAR_TOP_OFFSET - badgeH + yOffset;
 
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
-        int bg = (bgA << 24) | 0x1a1a2e;
-        int border = (borderA << 24) | 0x4fc3f7;
-        HudChrome.drawRoundedRect(g, x, y, badgeW, badgeH, bg, border);
+        HudChrome.panel(g, x, y, badgeW, badgeH, fade, com.manta.api.hud.HudConstants.ACCENT);
 
         String label;
         if (toolMode == TrainPresetToolItem.TOOL_MODE_SELECTION) {
@@ -362,26 +328,25 @@ public class PlaceModeHudRenderer {
         // 枠色: ready なら緑、それ以外は赤
         int borderRgb = ready ? 0x66bb6a : 0xff8a80;
         HudChrome.drawRoundedRect(g, x, y, width, height,
-                ((int) (0xE8 * fade) << 24) | 0x1a1a2e,
-                ((int) (0xFF * fade) << 24) | borderRgb);
+                com.manta.api.hud.HudChrome.fadeAlpha(0xE81a1a2e, fade),
+                com.manta.api.hud.HudChrome.fadeAlpha(0xFF000000 | borderRgb, fade));
 
-        int titleColor = ((int) (0xFF * fade) << 24) | (ready ? 0x80ffa0 : 0xFFF0F0);
+        int titleColor = com.manta.api.hud.HudChrome.fadeAlpha(0xFF000000 | (ready ? 0x80ffa0 : 0xFFF0F0), fade);
         title = HudText.clip(mc.font, title, width - 16);
-        g.drawString(mc.font, title, x + 8, y + 6, titleColor, false);
+        com.manta.api.text.MantaText.draw(g, mc.font, title, x + 8, y + 6, titleColor);
+
+        // セル幾何は TileGrid が持つ (A8 / R4.21.1)。rowStride = rowH、タイル高さは 20px。
+        com.manta.api.controller.TileGrid matGrid = new com.manta.api.controller.TileGrid(
+                x + 8, y + 24, cols, (width - 16) / cols, rowH, (width - 24) / cols, 20);
 
         for (int i = 0; i < maxShown; i++) {
             var entry = entries.get(i);
-            int col = i % cols;
-            int row = i / cols;
-            int cellX = x + 8 + col * ((width - 16) / cols);
-            int cellY = y + 24 + row * rowH;
-            int cellW = (width - 24) / cols;
+            int cellX = matGrid.tileX(i);
+            int cellY = matGrid.tileY(i, 0);
+            int cellW = matGrid.tileW();
             // 各 row の枠色: 不足あり=赤、ready=緑、その他=灰
             int cellBorder = ready ? 0x66bb6a : 0x444a66;
-            SmoothRenderer.fillRoundedRect(g, cellX, cellY, cellW, 20, 5f,
-                    ((int) (0xFF * fade) << 24) | cellBorder);
-            SmoothRenderer.fillRoundedRect(g, cellX + 1, cellY + 1, cellW - 2, 20 - 2, 4f,
-                    ((int) (0xC0 * fade) << 24) | 0x25253a);
+            com.manta.api.hud.HudChrome.innerRect(g, cellX, cellY, cellW, 20, com.manta.api.hud.HudChrome.fadeAlpha(0xC025253a, fade), com.manta.api.hud.HudChrome.fadeAlpha(0xFF000000 | cellBorder, fade));
 
             ItemStack icon = entry.stack();
             if (!icon.isEmpty()) {
@@ -393,7 +358,7 @@ public class PlaceModeHudRenderer {
                     // control-glyph gate \u304b\u3089\u4e0d\u53ef\u8996**\u3060\u3063\u305f (gate \u306f 2026-07-26 \u306b escape \u5fa9\u53f7\u3092\u8ffd\u52a0)\u3002
                     com.manta.api.render.Icons.draw(g, "manta:check",
                             cellX + 12, cellY + 9, 8f, 8f,
-                            ((int) (0xFF * fade) << 24) | 0xFF66bb6a);
+                            com.manta.api.hud.HudChrome.fadeAlpha(0xFF000000 | 0xFF66bb6a, fade));
                 }
             }
             String name = icon.isEmpty() ? "?" : icon.getHoverName().getString();
@@ -404,23 +369,21 @@ public class PlaceModeHudRenderer {
                     ? "OK"
                     : net.minecraft.network.chat.Component.translatable("tsu.tool.hud_short_fmt", TrainPresetMaterials.formatCompactCount(entry.count())).getString();
             int countColor = ready ? 0xFF66bb6a : 0xFF80deea;
-            int textColor = ((int) (0xFF * fade) << 24) | 0xFFF0F0;
-            g.drawString(mc.font, name, cellX + 24, cellY + 3, textColor, false);
+            int textColor = com.manta.api.hud.HudChrome.fadeAlpha(0xFFFFF0F0, fade);
+            com.manta.api.text.MantaText.draw(g, mc.font, name, cellX + 24, cellY + 3, textColor);
             int countX = cellX + 24;
             if (ready) {
                 com.manta.api.render.Icons.draw(g, "manta:check",
                         countX, cellY + 11.5f, 7f, 7f,
-                        ((int) (0xFF * fade) << 24) | countColor);
+                        com.manta.api.hud.HudChrome.fadeAlpha(0xFF000000 | countColor, fade));
                 countX += 9;
             }
-            g.drawString(mc.font, count, countX, cellY + 11,
-                    ((int) (0xFF * fade) << 24) | countColor, false);
+            com.manta.api.text.MantaText.draw(g, mc.font, count, countX, cellY + 11, com.manta.api.hud.HudChrome.fadeAlpha(0xFF000000 | countColor, fade));
         }
 
         if (entries.size() > maxShown) {
             String more = "+" + (entries.size() - maxShown) + " more";
-            g.drawString(mc.font, more, x + width - 8 - mc.font.width(more),
-                    y + height - 10, ((int) (0xFF * fade) << 24) | 0xFFAAAAAA, false);
+            com.manta.api.text.MantaText.draw(g, mc.font, more, x + width - 8 - com.manta.api.text.MantaText.uiWidth(mc.font, more), y + height - 10, com.manta.api.hud.HudChrome.fadeAlpha(0xFF000000 | 0xFFAAAAAA, fade));
         }
     }
 

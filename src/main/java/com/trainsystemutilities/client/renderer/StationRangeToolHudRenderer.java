@@ -107,40 +107,9 @@ public class StationRangeToolHudRenderer {
         // タブ変化を検知してハイライト位置を補間 (= 共通 animator)
         numDirAnim.update(numDir);
 
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
-        int bg = (bgA << 24) | 0x1a1a2e;
-        int border = (borderA << 24) | 0x4fc3f7;
-        HudChrome.drawRoundedRect(g, x, y, w, h, bg, border);
-
-        int n = StationRangeToolItem.NUM_DIR_COUNT;
-        int tabAreaX = x + 1;
-        int tabAreaY = y + 1;
-        int tabAreaW = w - 2;
-        int tabAreaH = h - 2;
-        int tabW = tabAreaW / n;
-        int lastTabW = tabAreaW - tabW * (n - 1);
-
-        int hlX = numDirAnim.highlightX(tabAreaX, tabW);
-        int hlW = numDirAnim.highlightW(tabW, lastTabW, n);
-
-        int hlBgA = (int) (0xFF * fade);
-        int hlBg = (hlBgA << 24) | 0x4fc3f7;
-        int hlBorderA = (int) (0xFF * fade);
-        int hlBorder = (hlBorderA << 24) | 0x80deea;
-        SmoothRenderer.fillRoundedRect(g, hlX, tabAreaY, hlW, tabAreaH, 5f, hlBorder);
-        SmoothRenderer.fillRoundedRect(g, hlX + 1, tabAreaY + 1, hlW - 2, tabAreaH - 2, 4f, hlBg);
-
-        for (int i = 0; i < n; i++) {
-            int tx = tabAreaX + i * tabW;
-            int tw = (i == n - 1) ? lastTabW : tabW;
-            boolean active = i == numDirAnim.curTab();
-            int fgRgb = active ? 0x000000 : 0x80deea;
-            int fgA = (int) (0xFF * fade);
-            int fg = (fgA << 24) | fgRgb;
-            String label = numDirLabel(i);
-            HudChrome.drawCenteredLabel(g, mc.font, label, tx, tabAreaY, tw, tabAreaH, fg);
-        }
+        com.manta.api.hud.HudTabStrip.draw(g, mc.font, x, y, w, h,
+                StationRangeToolItem.NUM_DIR_COUNT, numDirAnim.curTab(), numDirAnim, fade,
+                StationRangeToolHudRenderer::numDirLabel);
     }
 
     private static String numDirLabel(int dir) {
@@ -189,17 +158,13 @@ public class StationRangeToolHudRenderer {
 
     private static void renderModeBadge(GuiGraphics g, Minecraft mc, int x, int y, int w, int h,
                                         float fade, int toolMode) {
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
         // モード別アクセント色
         int borderRgb = switch (toolMode) {
             case StationRangeToolItem.TOOL_MODE_GUI -> 0xBA68C8;       // 紫
             case StationRangeToolItem.TOOL_MODE_VIEW -> 0x4FC3F7;      // 水色
             default -> 0x66BB6A;                                       // 緑 (selection)
         };
-        int bg = (bgA << 24) | 0x1a1a2e;
-        int border = (borderA << 24) | borderRgb;
-        HudChrome.drawRoundedRect(g, x, y, w, h, bg, border);
+        HudChrome.panel(g, x, y, w, h, fade, borderRgb);
 
         String key = switch (toolMode) {
             case StationRangeToolItem.TOOL_MODE_GUI -> "tsu.station_tool.hud_mode_gui";

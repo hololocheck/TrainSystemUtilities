@@ -25,7 +25,14 @@ import java.util.UUID;
  * <p>主要レイアウト + 列車一覧 + 次列車 + monitor section + 基本トグル。
  * popup (settings/color/symbol) は Phase 5-B-2/3 で追加 (現状クリックしても何も起きない)。
  */
-public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagementMenu> {
+public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagementMenu>
+        implements com.manta.api.wiki.WikiLocalMenu {
+
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
 
     @Override
     protected String wikiPageId() { return "railway-management"; }
@@ -78,12 +85,11 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     };
     /** Phase 21: 機能ドロップダウン (= アナウンス / ホームドア 切替) の開閉。 */
     boolean showFunctionDropdown = false;
-    int functionDropdownOpenSerial = 0;
-    /** Condition dropdown が開いている entry index。-1 = 閉じている。 */
+    /** How the function drop-down unfolds and folds (Manta DropdownMotion, 2026-10-07 - it replaced the open serial). */
+    final com.manta.api.anim.DropdownMotion functionDropdownMotion = new com.manta.api.anim.DropdownMotion();
+    /** Condition dropdown が開いている entry index。-1 = 閉じている。 Its panel's motion is the controller's. */
     final com.manta.api.controller.IndexedOverlayController conditionDropdown =
             new com.manta.api.controller.IndexedOverlayController();
-    /** Condition dropdown 再 open のたびに増やし anim spec を変える (= function dropdown と同じ再生 trigger)。 */
-    int conditionDropdownOpenSerial = 0;
     /** popup を開いた瞬間の nanoTime。アイテムを popup 開放アニメ (popIn 220ms) と同期 scale させるため。 */
     long announcementOpenedAtNanos = 0L;
     /** popIn(220) と同じ timing でアイテムをスケールイン。 */
@@ -131,7 +137,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                     "ann-master-toggle-track", "ann-master-toggle-knob",
                     () -> { var c = announcementConfig(); return c != null && c.isEnabled(); },
                     v -> sendAnnouncementCmd(
-                            com.trainsystemutilities.network.AnnouncementCommandPayload.OP_TOGGLE_ENABLED, 0, 0, 0));
+                            com.trainsystemutilities.network.AnnouncementCommandAction.OP_TOGGLE_ENABLED, 0, 0, 0));
     /** Range frame toggle (= client-only state)。 */
     final com.manta.api.controller.ToggleSwitchController annRangeFrameToggle =
             new com.manta.api.controller.ToggleSwitchController(
@@ -150,7 +156,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                     "ann-attenuation-toggle-track", "ann-attenuation-toggle-knob",
                     () -> { var c = announcementConfig(); return c == null || c.isAttenuationMode(); },
                     v -> sendAnnouncementCmd(
-                            com.trainsystemutilities.network.AnnouncementCommandPayload.OP_TOGGLE_ATTENUATION, 0, 0, 0));
+                            com.trainsystemutilities.network.AnnouncementCommandAction.OP_TOGGLE_ATTENUATION, 0, 0, 0));
     /** Monitor toggle (= localMonitorEnabled + clickButton(0)、derived visual: monitorEnabled && groups > 0)。 */
     final com.manta.api.controller.ToggleSwitchController monitorToggle =
             new com.manta.api.controller.ToggleSwitchController(
@@ -168,7 +174,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                         return c != null && c.isDetectionSharedTo(sts.get(idx).name());
                     },
                     idx -> sendShareToggle(idx,
-                            com.trainsystemutilities.network.AnnouncementShareTogglePayload.TYPE_DETECTION));
+                            com.trainsystemutilities.network.AnnouncementShareToggleAction.TYPE_DETECTION));
     /** Per-station range sharing toggle (= repeat idx ごと)。 */
     final com.manta.api.controller.IndexedToggleSwitchController annShareRngToggle =
             new com.manta.api.controller.IndexedToggleSwitchController(
@@ -180,7 +186,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                         return c != null && c.isRangeSharedTo(sts.get(idx).name());
                     },
                     idx -> sendShareToggle(idx,
-                            com.trainsystemutilities.network.AnnouncementShareTogglePayload.TYPE_RANGE));
+                            com.trainsystemutilities.network.AnnouncementShareToggleAction.TYPE_RANGE));
     private int localTrackNumber = -1;
     private int localTrackFontSize = -1;
     int localTrackPosition = -1;
@@ -217,7 +223,9 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                         }
                         @Override
                         public String currentColor(String key, String defaultHex) {
-                            return be().getColorOrDefault(key, defaultHex);
+                            // The face being edited, as the swatch beside it (getCurrentSelectedColorHex):
+                            // the hex read the front face's while the presets wrote the back's.
+                            return be().getColorOrDefault((showBackFace ? "back." : "") + key, defaultHex);
                         }
                     });
     private static final String[] COLOR_KEYS = {"arrTime", "depTime", "stopInfo", "routeType", "stopSec", "trainName", "nextName", "sectionTitle", "countdown", "trackNumber"};
@@ -253,16 +261,33 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     private boolean showResetAllConfirm = false;
     // 色対象ドロップダウン展開状態 / 選択中 index は colorPopup controller に集約済み
 
-    // Symbol dropdown
-    boolean showSymbolDropdown = false;
     static final int MAX_GROUPS = 4;
-    static final int MAX_SYMBOLS = 8;
 
     public RailwayManagementScreenV2(RailwayManagementMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
+        // A press outside an open drop-down folds it and does nothing else (the user's decision, 2026-10-07).
+        foldOnOutsidePress(() -> showFunctionDropdown, () -> setFunctionDropdownOpen(false),
+                "function-dd-trigger", "function-dd-item", "function-dd-bg");
+        // The popup's own close button is the list's too: it closes the popup in one press, as ColorTargetController
+        // documents (second reading, 2026-10-07 - unregistered, the first press only folded the list).
+        foldOnOutsidePress(() -> showColorSettings && colorPopup.isDropdownOpen(), colorPopup::closeDropdown,
+                "color-target-dropdown", "color-target-item", "color-target-caret", "color-target-list-bg",
+                "color-popup-close");
+        foldOnOutsidePress(() -> showAnnouncement && conditionDropdown.isOpen(), conditionDropdown::close,
+                "ann-cond-display", "ann-cond-dd-item", "ann-cond-dd-bg");
     }
 
     // ===== Wiki live-capture support (WikiLiveCapture から呼ばれる) =====
+
+    /**
+     * Built by wikiCreate: the block entity is the wiki's stand-in and the menu its throwaway one, so what a press would
+     * send to the server is applied to them here instead (clickButton, sendAnnouncementCmd) - the playback's containment
+     * stops every packet, and the page showed presses that changed nothing (改善1, 2026-10-07).
+     */
+    boolean wikiMode = false;
+    /** The entry a wiki test play lights, and until when (the server's playing entry, which no host sends here). */
+    private int wikiPlayingEntry = -1;
+    private long wikiPlayingUntil = 0L;
 
     /** wiki キャプチャ用にダミー BE + 空インベントリで screen を生成。 失敗時 null。 */
     public static RailwayManagementScreenV2 wikiCreate() {
@@ -273,10 +298,67 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                 pos, com.trainsystemutilities.registry.ModBlocks.RAILWAY_MANAGEMENT_BLOCK.get().defaultBlockState());
         be.setLevel(mc.level);
         be.setLineSymbol("JA", 1, "#4fc3f7"); // サンプル路線記号 (実物の SVG が出る)
-        Inventory inv = new Inventory(mc.player); // 空 (持ち物アイテムを写さない)
+        // The demo the page shows (改善1, 2026-10-07: a train at the platform and the trains coming, where it showed
+        // none): the management computer's demo trains, a station with its line symbol, one linked monitor group.
+        long tick = mc.level.getGameTime();
+        long day = mc.level.getDayTime();
+        be.wikiSeed("東京", new com.trainsystemutilities.blockentity.LineSymbol("JA", 1, "#4fc3f7", "Loop", 12),
+                java.util.List.of(new RailwayManagementBlockEntity.ArrivedTrain(
+                        UUID.nameUUIDFromBytes("tsu-wiki-rm-arrived".getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                        "山手線 E235系", tick - WIKI_STOPPED_TICKS, day - WIKI_STOPPED_TICKS, 11, "品川",
+                        WIKI_STOP_SEC, "CIRCULAR", "LOCAL", "", "")),
+                java.util.List.of(
+                        new RailwayManagementBlockEntity.NextTrain("中央線快速 E233系", 10, "神田", "SHUTTLE", 30,
+                                day + 600, "神田", true, "RAPID"),
+                        new RailwayManagementBlockEntity.NextTrain("京浜東北線 E233系", 10, "有楽町", "", 20,
+                                day + 1500, "", false, "LOCAL"),
+                        new RailwayManagementBlockEntity.NextTrain("回送列車", 4, "上野", "", 0,
+                                day + 3000, "", false, "")),
+                new RailwayManagementBlockEntity.MonitorGroupInfo(pos, 4, 2, true,
+                        0, 0, 0, 0, 0, 0, 1, 0, 1, 0));
+        Inventory inv = new Inventory(mc.player); // 持ち物アイテムを写さない
+        // The SAS page puts this recording into an entry (a shift-click from the hotbar's first slot). Without SAS the
+        // stack is empty: that step, the second last, then stops the playback (Manta's slot verdict - a click that
+        // changes nothing) after the entry's settings were shown; the page says the popup needs SAS.
+        inv.setItem(0, com.trainsystemutilities.compat.sas.SasIntegration.wikiRecordingMedium(
+                "departure_melody.ogg", "ogg", 12));
         var menu = new RailwayManagementMenu(0, inv, be);
-        return new RailwayManagementScreenV2(menu, inv,
+        var screen = new RailwayManagementScreenV2(menu, inv,
                 Component.translatable("tsu.railway_management.title"));
+        screen.wikiMode = true;
+        return screen;
+    }
+
+    /** The demo train has stood this long when the page opens, and stops this long - then it arrives again. */
+    private static final int WIKI_STOPPED_TICKS = 200;
+    private static final int WIKI_STOP_SEC = 45;
+
+    /** Only the SAS page opens the menu to a playback: its recording goes into an entry from the inventory. */
+    @Override
+    public boolean wikiLocalMenu() {
+        return wikiMode && showAnnouncement;
+    }
+
+    /**
+     * The demo as time goes on, without the server's sync: the train at the platform arrives again a few seconds after its
+     * countdown ends, and the coming trains turn a page every ten seconds (containerTick's rotation - the wiki draws a
+     * screen, it does not tick it).
+     */
+    private void wikiDemoTick() {
+        var be = be();
+        if (be.getLevel() == null) return;
+        long tick = be.getLevel().getGameTime();
+        var arrived = be.getArrivedTrains();
+        if (!arrived.isEmpty()) {
+            var t = arrived.get(0);
+            if (tick - t.arrivalTick() >= (WIKI_STOP_SEC + 3) * 20L) {
+                arrived.set(0, new RailwayManagementBlockEntity.ArrivedTrain(t.id(), t.name(), tick,
+                        be.getLevel().getDayTime(), t.carriageCount(), t.destination(), t.scheduledStopSec(),
+                        t.routeType(), t.trainType(), t.couplingStatus(), t.couplingPartner()));
+            }
+        }
+        int pages = Math.max(1, (be.getNextTrains().size() + NEXT_TRAIN_PER_PAGE - 1) / NEXT_TRAIN_PER_PAGE);
+        nextTrainPageIndex = (int) ((tick / NEXT_TRAIN_ROTATE_TICKS) % pages);
     }
 
     /** wiki キャプチャ用に overlay state を強制設定 (ドロップダウン等は閉じる)。 */
@@ -286,16 +368,41 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         showAnnouncement = false;
         showScreenDoor = false;
         showScreenDoorColorPicker = false;
-        showFunctionDropdown = false;       // ドロップダウンは常に閉じる (= 開きっぱなし防止)
+        setFunctionDropdownOpen(false);     // ドロップダウンは常に閉じる (= 開きっぱなし防止)
         showAnnouncementShareList = false;
         switch (state) {
             case "settings"     -> showSettings = true;
             case "color"        -> showColorSettings = true;
             case "announcement" -> showAnnouncement = true;
             case "screen-door"  -> showScreenDoor = true;
+            // BelugaAOS's UI sweep alone (WikiLiveCapture's sweep-only states, 2026-10-21): each list holding twice the
+            // rows it shows, so its scrollbar thumb is up to be dragged. The demo block entity's own lists; nothing is sent.
+            case "announcement-long" -> {
+                showAnnouncement = true;
+                var cfg = be().getAnnouncementConfig();
+                for (int i = cfg.size(); i < 2 * ANN_ENTRY_VISIBLE; i++) cfg.addEntry();
+            }
+            case "announcement-share-long" -> {
+                showAnnouncement = true;
+                showAnnouncementShareList = true;
+                wikiShareStations = new java.util.ArrayList<>();
+                for (int i = 0; i < 2 * ANN_SHARE_VISIBLE; i++) {
+                    wikiShareStations.add(new com.trainsystemutilities.network.TrackNetworkScanner.StationInfo(
+                            "駅 " + (i + 1), new net.minecraft.core.BlockPos(0, 64, 16 * i)));
+                }
+            }
+            case "screen-door-long" -> {
+                showScreenDoor = true;
+                for (int i = be().getScreenDoorConditions().size(); i < 2 * SD_COND_VISIBLE; i++) {
+                    be().addScreenDoorCondition(com.trainsystemutilities.screendoor.ScreenDoorCondition.defaultEntry());
+                }
+            }
             default -> { /* main: overlay なし */ }
         }
     }
+
+    /** The share list's stations of the sweep's "announcement-share-long", or null: the linked computer's, as always. */
+    private java.util.List<com.trainsystemutilities.network.TrackNetworkScanner.StationInfo> wikiShareStations = null;
 
     // dialog-open scaleIn 同期の inventory item scale-in は MCSS 基底 JsonLayoutScreen が
     // default で提供。subclass 側のフィールド/override は不要。
@@ -442,6 +549,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     @Override
     protected void containerTick() {
         super.containerTick();
+        pollData();
         var nextTrains = be().getNextTrains();
         int totalPages = nextTrains.isEmpty() ? 1
                 : (nextTrains.size() + NEXT_TRAIN_PER_PAGE - 1) / NEXT_TRAIN_PER_PAGE;
@@ -450,10 +558,6 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
             if (nextTrainPageTimer >= NEXT_TRAIN_ROTATE_TICKS) {
                 nextTrainPageIndex = (nextTrainPageIndex + 1) % totalPages;
                 nextTrainPageTimer = 0;
-                // ページ切替時に列車行 (next-row) のスライドインを再トリガー。
-                // V1 の .page-slide-in と同じ視覚効果。
-                // 全 anim 破棄ではなく next-row class だけクリア (ダイアログ scaleIn を破壊しない)
-                clearMainAnimByClass("next-row");
             }
         }
         if (nextTrainPageIndex >= totalPages) nextTrainPageIndex = 0;
@@ -489,11 +593,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     /** 文字列を指定 px 幅以下に切り詰め (超過したら末尾に "…")。font.width はピクセル単位。 */
     String fit(String text, int maxWidth) {
         if (text == null || text.isEmpty() || this.font == null) return text;
-        if (this.font.width(text) <= maxWidth) return text;
-        while (text.length() > 0 && this.font.width(text + "…") > maxWidth) {
-            text = text.substring(0, text.length() - 1);
-        }
-        return text + "…";
+        return com.manta.api.hud.HudText.ellipsize(this.font, text, maxWidth);
     }
 
     String getMinecraftTime() {
@@ -502,25 +602,35 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         return formatDayTime(be.getLevel().getDayTime());
     }
 
+    /** The three lists' thumbs, grabbed and dragged (Manta 2.87.0's dragThumb, R4.19.5). */
     @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        return RailwayManagementDispatch.text(this, classes, defaultText);
-    }
-
-    @Override
-    public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
-        return RailwayManagementDispatch.number(this, classes, key, defaultValue);
+    public boolean onElementDrag(String[] classes, String key, int mouseX, int mouseY,
+                                 int elementX, int elementY, int elementW, int elementH, boolean pressed) {
+        if ("sd-cond-thumb-drag".equals(key)) {
+            return sdCondScroll.dragThumb(mouseY, pressed);
+        }
+        if ("ann-entry-thumb-drag".equals(key)) {
+            return annEntryScroll.dragThumb(mouseY, pressed);
+        }
+        if ("ann-share-thumb-drag".equals(key)) {
+            return annShareScroll.dragThumb(mouseY, pressed);
+        }
+        return super.onElementDrag(classes, key, mouseX, mouseY, elementX, elementY, elementW, elementH, pressed);
     }
 
     @Override
     public boolean onElementWheel(String[] classes, String key,
                                    int mouseX, int mouseY, double scrollY) {
+        if (showSettings && key != null && key.startsWith("settings-wheel-")) {
+            wheelSettingsDisplay(key.substring("settings-wheel-".length()), scrollY > 0 ? 1 : -1);
+            return true;
+        }
         if ("ann-delay-wheel".equals(key)) {
             int idx = annEntryRealIdx();
             if (idx < 0) return false;
             int delta = scrollY > 0 ? 1 : -1;
             sendAnnouncementCmd(
-                    com.trainsystemutilities.network.AnnouncementCommandPayload.OP_ADJUST_ENTRY_DELAY,
+                    com.trainsystemutilities.network.AnnouncementCommandAction.OP_ADJUST_ENTRY_DELAY,
                     idx, delta, 0);
             adjustEntryDelayLocally(idx, delta);
             return true;
@@ -530,7 +640,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
             if (idx < 0) return false;
             int delta = scrollY > 0 ? 1 : -1;
             sendAnnouncementCmd(
-                    com.trainsystemutilities.network.AnnouncementCommandPayload.OP_ADJUST_ENTRY_PLAYCOUNT,
+                    com.trainsystemutilities.network.AnnouncementCommandAction.OP_ADJUST_ENTRY_PLAYCOUNT,
                     idx, delta, 0);
             adjustEntryPlayCountLocally(idx, delta);
             return true;
@@ -550,37 +660,32 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
 
     /** Phase 21: ホームドア条件 add (= server + client 即時反映)。 */
     void sendScreenDoorCondAdd() {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ScreenDoorConditionPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ScreenDoorConditionPayload.OP_ADD,
-                        0, 0, 0, 0));
+        sendData(com.trainsystemutilities.network.RailwayManagementData.DOOR_CONDITION,
+                        com.trainsystemutilities.network.ScreenDoorConditionAction.OP_ADD,
+                        0, 0, 0, 0);
         be().addScreenDoorCondition(
                 com.trainsystemutilities.screendoor.ScreenDoorCondition.defaultEntry());
     }
 
     void sendScreenDoorCondRemove(int idx) {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ScreenDoorConditionPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ScreenDoorConditionPayload.OP_REMOVE,
-                        idx, 0, 0, 0));
+        sendData(com.trainsystemutilities.network.RailwayManagementData.DOOR_CONDITION,
+                        com.trainsystemutilities.network.ScreenDoorConditionAction.OP_REMOVE,
+                        idx, 0, 0, 0);
         be().removeScreenDoorCondition(idx);
         sdCondScroll.clamp();
     }
 
     void sendScreenDoorCondUpdate(int idx,
             com.trainsystemutilities.screendoor.ScreenDoorCondition next) {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ScreenDoorConditionPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ScreenDoorConditionPayload.OP_UPDATE,
-                        idx, next.trackNumber(), next.eventType(), next.actionType()));
+        sendData(com.trainsystemutilities.network.RailwayManagementData.DOOR_CONDITION,
+                        com.trainsystemutilities.network.ScreenDoorConditionAction.OP_UPDATE,
+                        idx, next.trackNumber(), next.eventType(), next.actionType());
         be().updateScreenDoorCondition(idx, next);
     }
 
-    /** 現在の AnnouncementConfig (client-side cache から取得)。 */
+    /** 現在の AnnouncementConfig (client-side cache から取得)。 The wiki's: the stand-in's own, which no host syncs. */
     com.trainsystemutilities.announce.AnnouncementConfig announcementConfig() {
+        if (wikiMode) return be().getAnnouncementConfig();
         return com.trainsystemutilities.client.gui.RailwayAnnouncementClientState.getConfig(
                 this.menu.getBlockEntity().getBlockPos());
     }
@@ -612,17 +717,51 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     }
 
     int announcementPlayingEntryIndex() {
-        int idx = com.trainsystemutilities.client.gui.RailwayAnnouncementClientState.getPlayingEntry(
-                this.menu.getBlockEntity().getBlockPos());
+        int idx = wikiMode
+                ? (System.currentTimeMillis() < wikiPlayingUntil ? wikiPlayingEntry : -1)
+                : com.trainsystemutilities.client.gui.RailwayAnnouncementClientState.getPlayingEntry(
+                        this.menu.getBlockEntity().getBlockPos());
         var cfg = announcementConfig();
         if (idx < 0 || cfg == null || idx >= cfg.size()) return -1;
         return idx;
     }
 
     void sendAnnouncementCmd(byte op, int a1, int a2, int a3) {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.AnnouncementCommandPayload(
-                        be().getBlockPos(), op, a1, a2, a3));
+        if (wikiMode) {
+            wikiAnnouncementCmd(op, a1, a2);
+            return;
+        }
+        sendData(com.trainsystemutilities.network.RailwayManagementData.ANNOUNCEMENT, (int) op, a1, a2, a3);
+    }
+
+    /**
+     * The wiki's stand-in takes a command as AnnouncementCommandAction applies it on the server, to its own config and
+     * media. The condition, delay and play count are not here: their callers already apply them locally (R4.9.1). A test
+     * play lights its entry for three seconds; nothing sounds.
+     */
+    private void wikiAnnouncementCmd(byte op, int a1, int a2) {
+        var cfg = be().getAnnouncementConfig();
+        switch (op) {
+            case com.trainsystemutilities.network.AnnouncementCommandAction.OP_ADD_ENTRY -> cfg.addEntry();
+            case com.trainsystemutilities.network.AnnouncementCommandAction.OP_REMOVE_ENTRY -> {
+                be().removeAnnouncementMedia(a1);
+                cfg.removeEntry(a1);
+                annEntryScroll.clamp();
+            }
+            case com.trainsystemutilities.network.AnnouncementCommandAction.OP_TEST_PLAY -> {
+                wikiPlayingEntry = a1;
+                wikiPlayingUntil = System.currentTimeMillis() + 3000L;
+            }
+            case com.trainsystemutilities.network.AnnouncementCommandAction.OP_STOP_PLAYBACK -> wikiPlayingUntil = 0L;
+            case com.trainsystemutilities.network.AnnouncementCommandAction.OP_TOGGLE_ENABLED ->
+                    cfg.setEnabled(!cfg.isEnabled());
+            case com.trainsystemutilities.network.AnnouncementCommandAction.OP_TOGGLE_ATTENUATION ->
+                    cfg.setAttenuationMode(!cfg.isAttenuationMode());
+            case com.trainsystemutilities.network.AnnouncementCommandAction.OP_REORDER_ENTRY -> {
+                if (cfg.moveEntry(a1, a2)) be().swapAnnouncementMedia(a1, a2);
+            }
+            default -> { }
+        }
     }
 
     /** Per-station share toggle (= IndexedToggleSwitchController から呼ばれる)。 */
@@ -631,14 +770,23 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         if (idx < 0 || idx >= stations.size()) return;
         String stName = stations.get(idx).name();
         if (stName == null || stName.isEmpty()) return;
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.AnnouncementShareTogglePayload(
-                        be().getBlockPos(), stName, type));
+        // The server keeps a name only if SafeName admits it (128 bytes, the declaration): one it would drop is not
+        // sent, and so none can reach past the declaration. The name is compared with the world's station names byte
+        // for byte, so its param is declared exact (a string param is NFC) - and a name with no UTF-8 form (an unpaired
+        // surrogate, which SafeName counts as '?') is refused by that declaration, so it is not sent either.
+        try {
+            com.manta.api.util.safe.SafeName.validate(stName);
+        } catch (IllegalArgumentException e) {
+            return;
+        }
+        if (com.trainsystemutilities.network.ExactText.utf8Length(stName) < 0) return;
+        sendData(com.trainsystemutilities.network.RailwayManagementData.ANNOUNCEMENT_SHARE, stName, (int) type);
     }
 
     /** 共有先候補となる station 一覧 (linked computer の cachedStations から、自局を除く)。
      *  client 側で BE.getUpdateTag 経由で同期されているため、server 経由しなくても取得可能。 */
     java.util.List<com.trainsystemutilities.network.TrackNetworkScanner.StationInfo> getShareCandidateStations() {
+        if (wikiShareStations != null) return wikiShareStations;
         var be = be();
         if (this.minecraft == null || this.minecraft.level == null) return java.util.Collections.emptyList();
         if (be.getLinkedComputerPos() == null) return java.util.Collections.emptyList();
@@ -678,7 +826,6 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         if (cfg != lastObservedAnnouncementConfig) {
             if (pendingAnnouncementShuffle && showAnnouncement && cfg != null) {
                 announcementShuffleStartedAtNanos = now;
-                clearOverlay2AnimByClass("ann-entry-row");
                 pendingAnnouncementShuffle = false;
             }
             // entry 削除はサーバー往復なので、送信直後ではなく **config が実際に入れ替わった
@@ -805,7 +952,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     void setFunctionDropdownOpen(boolean open) {
         if (showFunctionDropdown == open) return;
         showFunctionDropdown = open;
-        if (open) functionDropdownOpenSerial++;
+        functionDropdownMotion.setOpen(open);
     }
 
     void toggleFunctionDropdown() {
@@ -816,15 +963,16 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         sdPreview.resetView();
     }
 
-    private boolean isFunctionDropdownItemHovering(double mouseX, double mouseY) {
+    /** 引数は dialog-local ({@link #isRawHovering} と同じ空間)。現在 呼び出し元なし。 */
+    private boolean isFunctionDropdownItemHovering(double localX, double localY) {
         if (!showFunctionDropdown) return false;
         if (isRawHovering(FUNCTION_DD_X, FUNCTION_DD_DOOR_Y,
-                FUNCTION_DD_W, FUNCTION_DD_ITEM_H, mouseX, mouseY)) {
+                FUNCTION_DD_W, FUNCTION_DD_ITEM_H, localX, localY)) {
             return true;
         }
         return com.trainsystemutilities.compat.sas.SasIntegration.isLoaded()
                 && isRawHovering(FUNCTION_DD_X, FUNCTION_DD_ANNOUNCEMENT_Y,
-                FUNCTION_DD_W, FUNCTION_DD_ITEM_H, mouseX, mouseY);
+                FUNCTION_DD_W, FUNCTION_DD_ITEM_H, localX, localY);
     }
 
     int functionDropdownPanelHeight() {
@@ -833,19 +981,30 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                 : FUNCTION_DD_ITEM_H + 4;
     }
 
-    private boolean isFunctionDropdownPanelHovering(double mouseX, double mouseY) {
+    /** 引数は vanilla の論理座標 (= 基底が pointer を見る super すべて — render / mouseClicked /
+     *  mouseDragged / mouseReleased — に渡す、縮尺を戻した値。{@code leftPos} を引くと dialog-local)。
+     *  {@link #isHovering} 経由専用で、vanilla は findSlot からその 4 経路で呼ぶ。 */
+    private boolean isFunctionDropdownPanelHovering(double logicalX, double logicalY) {
         return showFunctionDropdown
                 && isRawHovering(FUNCTION_DD_BG_X, FUNCTION_DD_BG_Y,
-                FUNCTION_DD_BG_W, functionDropdownPanelHeight(), mouseX, mouseY);
+                FUNCTION_DD_BG_W, functionDropdownPanelHeight(),
+                logicalX - this.leftPos, logicalY - this.topPos);
     }
 
-    private boolean isRawHovering(int x, int y, int width, int height, double mouseX, double mouseY) {
-        mouseX -= (double) this.leftPos;
-        mouseY -= (double) this.topPos;
-        return mouseX >= (double) (x - 1)
-                && mouseX < (double) (x + width + 1)
-                && mouseY >= (double) (y - 1)
-                && mouseY < (double) (y + height + 1);
+    /**
+     * x/y/width/height は layout の論理座標なので、<b>localX/localY も dialog-local で渡すこと</b>。
+     *
+     * <p>呼び出し元で空間が違う: {@link #isHovering} には vanilla の論理座標が来る（{@code leftPos}
+     * を引けば local）が、{@code mouseClicked} には生の screen が来る（{@code toLocalMx} を通す）。
+     * 2026-09-12 に「screen とみなして一律 {@code toLocalMx}」に変えたところ、前者が二重変換に
+     * なり UI スケールつまみ 0.910 でドロップダウン下端の slot が拾えなくなった（二次読みが検出）。
+     * 変換は呼び出し元の仕事、ここは比較だけ。
+     */
+    private boolean isRawHovering(int x, int y, int width, int height, double localX, double localY) {
+        return localX >= (double) (x - 1)
+                && localX < (double) (x + width + 1)
+                && localY >= (double) (y - 1)
+                && localY < (double) (y + height + 1);
     }
 
     @Override
@@ -859,15 +1018,19 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
 
     private boolean handleFunctionDropdownClickBeforeSlots(double mouseX, double mouseY, int button) {
         if (!showFunctionDropdown) return false;
+        // ここは mouseClicked からの生 screen 座標なので、基底の写像で dialog-local に落とす
+        // (UI スケールつまみが 1.0 でないと引き算だけでは合わない - 実機 2026-09-12)。
+        final double localX = toLocalMx(mouseX);
+        final double localY = toLocalMy(mouseY);
         if (isRawHovering(FUNCTION_DD_X, FUNCTION_DD_DOOR_Y,
-                FUNCTION_DD_W, FUNCTION_DD_ITEM_H, mouseX, mouseY)) {
+                FUNCTION_DD_W, FUNCTION_DD_ITEM_H, localX, localY)) {
             if (button != 0) return true;
             toggleScreenDoorPopupFromFunctionDropdown();
             return true;
         }
         if (com.trainsystemutilities.compat.sas.SasIntegration.isLoaded()
                 && isRawHovering(FUNCTION_DD_X, FUNCTION_DD_ANNOUNCEMENT_Y,
-                FUNCTION_DD_W, FUNCTION_DD_ITEM_H, mouseX, mouseY)) {
+                FUNCTION_DD_W, FUNCTION_DD_ITEM_H, localX, localY)) {
             if (button != 0) return true;
             toggleAnnouncementPopupFromFunctionDropdown();
             return true;
@@ -895,10 +1058,26 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         return isOverlay2RawHovering(40, 80, 160, 150, mouseX, mouseY);
     }
 
+    /** vanilla が今の frame に選んだ hover (popup の下に隠れた slot は manta の基底が外した後)。 */
+    net.minecraft.world.inventory.Slot hoveredSlotAccess() {
+        return this.hoveredSlot;
+    }
+
+    /** popup が開いている間のツールチップは render が popup の上 (z=900) に 1 枚だけ描く — 基底のものは 2 枚目になる
+     *  (2026-10-02 実機: 縮尺 0.67 で、カーソルの位置と論理座標の位置に 2 枚並んだ)。 */
+    @Override
+    protected void renderTooltip(net.minecraft.client.gui.GuiGraphics g, int x, int y) {
+        if (showAnnouncement || showScreenDoor) return;
+        super.renderTooltip(g, x, y);
+    }
+
     private boolean isOverlay2RawHovering(int x, int y, int width, int height,
                                           double mouseX, double mouseY) {
-        mouseX -= (double) overlay2X();
-        mouseY -= (double) overlay2Y();
+        // popup は自身の原点 pivot で scale するので、原点を引いたあと scale で割って
+        // popup-local へ戻す (引くだけだと つまみが 1.0 でないときずれる - 実機 2026-09-12)。
+        float s = overlay2Scale() > 0f ? overlay2Scale() : 1f;
+        mouseX = (mouseX - overlay2X()) / s;
+        mouseY = (mouseY - overlay2Y()) / s;
         return mouseX >= (double) x
                 && mouseX < (double) (x + width)
                 && mouseY >= (double) y
@@ -906,9 +1085,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
     }
 
     private void applyScreenDoorBandColor(int argb) {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ScreenDoorBandColorPayload(
-                        be().getBlockPos(), argb));
+        sendData(com.trainsystemutilities.network.RailwayManagementData.DOOR_BAND_COLOR, argb);
         be().setScreenDoorBandColorARGB(argb);
         showScreenDoorColorPicker = false;
     }
@@ -921,11 +1098,6 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         showAnnouncement = !showAnnouncement;
         if (showAnnouncement) {
             resetAnnouncementTransientState();
-            net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                    new com.trainsystemutilities.network.AnnouncementCommandPayload(
-                            be().getBlockPos(),
-                            com.trainsystemutilities.network.AnnouncementCommandPayload.OP_SYNC_REQUEST,
-                            0, 0, 0));
             positionAnnouncementSlots();
         } else {
             resetAnnouncementTransientState();
@@ -977,7 +1149,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                 if (slot.x < -500) continue;
                 if (RailwayManagementDispatch.isOverPopupSlot(this, slot, mouseX, mouseY)) {
                     net.minecraft.world.inventory.ClickType type;
-                    if (net.minecraft.client.gui.screens.Screen.hasShiftDown()) {
+                    if (com.manta.api.hud.ModifierKeys.shift(net.minecraft.client.Minecraft.getInstance().getWindow().getWindow())) {
                         type = net.minecraft.world.inventory.ClickType.QUICK_MOVE;
                     } else if (button == 2
                             && this.minecraft != null && this.minecraft.player != null
@@ -1012,7 +1184,11 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         if (sdPreview.mouseReleased(button)) {
             return true;
         }
-        if ((showAnnouncement || showScreenDoor) && button >= 0 && button <= 2) {
+        // quick-craft の最中は飲まない: popup slot の上の press は上で slotClicked にしたので vanilla の quick-craft は始まって
+        // いない。始まっているなら popup の外からのドラッグで、ここで飲むと分配が次の release まで開いたまま残る
+        // (2026-10-02 実機: 29 → popup slot 37 のドラッグで何も分配されず 64 個を持ったまま)。基底が consumer の slot の上の
+        // release を vanilla に渡し、vanilla が分配を確定する。
+        if (!this.isQuickCrafting && (showAnnouncement || showScreenDoor) && button >= 0 && button <= 2) {
             for (int i = com.trainsystemutilities.gui.RailwayManagementMenu.ANNOUNCEMENT_SLOT_BASE;
                  i < this.menu.slots.size(); i++) {
                 var slot = this.menu.slots.get(i);
@@ -1026,6 +1202,16 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
+    // ===== Manta 7 push (Phase 4, 2026-09-24) =====
+    // The pages' values are WRITTEN by RailwayManagementPush each frame before the engine draws, and
+    // once when a page opens: the screen overrides no getDynamic*.
+    final RailwayManagementPush pushState = new RailwayManagementPush(this);
+
+    @Override
+    protected void pageOpened(Object page, com.manta.api.screen.PageLayer layer) {
+        pushState.pageOpened(page, layer);
+    }
+
     @Override
     public void render(net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         // popup が「初めて」見える瞬間に anim 開始時刻を engine と同フレームでセット。
@@ -1033,6 +1219,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         if (showAnnouncement && announcementOpenedAtNanos == 0L) {
             announcementOpenedAtNanos = System.nanoTime();
         }
+        if (wikiMode) wikiDemoTick();
         updatePendingAnnouncementShuffle();
         // popup が開いている間は毎フレーム slot 位置を popup 座標に合わせる
         // (overlay 位置はドラッグで変わる可能性があるため)。閉じている間は off-screen に強制。
@@ -1041,6 +1228,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         if (showScreenDoor && !showScreenDoorColorPicker) positionScreenDoorSlot();
         else hideScreenDoorSlot();
         syncScreenDoorHighlight();
+        pushState.pushAll();
         super.render(g, mouseX, mouseY, partialTick);
 
         // popup 内の slot は super.render で z=0 に描画されるため popup (z=600) の下に隠れる。
@@ -1056,7 +1244,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                 g.pose().pushPose();
                 g.pose().translate(0, 0, 900);
                 var stack = hovered.getItem();
-                g.renderTooltip(this.font,
+                com.manta.api.render.ItemDraw.tooltip(g, this.font,
                         this.getTooltipFromContainerItem(stack),
                         stack.getTooltipImage(), stack, mouseX, mouseY);
                 g.pose().popPose();
@@ -1098,7 +1286,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                     if (idx >= 0) {
                         int noneOrd = com.trainsystemutilities.announce.AnnouncementCondition.Type.NONE.ordinal();
                         sendAnnouncementCmd(
-                                com.trainsystemutilities.network.AnnouncementCommandPayload.OP_SET_ENTRY_CONDITION,
+                                com.trainsystemutilities.network.AnnouncementCommandAction.OP_SET_ENTRY_CONDITION,
                                 idx, noneOrd, 0);
                         applyConditionTypeLocally(idx, noneOrd);
                     }
@@ -1152,60 +1340,51 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
             return true;
         }
         if (showSettings) {
-            // hit-test each settings display for wheel-driven adjustment
-            int delta = dy > 0 ? 1 : -1;
-            // Track number
-            if (overSettingsDisplay("track-display-track", mx, my)) {
-                int newV = Math.max(0, Math.min(99, currentTrackNumber() + delta));
-                localTrackNumber = newV;
-                int gi = currentGroupIndex();
-                if (showBackFace) clickButton(batchApply() ? 2000 + newV : 2200 + gi * 100 + newV);
-                else clickButton(batchApply() ? 2 + newV : 200 + gi * 100 + newV);
-                return true;
-            }
-            if (overSettingsDisplay("track-display-font", mx, my)) {
-                int newV = Math.max(0, Math.min(97, currentTrackFontSize() + delta));
-                localTrackFontSize = newV;
-                int gi = currentGroupIndex();
-                if (showBackFace) clickButton(batchApply() ? 2100 + newV : 2500 + gi * 100 + newV);
-                else clickButton(batchApply() ? 102 + newV : 500 + gi * 100 + newV);
-                return true;
-            }
-            if (overSettingsDisplay("track-display-clockfs", mx, my)) {
-                int newV = Math.max(0, Math.min(97, currentClockFontSize() + delta));
-                localClockFontSize = newV;
-                int gi = currentGroupIndex();
-                if (showBackFace) clickButton(batchApply() ? 5100 + newV : 5200 + gi * 100 + newV);
-                else clickButton(batchApply() ? 4100 + newV : 4200 + gi * 100 + newV);
-                return true;
-            }
-            // pos / clock visible は wheel でも切替 (mouseClicked と同じ挙動)
-            if (overSettingsDisplay("track-display-pos", mx, my)) {
-                onElementClick(new String[]{"track-display-pos"}, (int) mx, (int) my);
-                return true;
-            }
-            if (overSettingsDisplay("track-display-clock", mx, my)) {
-                onElementClick(new String[]{"track-display-clock"}, (int) mx, (int) my);
-                return true;
-            }
+            // The displays' wheel is the engine's (their wheelKey settings-wheel-*, onElementWheel - 2026-10-07, so a wiki
+            // playback's wheel is aimed at its display as a press is); any other wheel over the open popup is consumed.
+            super.mouseScrolled(mx, my, dx, dy);
             return true;  // popup 内のスクロール消費
         }
         return super.mouseScrolled(mx, my, dx, dy);
     }
 
-    /** Hit-test a class element inside the overlay. ドラッグで移動した位置に
-     *  追従するため JsonLayoutScreen の overlayX/Y() を使用する (固定中央配置を仮定しない)。 */
-    private boolean overSettingsDisplay(String className, double mx, double my) {
-        int[] r = findElementByClass(className);
-        if (r == null) return false;
-        int overX = overlayX();
-        int overY = overlayY();
-        int x = overX + r[0], y = overY + r[1];
-        return mx >= x && mx < x + r[2] && my >= y && my < y + r[3];
+    /** A settings display under the wheel (its wheelKey settings-wheel-*): the numbers step, the switches flip. */
+    private void wheelSettingsDisplay(String display, int delta) {
+        int gi = currentGroupIndex();
+        switch (display) {
+            case "track" -> {
+                int newV = Math.max(0, Math.min(99, currentTrackNumber() + delta));
+                localTrackNumber = newV;
+                if (showBackFace) clickButton(batchApply() ? 2000 + newV : 2200 + gi * 100 + newV);
+                else clickButton(batchApply() ? 2 + newV : 200 + gi * 100 + newV);
+            }
+            case "font" -> {
+                int newV = Math.max(0, Math.min(97, currentTrackFontSize() + delta));
+                localTrackFontSize = newV;
+                if (showBackFace) clickButton(batchApply() ? 2100 + newV : 2500 + gi * 100 + newV);
+                else clickButton(batchApply() ? 102 + newV : 500 + gi * 100 + newV);
+            }
+            case "clockfs" -> {
+                int newV = Math.max(0, Math.min(97, currentClockFontSize() + delta));
+                localClockFontSize = newV;
+                if (showBackFace) clickButton(batchApply() ? 5100 + newV : 5200 + gi * 100 + newV);
+                else clickButton(batchApply() ? 4100 + newV : 4200 + gi * 100 + newV);
+            }
+            // pos / clock visible は wheel でも切替 (mouseClicked と同じ挙動)
+            case "pos", "clock" -> onElementClick(new String[]{"track-display-" + display}, 0, 0);
+            default -> { }
+        }
     }
 
-    /** MCSS 基底の sendButtonClick に委譲 (旧 clickButton 名は call site 互換のため残す)。 */
-    void clickButton(int id) { sendButtonClick(id); }
+    /** MCSS 基底の sendButtonClick に委譲 (旧 clickButton 名は call site 互換のため残す)。 The wiki's stand-in takes the
+     *  button as the server's menu would (RailwayManagementMenu.clickMenuButton: its block entity's values only). */
+    void clickButton(int id) {
+        if (wikiMode) {
+            getMenu().clickMenuButton(Minecraft.getInstance().player, id);
+            return;
+        }
+        sendButtonClick(id);
+    }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
@@ -1308,10 +1487,14 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
 
     /** 条件 entries 表示領域 (= popup local 12, 200, 216, 72) の hit 判定。 */
     private boolean isOverScreenDoorCondArea(double mouseX, double mouseY) {
-        int absX = overlay2X() + 12;
-        int absY = overlay2Y() + SD_COND_AREA_Y;
-        return mouseX >= absX && mouseX < absX + 216
-                && mouseY >= absY && mouseY < absY + SD_COND_AREA_H;
+        // popup は自身の原点 pivot で scale するので、当たり判定も scale を通す
+        // (isOverScreenDoorPreview と同じ形。overlay2X() + local だけだと
+        //  UI スケールつまみが 1.0 でないときずれる - 実機 2026-09-12)。
+        float absX = overlay2LocalToScreenX(12);
+        float absY = overlay2LocalToScreenY(SD_COND_AREA_Y);
+        float w = overlay2LocalToScreenLen(216);
+        float h = overlay2LocalToScreenLen(SD_COND_AREA_H);
+        return com.manta.api.hud.Rects.contains(mouseX, mouseY, absX, absY, w, h);
     }
 
     /** preview box (= popup local 12,50,216,100) の absolute 範囲に hit 判定。 */
@@ -1322,7 +1505,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         float absY = overlay2LocalToScreenY(50);
         float w = overlay2LocalToScreenLen(216);
         float h = overlay2LocalToScreenLen(100);
-        return mouseX >= absX && mouseX < absX + w && mouseY >= absY && mouseY < absY + h;
+        return com.manta.api.hud.Rects.contains(mouseX, mouseY, absX, absY, w, h);
     }
 
     private long[] lastScreenDoorHighlight = null;
@@ -1349,7 +1532,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
                         .equals(type)) {
                     reason = "card type=" + type + " (expected screen_door_group)";
                 } else {
-                    now = ScreenDoorPreviewController.readMembers(tag);
+                    now = com.trainsystemutilities.item.MemoryCardItem.readMembers(tag);
                     if (now.length == 0) { now = null; reason = "members empty"; }
                     else reason = "members=" + now.length;
                 }
@@ -1367,6 +1550,57 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         com.trainsystemutilities.client.structure.ScreenDoorGroupHighlightRenderer
                 .setGuiHighlight(null);
         super.removed();
+        if (data != null) {
+            data.close();
+            data = null;
+        }
+    }
+
+    // ===== manta:data (MANTA_7_CONCEPT C4, network.RailwayManagementData) =====
+
+    /**
+     * The block's host: opened at the first tick for the block entity the client's level holds (never for the
+     * wiki capture's stand-in) and closed with the screen. Its fields - the announcement settings and the entry
+     * playing, which AnnouncementSyncPayload and AnnouncementPlaybackStatePayload carried - go into
+     * RailwayAnnouncementClientState, which the popup and the range-frame renderer read as before.
+     */
+    private com.manta.api.data.Mirror data;
+    private int dataRevision = -1;
+
+    /** An action of the block's host, its params in railway-management-state.json's order. */
+    void sendData(String action, Object... args) {
+        com.manta.api.data.Mirror m = dataMirror();
+        if (m != null) m.send(action, args);
+    }
+
+    private com.manta.api.data.Mirror dataMirror() {
+        if (data == null) {
+            var be = be();
+            // Not for the wiki capture's stand-in: it has the client's level (setLevel), but it is not the block
+            // entity that level holds at its position - and its position is the player's, not a block's.
+            if (be.getLevel() == null || be.getLevel().getBlockEntity(be.getBlockPos()) != be
+                    || minecraft == null || minecraft.getConnection() == null) return null;
+            data = com.manta.api.data.Mirror.open(
+                    com.trainsystemutilities.network.RailwayManagementData.channel(be.getLevel(), be.getBlockPos()),
+                    com.trainsystemutilities.network.RailwayManagementData.schema());
+        }
+        return data;
+    }
+
+    /** Every container tick: what the host sent since the last one, into the client state the screen reads. */
+    private void pollData() {
+        com.manta.api.data.Mirror m = dataMirror();
+        if (m == null) return;
+        m.poll();
+        int revision = m.revision();
+        if (revision < 0 || revision == dataRevision) return;
+        dataRevision = revision;
+        net.minecraft.core.BlockPos pos = be().getBlockPos();
+        RailwayAnnouncementClientState.setConfig(pos, com.trainsystemutilities.network.RailwayManagementData.configOf(
+                (Boolean) m.get("ann-enabled"), (Boolean) m.get("ann-attenuation"),
+                (java.util.List<?>) m.get("ann-entries"), (java.util.List<?>) m.get("ann-shared-detection"),
+                (java.util.List<?>) m.get("ann-shared-range")));
+        RailwayAnnouncementClientState.setPlayingEntry(pos, (Integer) m.get("ann-playing"));
     }
 
     /** NBT sync で ListTag<LongTag> → LongArrayTag に自動圧縮されるため両方対応。 */
@@ -1375,8 +1609,7 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
      *  - 時計は番線パネル下部 (h=60 でディメンションテキストとは重ならない位置) */
     private void drawMonitorPreview(GuiGraphics g, int x, int y, int w, int h) {
         // 外枠
-        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, 0xFF000000);
-        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, 0xFF0a0a18);
+        com.manta.api.hud.HudChrome.innerRect(g, x, y, w, h, 0xFF0a0a18, 0xFF000000);
 
         int trackNumber = currentTrackNumber();
         int trackPosition = currentTrackPosition();
@@ -1409,18 +1642,18 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
             // 番線数字 (シンボル下 or 上部)
             if (trackNumber > 0) {
                 String numStr = String.valueOf(trackNumber);
-                int textW = this.font.width(numStr);
+                int textW = com.manta.api.text.MantaText.uiWidth(this.font, numStr);
                 int textX = sideX + (sidePanelW - textW) / 2;
-                g.drawString(this.font, numStr, textX, curY, 0xFF4fc3f7, false);
+                com.manta.api.text.MantaText.draw(g, this.font, numStr, textX, curY, 0xFF4fc3f7);
             }
 
             // 時計 (パネル底部)
             if (clockVisible == 1) {
                 String clockStr = getMinecraftTime();
-                int cw = this.font.width(clockStr);
+                int cw = com.manta.api.text.MantaText.uiWidth(this.font, clockStr);
                 int cx = sideX + (sidePanelW - cw) / 2;
                 int cy = y + h - 12;
-                g.drawString(this.font, clockStr, cx, cy, 0xFFffc107, false);
+                com.manta.api.text.MantaText.draw(g, this.font, clockStr, cx, cy, 0xFFffc107);
             }
         }
 
@@ -1452,30 +1685,6 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         LineSymbolPainter.draw(g, x, y, size, sym, this.font);
     }
 
-    /** リンク先 ManagementComputer / 周辺 chunk から利用可能な路線記号を集める。 */
-    java.util.List<com.trainsystemutilities.blockentity.LineSymbol> getAvailableSymbols() {
-        java.util.List<com.trainsystemutilities.blockentity.LineSymbol> result = new java.util.ArrayList<>();
-        if (this.minecraft == null || this.minecraft.level == null) return result;
-        try {
-            var server = this.minecraft.getSingleplayerServer();
-            if (server == null) return result;
-            var serverLevel = server.getLevel(this.minecraft.level.dimension());
-            if (serverLevel == null) return result;
-            var bePos = be().getBlockPos();
-            for (int dx = -64; dx <= 64; dx += 16) {
-                for (int dz = -64; dz <= 64; dz += 16) {
-                    var chunk = serverLevel.getChunkAt(bePos.offset(dx, 0, dz));
-                    for (var entry : chunk.getBlockEntities().entrySet()) {
-                        if (entry.getValue() instanceof com.trainsystemutilities.blockentity.ManagementComputerBlockEntity mbe) {
-                            result.addAll(mbe.getLineSymbols());
-                        }
-                    }
-                }
-            }
-        } catch (Exception e) { com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[RailwayScreen] GUI op failed", e); }
-        return result;
-    }
-
     /**
      * 割り当てられた路線記号を取得。
      *
@@ -1490,37 +1699,4 @@ public class RailwayManagementScreenV2 extends JsonLayoutScreen<RailwayManagemen
         return be.getAssignedLineSymbol();
     }
 
-    @Override
-    public com.manta.api.anim.Transition getDynamicTransition(String[] classes, String key) {
-        // toggle-bg / toggle-knob は基底 JsonLayoutScreen が解決するので super に委譲。
-        com.manta.api.anim.Transition base = super.getDynamicTransition(classes, key);
-        if (base != null) return base;
-        return switch (key) {
-            case "ann-entry-active" ->
-                    com.manta.api.anim.Transition.of(160, com.manta.api.anim.Easing.EASE_OUT);
-            case "ann-playing-frame-move" ->
-                    com.manta.api.anim.Transition.of(220, com.manta.api.anim.Easing.EASE_OUT);
-            default -> null;
-        };
-    }
-
-    @Override
-    public com.manta.api.anim.Animation getDynamicAnimation(String[] classes, String key) {
-        // 基底クラスが dialog-open / *-popup-open を処理。それ以外は本 Screen 固有。
-        // ann-share-popup-open は "-popup-open" で終わるので base が popIn(220) を返す
-        // → 他の popup (settings/color/announcement) と完全に同じ展開アニメ。
-        com.manta.api.anim.Animation base = super.getDynamicAnimation(classes, key);
-        if (base != null) return base;
-        return RailwayManagementDispatch.animation(this, classes, key);
-    }
-
-    @Override
-    public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-        return RailwayManagementDispatch.color(this, classes, key, defaultArgb);
-    }
-
-    @Override
-    public Boolean getDynamicBool(String[] classes, String key, boolean defaultValue) {
-        return RailwayManagementDispatch.bool(this, classes, key, defaultValue);
-    }
 }

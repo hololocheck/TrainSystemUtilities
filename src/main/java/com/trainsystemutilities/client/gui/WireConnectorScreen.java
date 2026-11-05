@@ -1,7 +1,8 @@
 package com.trainsystemutilities.client.gui;
-import com.manta.api.anim.Animation;
 
 import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.PageLayer;
+import com.manta.api.state.MantaState;
 import com.manta.api.controller.DropdownController;
 import com.manta.api.controller.NumberWheelInput;
 import com.manta.api.controller.ScrollViewport;
@@ -11,16 +12,15 @@ import com.manta.api.render.TextCaretRenderer;
 import com.trainsystemutilities.electrification.item.WireConnectorItem;
 import com.trainsystemutilities.electrification.wire.WireConnection;
 import com.trainsystemutilities.electrification.wire.WireType;
-import com.trainsystemutilities.network.WireConnectorPresetPayload;
-import com.trainsystemutilities.network.WireConnectorRefillOpenPayload;
-import com.trainsystemutilities.network.WireConnectorTypePayload;
+import com.trainsystemutilities.network.WireConnectorPresetAction;
+import com.trainsystemutilities.network.WireConnectorTypeAction;
 import com.trainsystemutilities.registry.ModItems;
+import com.trainsystemutilities.client.ToolsClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
@@ -41,6 +41,12 @@ import java.util.List;
  * </ul>
  */
 public class WireConnectorScreen extends JsonLayoutPlainScreen {
+
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
 
     @Override
     protected String wikiPageId() { return "wire-connector"; }
@@ -101,19 +107,49 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
                     .enabledWhen(() -> selected == WireType.CUSTOM && currentPresetName == null);
 
     /** ダイアログ状態。 */
-    private boolean showApplyConfirm = false;
+    /** 共通の確認ダイアログ (R4.27.1)。 */
+    private final com.manta.api.screen.ConfirmDialog<Void> applyConfirm = com.manta.api.screen.ConfirmDialog.<Void>confirm()
+            .title("tsu.wire_connector.confirm_title")
+            .yes("tsu.wire_connector.confirm_ok")
+            .body(ignored -> selectedDesignName());
     private boolean showSaveDialog = false;
     /** プリセット保存ダイアログの名前入力。Enter で保存、Esc でダイアログ閉じ。 */
     private final TextInputController saveNameInput =
-            new TextInputController(32, "")
+            new TextInputController(WireConnectorPresetAction.MAX_NAME_CODE_POINTS, "")
                     .onSubmit(() -> onElementClick(new String[]{"preset-save-ok"}, 0, 0, 0))
                     .onEscape(this::closeSaveDialog);
-    private boolean showDeleteDialog = false;
+    private final com.manta.api.screen.ConfirmDialog<Integer> deleteConfirm = com.manta.api.screen.ConfirmDialog.<Integer>danger()
+            .title("tsu.wire_connector.preset_delete_title")
+            .yes("tsu.wire_connector.preset_delete_ok")
+            .body(this::presetNameAt);
     private int deletePresetIndex = -1;
 
     public WireConnectorScreen() {
+        this(findTool());
+    }
+
+    /**
+     * The wiki's stand-in's tool: a demo one holding two spools of wire, not the one the viewer holds - the refill section
+     * fills it (改善1, 2026-10-07). Null: the held one.
+     */
+    private ItemStack wikiTool = null;
+
+    /** The wiki's stand-in (WikiLiveCapture): the screen on its demo tool. */
+    public static WireConnectorScreen wikiCreate() {
+        ItemStack tool = new ItemStack(ModItems.WIRE_CONNECTOR.get());
+        WireConnectorItem.addWireTank(tool, 2 * com.trainsystemutilities.electrification.item.WireSpoolItem.METERS_PER_SPOOL);
+        WireConnectorScreen s = new WireConnectorScreen(tool);
+        s.wikiTool = tool;
+        return s;
+    }
+
+    private ItemStack tool() {
+        return wikiTool != null ? wikiTool : findTool();
+    }
+
+    /** The screen on {@code tool}, the wire connector in hand (null: none). */
+    private WireConnectorScreen(ItemStack tool) {
         super(Component.translatable("tsu.wire_connector.title"));
-        ItemStack tool = findTool();
         this.selected = tool != null ? WireConnectorItem.readWireType(tool) : WireType.TWO_TIER;
         this.sagEnabled = tool != null && WireConnectorItem.readSag(tool);
         float initThickness = tool != null
@@ -125,16 +161,54 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
         this.customRowCount = tool != null
                 ? WireConnectorItem.readCustomRowCount(tool) : WireConnection.DEFAULT_CUSTOM_ROW_COUNT;
         this.customThickness = new NumberWheelInput(initThickness, 0.01f, 0.30f, 0.01f, "%.2f")
-                .onChange(v -> sendCustomFloatPayload(WireConnectorTypePayload.ACTION_CUSTOM_THICKNESS, v))
+                .onChange(v -> sendCustomFloatPayload(WireConnectorTypeAction.ACTION_CUSTOM_THICKNESS, v))
                 .enabledWhen(this::isCustomEditing);
         this.customTrolleyOffset = new NumberWheelInput(initOffset, 0f, 2.0f, 0.05f, "%.2fm")
-                .onChange(v -> sendCustomFloatPayload(WireConnectorTypePayload.ACTION_CUSTOM_TROLLEY_OFFSET, v))
+                .onChange(v -> sendCustomFloatPayload(WireConnectorTypeAction.ACTION_CUSTOM_TROLLEY_OFFSET, v))
                 .enabledWhen(this::isCustomEditing);
         this.customDropperInterval = new NumberWheelInput(initDropper, 0.5f, 10.0f, 0.25f, "%.2fm")
-                .onChange(v -> sendCustomFloatPayload(WireConnectorTypePayload.ACTION_CUSTOM_DROPPER_INTERVAL, v))
+                .onChange(v -> sendCustomFloatPayload(WireConnectorTypeAction.ACTION_CUSTOM_DROPPER_INTERVAL, v))
                 .enabledWhen(this::isCustomEditing);
         this.presets = tool != null
                 ? new ArrayList<>(WireConnectorItem.readPresets(tool)) : new ArrayList<>();
+    }
+
+    /**
+     * wiki キャプチャ用に state を当てる (WikiLiveCapture)。"confirm" = 適用の確認 (本文は選択中のデザイン名)。
+     * "preset-delete" = プリセット削除の確認: 本文はプリセット名なので、プリセットの無いツールでは空になる →
+     * 保存ボタンと同じ既定名・同じ値のサンプルを画面ローカルの一覧に 1 つ足し、そのタイルが見える位置まで
+     * スクロールして開く。"preset-save" = プリセット保存のダイアログ (CUSTOM を選んだ状態で、保存ボタンと同じ既定名)。
+     * 撮るだけの画面なので何も送らない。
+     */
+    public void wikiApplyState(String state) {
+        switch (state) {
+            case "confirm" -> applyConfirm.ask();
+            case "preset-delete" -> {
+                addWikiPreset();
+                tileScroll.setOffset(totalTiles() - VISIBLE_SLOTS);
+                deleteConfirm.ask(presets.size() - 1);
+            }
+            // BelugaAOS's UI sweep alone (WikiLiveCapture's sweep-only states, 2026-10-21): presets in the screen's own
+            // list until the tiles are twice what the strip shows, so its scrollbar thumb is up to be dragged.
+            case "main-long" -> {
+                for (int i = totalTiles(); i < 2 * VISIBLE_SLOTS; i++) addWikiPreset();
+            }
+            // プリセット保存: 保存ボタンは CUSTOM 選択中にだけ効く → CUSTOM を選び、押したときと同じ既定名で開く
+            case "preset-save" -> {
+                selected = WireType.CUSTOM;
+                currentPresetName = null;
+                openSaveDialog();
+            }
+            default -> { /* main: overlay なし */ }
+        }
+    }
+
+    /** A sample preset into the screen-local list: the save button's default name and the current values. */
+    private void addWikiPreset() {
+        presets.add(new WireConnectorItem.Preset(
+                Component.translatable("tsu.wire_connector.preset_default_name_fmt", presets.size() + 1).getString(),
+                customThickness.value(), customTrolleyOffset.value(),
+                customDropperInterval.value(), customRowCount));
     }
 
     /** CUSTOM パラメータが現在編集可能か (= CUSTOM 選択中かつプリセット未適用)。 */
@@ -144,7 +218,7 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
 
     /** CUSTOM float パラメータをサーバへ送る (= NumberWheelInput.onChange から)。 */
     private void sendCustomFloatPayload(int action, float value) {
-        PacketDistributor.sendToServer(new WireConnectorTypePayload(action, Math.round(value * 1000)));
+        ToolsClient.wireType(action, Math.round(value * 1000));
     }
 
     @Override
@@ -154,9 +228,9 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
 
     @Override
     protected String overlayJson() {
-        if (showApplyConfirm) return TsuLayouts.load("layouts/wire-connector-confirm.json");
+        if (applyConfirm.isOpen()) return com.manta.api.screen.MantaLayouts.load(com.manta.api.screen.ConfirmDialog.LAYOUT);
         if (showSaveDialog) return TsuLayouts.load("layouts/wire-connector-preset-save.json");
-        if (showDeleteDialog) return TsuLayouts.load("layouts/wire-connector-preset-delete.json");
+        if (deleteConfirm.isOpen()) return com.manta.api.screen.MantaLayouts.load(com.manta.api.screen.ConfirmDialog.LAYOUT);
         if (filterDropdown.isOpen()) return TsuLayouts.load("layouts/wire-connector-filter-menu.json");
         return null;
     }
@@ -176,13 +250,163 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
     @Override
     protected boolean closeTransientOverlays() { return filterDropdown.close(); }
 
+    // ===== Manta 7 push (Phase 4, TSU batch 3, 2026-09-23) =====
+    // The page's values are WRITTEN here each frame before the engine draws, and once when a page
+    // opens: the screen overrides no getDynamic*. The hint toggle and dialog-open are the base's.
+    // The overlay is one of four (overlayJson's precedence, overlayShown): the two confirmations
+    // are ConfirmDialog's, the save dialog's name and the filter menu's entrance are this screen's.
+    private static final int OVERLAY_NONE = 0, OVERLAY_APPLY = 1, OVERLAY_SAVE = 2, OVERLAY_DELETE = 3, OVERLAY_FILTER = 4;
+
+    private MantaState pushed, overlayPage;
+    private com.manta.api.state.TextSlot tPresetName;
+    private com.manta.api.state.TextSlot tTank, tSelectedName, tSelectedDesc, tTier, tRows, tHeight;
+    private com.manta.api.state.TextSlot tThickness, tOffset, tDropper, tSearch, tFilter;
+    private final com.manta.api.state.TextSlot[] tSlotName = new com.manta.api.state.TextSlot[VISIBLE_SLOTS];
+    private final com.manta.api.state.ColorSlot[] cSlotBg = new com.manta.api.state.ColorSlot[VISIBLE_SLOTS];
+    private final com.manta.api.state.ColorSlot[] cSlotBorder = new com.manta.api.state.ColorSlot[VISIBLE_SLOTS];
+    private com.manta.api.state.ColorSlot cSagTrack, cSagKnob, cSagLabel, cRowTrack, cRowKnob;
+    private com.manta.api.state.NumberSlot nSagKnobX, nRowKnobX, nThumbY, nThumbH, nTankFill;
+    private com.manta.api.state.BoolSlot bSag, bCustom, bScrollbar;
+
+    /** The overlay overlayJson shows, by its precedence. */
+    private int overlayShown() {
+        if (applyConfirm.isOpen()) return OVERLAY_APPLY;
+        if (showSaveDialog) return OVERLAY_SAVE;
+        if (deleteConfirm.isOpen()) return OVERLAY_DELETE;
+        if (filterDropdown.isOpen()) return OVERLAY_FILTER;
+        return OVERLAY_NONE;
+    }
+
     @Override
-    public com.manta.api.anim.Animation getDynamicAnimation(String[] classes, String key) {
-        if ("filter-menu-open".equals(key)) {
-            // dropdown 展開アニメ (= train-preset-browse の mode-menu と同じバウンス)
-            return com.manta.api.anim.Animation.dropdownDown(220, 46);
+    protected void pageOpened(Object page, PageLayer layer) {
+        if (layer == PageLayer.OVERLAY) {
+            overlayPage = MantaState.of(page);
+            tPresetName = null;
+            int shown = overlayShown();
+            if (shown == OVERLAY_SAVE) {
+                tPresetName = overlayPage.text("preset-name-input-value");
+                overlayPage.textByKeyOnly();
+            } else if (shown == OVERLAY_FILTER) {
+                // The menu's root declares "animationKey": "dropdown": the base unfolds and folds it (Manta
+                // DropdownMotion, 2026-10-07).
+                overlayPage.textByKeyOnly();
+            }
+            pushOverlay();
+            return;
         }
-        return super.getDynamicAnimation(classes, key);
+        if (layer != PageLayer.PRIMARY) return;
+        pushed = MantaState.of(page);
+        tTank = pushed.text("wire-tank-label");
+        tSelectedName = pushed.text("selected-name-text");
+        tSelectedDesc = pushed.text("selected-desc-text");
+        tTier = pushed.text("info-tier-count");
+        tRows = pushed.text("info-row-count");
+        tHeight = pushed.text("info-height");
+        tThickness = pushed.text("custom-thickness-value");
+        tOffset = pushed.text("custom-offset-value");
+        tDropper = pushed.text("custom-dropper-value");
+        tSearch = pushed.text("search-box-value");
+        tFilter = pushed.text("filter-dropdown-label");
+        // The name keys are spelt out, one per visible slot: the vocabulary gate reads the TEXT keys a
+        // screen writes from its source, and a key built by concatenation is invisible to it. A
+        // VISIBLE_SLOTS that no longer matches fails loudly - an index out of bounds here, or a null
+        // handle at the first set.
+        tSlotName[0] = pushed.text("slot-0-name");
+        tSlotName[1] = pushed.text("slot-1-name");
+        tSlotName[2] = pushed.text("slot-2-name");
+        tSlotName[3] = pushed.text("slot-3-name");
+        tSlotName[4] = pushed.text("slot-4-name");
+        for (int i = 0; i < VISIBLE_SLOTS; i++) {
+            cSlotBg[i] = pushed.color("slot-" + i + "-bg");
+            cSlotBorder[i] = pushed.color("slot-" + i + "-border");
+        }
+        cSagTrack = pushed.color("sag-toggle-bg");
+        cSagKnob = pushed.color("sag-knob-bg");
+        cSagLabel = pushed.color("sag-toggle-label-color");
+        cRowTrack = pushed.color("custom-row-toggle-bg");
+        cRowKnob = pushed.color("custom-row-knob-bg");
+        nSagKnobX = pushed.number("sag-knob-x");
+        nRowKnobX = pushed.number("custom-row-knob-x");
+        nThumbY = pushed.number("scrollbar-thumb-y");
+        nThumbH = pushed.number("scrollbar-thumb-h");
+        nTankFill = pushed.number("wire-tank-fill");
+        bSag = pushed.bool("sag-toggle-visible");
+        bCustom = pushed.bool("custom-params-visible");
+        bScrollbar = pushed.bool("scrollbar-visible");
+        pushed.textByKeyOnly();
+        pushAll();
+    }
+
+    private void pushOverlay() {
+        if (overlayPage == null || !overlayPage.isOpen()) return;
+        switch (overlayShown()) {
+            case OVERLAY_APPLY -> applyConfirm.push(overlayPage);
+            case OVERLAY_DELETE -> deleteConfirm.push(overlayPage);
+            case OVERLAY_SAVE -> {
+                if (tPresetName != null) overlayPage.set(tPresetName, saveNameInput.value());
+            }
+            default -> { }
+        }
+    }
+
+    private void pushAll() {
+        pushOverlay();
+        if (pushed == null || !pushed.isOpen()) return;
+        ItemStack tool = tool();
+        int amount = tool == null ? 0 : WireConnectorItem.readWireTank(tool);
+        pushed.set(tTank, amount + " / " + WireConnectorItem.WIRE_TANK_MAX + " m");
+        pushed.set(nTankFill, com.manta.api.render.Gauge.fillWidth(TANK_BAR_INNER_W, amount, WireConnectorItem.WIRE_TANK_MAX));
+        // A preset in use reads "<preset name> (custom)".
+        boolean presetInUse = currentPresetName != null && selected == WireType.CUSTOM;
+        pushed.set(tSelectedName, presetInUse
+                ? currentPresetName + " (" + WireType.CUSTOM.displayName().getString() + ")"
+                : selected.displayName().getString());
+        pushed.set(tSelectedDesc, presetInUse
+                ? Component.translatable("tsu.wire_connector.preset_loaded").getString()
+                : descFor(selected));
+        pushed.set(tTier, tierCountFor(selected));
+        pushed.set(tRows, rowCountFor(selected));
+        pushed.set(tHeight, heightFor(selected));
+        pushed.set(tThickness, customThickness.formatted());
+        pushed.set(tOffset, customTrolleyOffset.formatted());
+        pushed.set(tDropper, customDropperInterval.formatted());
+        // The search box's inner span: display() is the placeholder while empty.
+        pushed.set(tSearch, searchQuery.display());
+        pushed.set(tFilter, filterLabel(filterDropdown.selectedIndex()));
+        for (int i = 0; i < VISIBLE_SLOTS; i++) {
+            TileEntry entry = entryOfSlot(i);
+            pushed.set(tSlotName[i], entry == null ? "" : entry.name());
+            // The selected tile is lit; an empty slot is dimmed; any other keeps the layout's colours.
+            if (entry == null) {
+                pushed.set(cSlotBg[i], 0x80303030);
+                pushed.set(cSlotBorder[i], 0x40555555);
+            } else if (isSlotSelected(entry)) {
+                pushed.set(cSlotBg[i], 0xFF3B5274);
+                pushed.set(cSlotBorder[i], 0xFF80DEEA);
+            } else {
+                pushed.clear(cSlotBg[i]);
+                pushed.clear(cSlotBorder[i]);
+            }
+        }
+        pushed.set(cSagTrack, sagToggle.trackBg());
+        pushed.set(cSagKnob, sagToggle.knobBg());
+        pushed.set(cSagLabel, selected == WireType.SIMPLE ? 0xFF80DEEA : 0xFF666666);
+        pushed.set(cRowTrack, customRowToggle.trackBg());
+        pushed.set(cRowKnob, customRowToggle.knobBg());
+        // Offsets: knobX / thumbY are default + delta, so each delta is its answer for 0.
+        pushed.setOffset(nSagKnobX, sagToggle.knobX(0));
+        pushed.setOffset(nRowKnobX, customRowToggle.knobX(0));
+        pushed.setOffset(nThumbY, tileScroll.thumbY(0, 236 - 2, 20));
+        pushed.set(nThumbH, 20);
+        pushed.set(bSag, selected == WireType.SIMPLE);
+        pushed.set(bCustom, selected == WireType.CUSTOM);
+        pushed.set(bScrollbar, tileScroll.needsScrollbar());
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        pushAll();
+        super.render(g, mouseX, mouseY, partialTick);
     }
 
     private static ItemStack findTool() {
@@ -238,6 +462,15 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
 
     // ===== Click routing =====
 
+    /** R4.20.2: field 初期子の lambda からは method 経由で読む。 */
+    private String selectedDesignName() {
+        return selected == null ? "" : selected.displayName().getString();
+    }
+
+    private String presetNameAt(Integer idx) {
+        return (idx != null && idx >= 0 && idx < presets.size()) ? presets.get(idx).name() : "";
+    }
+
     @Override
     public void onElementClick(String[] classes, int mouseX, int mouseY, int button) {
         // BelugaExperience 標準ヘッダ部品 (R4.17): hint / wiki本 を先に処理 (× は下の switch)
@@ -249,21 +482,14 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
                 return;
             }
         }
-        // Apply 確認ダイアログ
-        if (showApplyConfirm) {
-            for (String c : classes) {
-                if ("confirm-ok".equals(c)) { apply(); showApplyConfirm = false; onClose(); return; }
-                if ("confirm-cancel".equals(c)) { showApplyConfirm = false; return; }
-            }
-            return;
-        }
+        // Apply 確認ダイアログ (共通)
+        if (applyConfirm.handleClick(classes, ignored -> { apply(); onClose(); })) return;
         // Save ダイアログ
         if (showSaveDialog) {
             for (String c : classes) {
                 if ("preset-save-ok".equals(c)) {
                     String name = saveNameInput.value().trim();
-                    PacketDistributor.sendToServer(new WireConnectorPresetPayload(
-                            WireConnectorPresetPayload.ACTION_SAVE, -1, name));
+                    ToolsClient.wirePresetSave(name);
                     // ローカルキャッシュにも反映 (= サーバ async 後の即時 UI 更新用)
                     presets.add(new WireConnectorItem.Preset(
                             name.isEmpty() ? Component.translatable("tsu.wire_connector.preset_default_name_fmt", presets.size() + 1).getString() : name,
@@ -279,29 +505,16 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
             }
             return;
         }
-        // Delete ダイアログ
-        if (showDeleteDialog) {
-            for (String c : classes) {
-                if ("preset-delete-ok".equals(c)) {
-                    if (deletePresetIndex >= 0 && deletePresetIndex < presets.size()) {
-                        PacketDistributor.sendToServer(new WireConnectorPresetPayload(
-                                WireConnectorPresetPayload.ACTION_DELETE, deletePresetIndex, ""));
-                        presets.remove(deletePresetIndex);
-                        // スクロールが端を超えないように補正
-                        tileScroll.clamp();
-                    }
-                    deletePresetIndex = -1;
-                    showDeleteDialog = false;
-                    return;
-                }
-                if ("preset-delete-cancel".equals(c)) {
-                    deletePresetIndex = -1;
-                    showDeleteDialog = false;
-                    return;
-                }
+        // Delete ダイアログ (共通)
+        if (deleteConfirm.handleClick(classes, idx -> {
+            if (idx != null && idx >= 0 && idx < presets.size()) {
+                ToolsClient.wirePreset(WireConnectorPresetAction.ACTION_DELETE, idx);
+                presets.remove((int) idx);
+                // スクロールが端を超えないように補正
+                tileScroll.clamp();
             }
-            return;
-        }
+            deletePresetIndex = -1;
+        })) return;
 
         // メインレイアウト
         for (String c : classes) {
@@ -327,15 +540,12 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
         for (String c : classes) {
             switch (c) {
                 case "custom-save-btn" -> {
-                    if (selected == WireType.CUSTOM) {
-                        saveNameInput.setValue(Component.translatable("tsu.wire_connector.preset_default_name_fmt", presets.size() + 1).getString());
-                        showSaveDialog = true;
-                    }
+                    if (selected == WireType.CUSTOM) openSaveDialog();
                     return;
                 }
-                case "confirm-btn" -> { showApplyConfirm = true; return; }
+                case "confirm-btn" -> { applyConfirm.ask(); return; }
                 case "wire-refill-btn" -> {
-                    PacketDistributor.sendToServer(new WireConnectorRefillOpenPayload());
+                    ToolsClient.wireRefillOpen();
                     return;
                 }
                 case "mc-popup-close", "header-close" -> { onClose(); return; }
@@ -361,7 +571,7 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
         if (button == 1) {
             // 右クリック → 削除確認
             deletePresetIndex = presetIdx;
-            showDeleteDialog = true;
+            deleteConfirm.ask(presetIdx);
         } else {
             // 左クリック → CUSTOM 選択 + パラメータ + プリセット名
             WireConnectorItem.Preset p = presets.get(presetIdx);
@@ -371,33 +581,52 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
             customTrolleyOffset.setValue(p.trolleyOffset());
             customDropperInterval.setValue(p.dropperInterval());
             customRowCount = p.rowCount();
-            PacketDistributor.sendToServer(new WireConnectorPresetPayload(
-                    WireConnectorPresetPayload.ACTION_APPLY, presetIdx, ""));
+            ToolsClient.wirePreset(WireConnectorPresetAction.ACTION_APPLY, presetIdx);
         }
     }
 
     @Override
     public boolean mouseScrolled(double mx, double my, double dxScroll, double dyScroll) {
-        if (showApplyConfirm || showSaveDialog || showDeleteDialog) {
+        if (applyConfirm.isOpen() || showSaveDialog || deleteConfirm.isOpen()) {
             return super.mouseScrolled(mx, my, dxScroll, dyScroll);
         }
-        // CUSTOM パラメータ調整 (= NumberWheelInput.enabledWhen で gate、プリセット選択中は値固定)
-        if (hoveredElement("custom-thickness-value", mx, my) && customThickness.handleWheel(dyScroll)) return true;
-        if (hoveredElement("custom-offset-value",    mx, my) && customTrolleyOffset.handleWheel(dyScroll)) return true;
-        if (hoveredElement("custom-dropper-value",   mx, my) && customDropperInterval.handleWheel(dyScroll)) return true;
+        // CUSTOM パラメータ調整: the values' own wheel is the engine's (their wheelKey custom-*-wheel, onElementWheel -
+        // 2026-10-07, so a wiki playback's wheel is aimed at its value as a press is).
+        if (super.mouseScrolled(mx, my, dxScroll, dyScroll)) return true;
         // タイル一覧スクロール (= デザインパネルにホバー時)
         if (tileScroll.needsScrollbar()) {
             int[] panel = findElementByClass("scrollbar-track");
             if (panel != null) {
-                int px = dialogX(), py = dialogY();
-                // パネル左上 14..220, 縦 52..288 をホバー範囲とする
-                if (mx >= px + 14 && mx < px + 220 && my >= py + 52 && my < py + 288) {
+                // パネル左上 14..220, 縦 52..288 (dialog-local) をホバー範囲とする。
+                // local → screen は manta の変換を通す (つまみが 1.0 でないとずれる)。
+                if (mx >= dialogLocalToScreenX(14) && mx < dialogLocalToScreenX(220)
+                        && my >= dialogLocalToScreenY(52) && my < dialogLocalToScreenY(288)) {
                     tileScroll.scroll(dyScroll > 0 ? -1 : 1);
                     return true;
                 }
             }
         }
-        return super.mouseScrolled(mx, my, dxScroll, dyScroll);
+        return false;
+    }
+
+    /** The preset tiles' thumb, grabbed and dragged (Manta 2.87.0's dragThumb, R4.19.5). */
+    @Override
+    public boolean onElementDrag(String[] classes, String key, int mouseX, int mouseY,
+                                 int elementX, int elementY, int elementW, int elementH, boolean pressed) {
+        if ("wire-tile-thumb-drag".equals(key)) {
+            return tileScroll.dragThumb(mouseY, pressed);
+        }
+        return super.onElementDrag(classes, key, mouseX, mouseY, elementX, elementY, elementW, elementH, pressed);
+    }
+
+    /** CUSTOM パラメータ調整 (= NumberWheelInput.enabledWhen で gate、プリセット選択中は値固定)。 */
+    @Override
+    public boolean onElementWheel(String[] classes, String key, int mouseX, int mouseY, double scrollY) {
+        if (applyConfirm.isOpen() || showSaveDialog || deleteConfirm.isOpen()) return false;
+        if ("custom-thickness-wheel".equals(key)) return customThickness.handleWheel(scrollY);
+        if ("custom-offset-wheel".equals(key)) return customTrolleyOffset.handleWheel(scrollY);
+        if ("custom-dropper-wheel".equals(key)) return customDropperInterval.handleWheel(scrollY);
+        return false;
     }
 
     // ===== text input (save dialog) =====
@@ -409,7 +638,7 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
             if (saveNameInput.charTyped(codePoint)) return true;
             return super.charTyped(codePoint, modifiers);
         }
-        if (!showApplyConfirm && !showDeleteDialog && searchQuery.charTyped(codePoint)) {
+        if (!applyConfirm.isOpen() && !deleteConfirm.isOpen() && searchQuery.charTyped(codePoint)) {
             return true;
         }
         return super.charTyped(codePoint, modifiers);
@@ -422,11 +651,22 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
             return super.keyPressed(keyCode, scanCode, modifiers);
         }
         // 通常時: ドロップダウン ESC を先に拾ってから検索ボックスへ流す
-        if (!showApplyConfirm && !showDeleteDialog) {
+        if (!applyConfirm.isOpen() && !deleteConfirm.isOpen()) {
             if (keyCode == GLFW.GLFW_KEY_ESCAPE && filterDropdown.onEscape()) return true;
             if (searchQuery.keyPressed(keyCode)) return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    /** 保存ダイアログを次の既定名で開く。 */
+    private void openSaveDialog() {
+        // setValue takes no cap of its own: the default name is cut to what the input holds, which
+        // is what the wire-preset declaration is sized from (a language's name could be longer).
+        String def = Component.translatable("tsu.wire_connector.preset_default_name_fmt", presets.size() + 1).getString();
+        int max = WireConnectorPresetAction.MAX_NAME_CODE_POINTS;
+        saveNameInput.setValue(def.codePointCount(0, def.length()) <= max
+                ? def : def.substring(0, def.offsetByCodePoints(0, max)));
+        showSaveDialog = true;
     }
 
     /** 保存ダイアログを閉じて入力バッファをクリア。 */
@@ -435,99 +675,32 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
         saveNameInput.clear();
     }
 
-    private boolean hoveredElement(String className, double mx, double my) {
-        int[] r = findElementByClass(className);
-        if (r == null) return false;
-        int x = dialogX() + r[0];
-        int y = dialogY() + r[1];
-        return mx >= x && mx < x + r[2] && my >= y && my < y + r[3];
-    }
-
     /** sag トグルの setter (= state + server sync を一括化、ToggleSwitchController から呼ぶ)。 */
     private void setSagEnabled(boolean v) {
         sagEnabled = v;
-        PacketDistributor.sendToServer(new WireConnectorTypePayload(
-                WireConnectorTypePayload.ACTION_SAG_TOGGLE, v ? 1 : 0));
+        ToolsClient.wireType(
+                WireConnectorTypeAction.ACTION_SAG_TOGGLE, v ? 1 : 0);
     }
 
     /** customRowCount 1/2 トグルの setter。 */
     private void setCustomRow2(boolean v) {
         customRowCount = v ? 2 : 1;
-        PacketDistributor.sendToServer(new WireConnectorTypePayload(
-                WireConnectorTypePayload.ACTION_CUSTOM_ROW_COUNT, customRowCount));
+        ToolsClient.wireType(
+                WireConnectorTypeAction.ACTION_CUSTOM_ROW_COUNT, customRowCount);
     }
 
     private void apply() {
-        PacketDistributor.sendToServer(
-                new WireConnectorTypePayload(WireConnectorTypePayload.ACTION_TYPE_SELECT, selected.id));
-        PacketDistributor.sendToServer(new WireConnectorTypePayload(
-                WireConnectorTypePayload.ACTION_SAG_TOGGLE, sagEnabled ? 1 : 0));
-        PacketDistributor.sendToServer(new WireConnectorTypePayload(
-                WireConnectorTypePayload.ACTION_CUSTOM_THICKNESS, Math.round(customThickness.value() * 1000)));
-        PacketDistributor.sendToServer(new WireConnectorTypePayload(
-                WireConnectorTypePayload.ACTION_CUSTOM_TROLLEY_OFFSET, Math.round(customTrolleyOffset.value() * 1000)));
-        PacketDistributor.sendToServer(new WireConnectorTypePayload(
-                WireConnectorTypePayload.ACTION_CUSTOM_DROPPER_INTERVAL, Math.round(customDropperInterval.value() * 1000)));
-        PacketDistributor.sendToServer(new WireConnectorTypePayload(
-                WireConnectorTypePayload.ACTION_CUSTOM_ROW_COUNT, customRowCount));
-    }
-
-    // ===== Dynamic text =====
-
-    @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        for (String c : classes) {
-            switch (c) {
-                case "wire-tank-label" -> {
-                    ItemStack tool = findTool();
-                    int amount = tool == null ? 0 : WireConnectorItem.readWireTank(tool);
-                    return amount + " / " + WireConnectorItem.WIRE_TANK_MAX + " m";
-                }
-                case "selected-name" -> {
-                    // プリセット選択中なら "プリセット名 (カスタム)" 形式
-                    if (currentPresetName != null && selected == WireType.CUSTOM) {
-                        return currentPresetName + " (" + WireType.CUSTOM.displayName().getString() + ")";
-                    }
-                    return selected.displayName().getString();
-                }
-                case "selected-desc" -> {
-                    if (currentPresetName != null && selected == WireType.CUSTOM) {
-                        return Component.translatable("tsu.wire_connector.preset_loaded").getString();
-                    }
-                    return descFor(selected);
-                }
-                case "info-tier-count" -> { return tierCountFor(selected); }
-                case "info-row-count" -> { return rowCountFor(selected); }
-                case "info-height" -> { return heightFor(selected); }
-                case "confirm-design-name" -> { return selected.displayName().getString(); }
-                case "custom-thickness-value" -> { return customThickness.formatted(); }
-                case "custom-offset-value" -> { return customTrolleyOffset.formatted(); }
-                case "custom-dropper-value" -> { return customDropperInterval.formatted(); }
-                case "custom-row-value" -> { return Component.translatable("tsu.wire_connector.row_count_fmt", customRowCount).getString(); }
-                case "preset-delete-name" -> {
-                    if (deletePresetIndex >= 0 && deletePresetIndex < presets.size())
-                        return presets.get(deletePresetIndex).name();
-                    return "";
-                }
-                // プリセット名入力の TEXT (= 内側 span のみが描画)。outer div には返さないことが重要 (二重描画回避)
-                case "preset-name-input-value" -> { return saveNameInput.value(); }
-                // 検索ボックスの TEXT (= 内側 span。display() で空時はプレースホルダ "検索…" を返す)
-                case "search-box-value" -> { return searchQuery.display(); }
-                case "filter-dropdown-label" -> { return filterLabel(filterDropdown.selectedIndex()); }
-                case "filter-option-0-label" -> { return filterLabel(FILTER_ALL); }
-                case "filter-option-1-label" -> { return filterLabel(FILTER_BASIC); }
-                case "filter-option-2-label" -> { return filterLabel(FILTER_CUSTOM); }
-            }
-            // スロットタイル名
-            if (c.startsWith("slot-") && c.endsWith("-name")) {
-                int slotIdx = parseSlotIndex(c, "-name");
-                if (slotIdx < 0) continue;
-                TileEntry entry = entryOfSlot(slotIdx);
-                if (entry == null) return "";
-                return entry.name();
-            }
-        }
-        return null;
+        ToolsClient.wireType(WireConnectorTypeAction.ACTION_TYPE_SELECT, selected.id);
+        ToolsClient.wireType(
+                WireConnectorTypeAction.ACTION_SAG_TOGGLE, sagEnabled ? 1 : 0);
+        ToolsClient.wireType(
+                WireConnectorTypeAction.ACTION_CUSTOM_THICKNESS, Math.round(customThickness.value() * 1000));
+        ToolsClient.wireType(
+                WireConnectorTypeAction.ACTION_CUSTOM_TROLLEY_OFFSET, Math.round(customTrolleyOffset.value() * 1000));
+        ToolsClient.wireType(
+                WireConnectorTypeAction.ACTION_CUSTOM_DROPPER_INTERVAL, Math.round(customDropperInterval.value() * 1000));
+        ToolsClient.wireType(
+                WireConnectorTypeAction.ACTION_CUSTOM_ROW_COUNT, customRowCount);
     }
 
     private static String filterLabel(int mode) {
@@ -583,37 +756,6 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
         };
     }
 
-    // ===== Dynamic color / number / bool =====
-
-    @Override
-    public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-        switch (key) {
-            case "sag-toggle-bg":          return sagToggle.trackBg();
-            case "sag-knob-bg":            return sagToggle.knobBg();
-            case "sag-toggle-label-color":
-                return selected == WireType.SIMPLE ? 0xFF80DEEA : 0xFF666666;
-            case "custom-row-toggle-bg":   return customRowToggle.trackBg();
-            case "custom-row-knob-bg":     return customRowToggle.knobBg();
-            default: /* fallthrough */
-        }
-        // slot-N-bg / slot-N-border (= 選択中スロットを強調)
-        if (key.startsWith("slot-")) {
-            int slotIdx = parseSlotIndex(key, "-bg");
-            if (slotIdx >= 0) {
-                TileEntry entry = entryOfSlot(slotIdx);
-                if (entry == null) return 0x80303030;
-                return isSlotSelected(entry) ? 0xFF3B5274 : null;
-            }
-            slotIdx = parseSlotIndex(key, "-border");
-            if (slotIdx >= 0) {
-                TileEntry entry = entryOfSlot(slotIdx);
-                if (entry == null) return 0x40555555;
-                return isSlotSelected(entry) ? 0xFF80DEEA : null;
-            }
-        }
-        return null;
-    }
-
     private boolean isSlotSelected(TileEntry entry) {
         if (entry == null) return false;
         if (entry.isBuiltin()) {
@@ -623,32 +765,6 @@ public class WireConnectorScreen extends JsonLayoutPlainScreen {
         return currentPresetName != null
                 && entry.presetIdx() >= 0 && entry.presetIdx() < presets.size()
                 && currentPresetName.equals(presets.get(entry.presetIdx()).name());
-    }
-
-    @Override
-    public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
-        if ("sag-knob-x".equals(key)) return sagToggle.knobX(defaultValue);
-        if ("custom-row-knob-x".equals(key)) return customRowToggle.knobX(defaultValue);
-        if ("scrollbar-thumb-y".equals(key)) return tileScroll.thumbY(defaultValue, 236 - 2, 20);
-        if ("scrollbar-thumb-h".equals(key)) return 20;
-        if ("wire-tank-fill".equals(key)) {
-            ItemStack tool = findTool();
-            int amount = tool == null ? 0 : WireConnectorItem.readWireTank(tool);
-            int max = WireConnectorItem.WIRE_TANK_MAX;
-            int pct = max == 0 ? 0 : amount * 100 / max;
-            return Math.max(0, Math.min(TANK_BAR_INNER_W, TANK_BAR_INNER_W * pct / 100));
-        }
-        return null;
-    }
-
-    @Override
-    public Boolean getDynamicBool(String[] classes, String key, boolean defaultValue) {
-        if ("sag-toggle-visible".equals(key)) return selected == WireType.SIMPLE;
-        if ("custom-params-visible".equals(key)) return selected == WireType.CUSTOM;
-        if ("scrollbar-visible".equals(key)) return tileScroll.needsScrollbar();
-        if ("dropdown-open".equals(key)) return filterDropdown.isOpen();
-        if ("custom-save-enabled".equals(key)) return selected == WireType.CUSTOM && currentPresetName == null;
-        return null;
     }
 
     // ===== Canvas-driven preview drawing =====

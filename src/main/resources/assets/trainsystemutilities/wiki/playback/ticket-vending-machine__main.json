@@ -1,0 +1,109 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ],
+        "at": [
+          0.162,
+          0.079
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tvm.dest",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "say": "trainsystemutilities.wiki.play.tvm.scroll",
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ],
+        "at": [
+          0.5,
+          0.425
+        ]
+      },
+      "do": "hover",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "tvm-grid"
+        ],
+        "at": [
+          0.5,
+          0.425
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tvm.buy",
+      "holdMs": 2200
+    }
+  ]
+}

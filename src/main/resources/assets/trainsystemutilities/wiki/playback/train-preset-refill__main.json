@@ -1,0 +1,39 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "refill-tank-bar"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tpr.tank",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "inv-slot"
+        ],
+        "index": 27
+      },
+      "do": "slot",
+      "quick": true,
+      "say": "trainsystemutilities.wiki.play.tpr.put",
+      "holdMs": 2200
+    },
+    {
+      "target": {
+        "classes": [
+          "refill-tank-bar"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tpr.filled",
+      "holdMs": 2000
+    }
+  ]
+}

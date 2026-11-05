@@ -1,0 +1,164 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "detail-group": {
+        "type": "string",
+        "maxLen": 36,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "detail-positions": {
+        "type": "list",
+        "maxLength": 256,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "detail-x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "detail-y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "detail-z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          }
+        }
+      },
+      "detail-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "vending-x": {
+        "type": "int",
+        "min": -33554432,
+        "max": 33554431,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "vending-y": {
+        "type": "int",
+        "min": -2048,
+        "max": 2047,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "vending-z": {
+        "type": "int",
+        "min": -33554432,
+        "max": 33554431,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "vending-origin": {
+        "type": "string",
+        "maxLen": 128,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "vending-dests": {
+        "type": "list",
+        "maxLength": 256,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "vending-dest-id": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "vending-dest-name": {
+            "type": "string",
+            "maxLen": 128
+          }
+        }
+      },
+      "vending-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      }
+    },
+    "actions": {
+      "create": {
+        "params": {
+          "name": {
+            "type": "string",
+            "maxLen": 768
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      },
+      "rename": {
+        "params": {
+          "group": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "name": {
+            "type": "string",
+            "maxLen": 768
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      },
+      "delete": {
+        "params": {
+          "group": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      },
+      "detail": {
+        "params": {
+          "group": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "buy": {
+        "params": {
+          "x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "dest": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 10
+      }
+    }
+  }
+}

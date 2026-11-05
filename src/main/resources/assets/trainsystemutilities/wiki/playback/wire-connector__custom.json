@@ -1,0 +1,169 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "wire-tile-slot",
+          "slot-0"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.custom",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-thickness-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.wire.thickness",
+      "holdMs": 350
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-thickness-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 350
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-thickness-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-offset-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.wire.offset",
+      "holdMs": 350
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-offset-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-dropper-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "say": "trainsystemutilities.wiki.play.wire.dropper",
+      "holdMs": 350
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-dropper-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-row-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.rows",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "custom-save-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.save",
+      "holdMs": 900
+    },
+    {
+      "do": "key",
+      "key": "backspace",
+      "times": 10,
+      "holdMs": 200
+    },
+    {
+      "target": {
+        "classes": [
+          "preset-name-input-caret"
+        ]
+      },
+      "do": "type",
+      "text": "Express",
+      "charMs": 120,
+      "say": "trainsystemutilities.wiki.play.wire.name",
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "preset-save-ok"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.saved",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "filter-dropdown-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.filter",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "filter-option-2"
+        ]
+      },
+      "do": "click",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "wire-tile-slot",
+          "slot-0"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.pick",
+      "holdMs": 2200
+    }
+  ]
+}

@@ -89,8 +89,7 @@ public final class AutoPlaceClearCommand {
 
         final int finalRemoved = removed;
         final int finalChunks = chunkCount;
-        source.sendSuccess(() -> Component.literal(
-                "架線設備 " + finalRemoved + " 個を削除 (" + finalChunks + " chunks)")
+        source.sendSuccess(() -> Component.translatable("tsu.cmd.electric_clear_done_fmt", finalRemoved, finalChunks)
                 .withStyle(ChatFormatting.GREEN), true);
         return Command.SINGLE_SUCCESS;
     }

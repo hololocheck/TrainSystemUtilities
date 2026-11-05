@@ -9,71 +9,27 @@ tags: [tool, station]
 ```embed:item id=trainsystemutilities:station_range_tool size=48 label=true
 ```
 
-![](bws:trainsystemutilities:wiki/screens/station-group-save__ja_jp.png)
-
-A tool that registers a station area as a **station group** by specifying two points.  
-It bundles multiple railway management blocks as one station, letting you apply common settings (color / settings / announcement) all at once.
+Name the space enclosed by two points and register it as a station group. The [Station Name Sign](../structure/station-name-sign.md), [Ticket Vending Machine](../structure/ticket-vending-machine.md), automatic ticket gates, [transit information](transit-terminal.md) and more refer to the shared station information.
 
 [[TOC]]
 
-## Mode switching
+## Registering a station
 
-This tool switches between three modes with **Alt + mouse wheel** (while held, the current mode is shown above the hotbar).
+1. Switch to "Range Selection" mode with Alt + mouse wheel.
+2. Right-click one corner of the station area.
+3. Right-click the opposite corner.
+4. Right-click to open the save screen, enter the station name and save with Enter.
 
-| Mode | Behavior |
-|---|---|
-| Select (default) | Left-click the two corners of the range to create a station group |
-| GUI | Right-click to open the station group management GUI |
-| Show | Display the outlines of existing station groups in the world |
+![](bws:trainsystemutilities:wiki/screens/station-group-save__en_us.png)
 
-## Usage (Select mode)
+The range must include a Create station block, and its volume must be within 64×64×64 blocks. Before saving, switch how tracks are numbered between "Auto", "From Left" and "From Right" with Ctrl + wheel press in Range Selection mode. "From Left" makes the end with the smaller coordinate (west or north) track 1, and "From Right" the end with the larger coordinate (east or south).
 
-1. Hold the tool and **left-click** the first corner of the station area.
-2. **Left-click** the opposite corner.
-3. Right-click the tool → station group save GUI is shown.
-4. Enter the station group name → Enter to save.
+## Managing registered stations
 
-## Track numbering modes
+![](bws:trainsystemutilities:wiki/screens/station-group-manage__en_us.png)
 
-At save time, you can choose a **track auto-numbering** mode:
+In "Manage GUI" mode, right-click to rename a station, check its members or delete it. A confirmation screen appears when you delete. In "View (outlines)" mode, you can see the ranges of registered stations as outlines.
 
-| Mode | Behavior |
-|---|---|
-| AUTO | Auto-numbered with inside = track 1 |
-| LEFT | Left edge = track 1 |
-| RIGHT | Right edge = track 1 |
+![](bws:trainsystemutilities:wiki/screens/station-group-manage-delete__en_us.png)
 
-## Station group management
-
-![](bws:trainsystemutilities:wiki/screens/station-group-manage__ja_jp.png)
-
-Switch the tool to **GUI** mode with **Alt + mouse wheel**, then **right-click** to open the
-management GUI, where you can:
-- Rename
-- Delete (with confirmation dialog)
-- Check member stations
-
-of a saved station group.
-
-> [!NOTE]
-> There is no command for station group management. Everything is done from this tool's GUI mode.
-
-![](bws:trainsystemutilities:wiki/screens/station-group-manage-delete__ja_jp.png)
-
-## Where station groups are used
-
-- [Management Computer Stations Tab](../management-computer/stations.md) assigns a line symbol to the group
-- [Railway Management Block batch apply](../railway-management/settings.md#batch-apply) applies settings to all in the same group at once
-- Share destination (share) for [SAS Announcement](../railway-management/announcement.md)
-- **Candidate sale stations** for [Ticket Vending Machines](../structure/ticket-vending-machine.md) (chosen from station groups in the [Tickets Tab](../management-computer/tickets.md))
-- Recognition of stations targeted by **automatic ticket gates**
-- Target of **route search** for the [Transit Terminal](transit-terminal.md) (search using station groups as origin / destination)
-
-> [!NOTE]
-> Ticket vending machines, automatic ticket gates, and transit routing all **reference the station groups created with this tool as shared data.** Before using them, first register the target stations as station groups.
-
-## Related
-
-- [Railway Management Block](../railway-management.md)
-- [Management Computer Stations Tab](../management-computer/stations.md)
-- [Memory Card](memory-card.md)
+There are no management commands. Manage stations from this tool's "Manage GUI" mode. The station a piece of equipment belongs to is judged from where it is placed, so register the station's range before using station name signs, ticket vending machines and the like.

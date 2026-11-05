@@ -14,10 +14,12 @@ import com.trainsystemutilities.electrification.wire.WireType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * サーバ tick で全電化列車のパンタグラフ集電 + 接触判定を駆動する。
@@ -426,12 +428,17 @@ public final class ContraptionElectrificationTicker {
      */
     public static TrainElectricStatus trainElectricStatus(Train train) {
         if (train == null || train.carriages == null) return new TrainElectricStatus(false, 0);
+        return trainElectricStatus(train.carriages, CARRIAGE_INFO);
+    }
+
+    /** {@link #trainElectricStatus(Train)} over a train's cars, each read through {@code infoOf} (null: not loaded).
+     *  The rule itself, apart from Create's carriages, so a test can hand it cars of a train it cannot build. */
+    static <C> TrainElectricStatus trainElectricStatus(List<C> cars,
+            Function<? super C, ContraptionElectrificationState.Info> infoOf) {
         boolean hasPanto = false, hasInv = false;
         int total = 0;
-        for (Carriage carriage : train.carriages) {
-            Contraption c = contraptionOf(carriage);
-            if (c == null) continue;
-            ContraptionElectrificationState.Info info = ContraptionElectrificationState.getInfo(c);
+        for (C car : cars) {
+            ContraptionElectrificationState.Info info = infoOf.apply(car);
             if (info == null) continue;
             if (!info.pantographs.isEmpty()) hasPanto = true;
             if (!info.inverters.isEmpty()) {
@@ -440,6 +447,38 @@ public final class ContraptionElectrificationTicker {
             }
         }
         return new TrainElectricStatus(hasPanto && hasInv, total);
+    }
+
+    /** A carriage's info, null while its contraption is not loaded. Non-capturing, so the drive gate's every-tick
+     *  {@link #trainElectricStatus(Train)} allocates nothing for it. */
+    private static final Function<Carriage, ContraptionElectrificationState.Info> CARRIAGE_INFO =
+            carriage -> ContraptionElectrificationState.getInfo(contraptionOf(carriage));
+
+    /** A train and how far its nearest loaded car is from the point it was looked up from. */
+    public record NearbyTrain(Train train, double distance) {}
+
+    /**
+     * The electrified train whose nearest loaded car in {@code level} is closest to {@code at}, within {@code radius}
+     * blocks; null when there is none. Electrified as {@link #trainElectricStatus(Train)} decides — a pantograph and an
+     * FE inverter anywhere in the train, on one car or on different ones — so the power checker and /tsu-pantograph
+     * name the trains the drive gate runs.
+     */
+    public static NearbyTrain nearestElectrifiedTrain(Level level, Vec3 at, double radius) {
+        Train best = null;
+        double bestSqr = radius * radius;
+        for (Train train : com.trainsystemutilities.compat.CreateBridge.snapshotTrains()) {
+            if (train == null || train.carriages == null) continue;
+            double d = Double.MAX_VALUE;
+            for (Carriage carriage : train.carriages) {
+                CarriageContraptionEntity e = carriage == null ? null : carriage.anyAvailableEntity();
+                if (e != null && e.level() == level) d = Math.min(d, e.distanceToSqr(at));
+            }
+            if (d < bestSqr && trainElectricStatus(train).electrified()) {
+                best = train;
+                bestSqr = d;
+            }
+        }
+        return best == null ? null : new NearbyTrain(best, Math.sqrt(bestSqr));
     }
 
     /** 列車内の全インバータ車両に FE を均等分配して充電する。

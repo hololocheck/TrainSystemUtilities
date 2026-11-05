@@ -2,7 +2,6 @@ package com.trainsystemutilities.client.renderer;
 
 import com.manta.api.anim.Animation;
 import com.manta.api.anim.Easing;
-import com.manta.api.screen.JsonLayoutHandler;
 import com.trainsystemutilities.blockentity.ManagementComputerBlockEntity;
 import com.trainsystemutilities.blockentity.MonitorLayoutPanel;
 import com.trainsystemutilities.network.TrackNetworkScanner;
@@ -14,13 +13,12 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * V3 stable IR handler for {@link ComputerPanelIrBuilder} templates.
- *
- * <p>Per-panel state を {@link #updateForPanel} で update してから render する。
- * IR は静的 (per panel-type) なので {@link MonitorWorldRenderer#renderComputerLayout}
- * 内で panel ごとに handler state を入れ替えて使用。
+ * One management-computer monitor panel's values (Manta 7 Phase 5): updated per frame with
+ * {@link #updateForPanel}, then WRITTEN into the panel's page with {@link #push} - no longer a
+ * JsonLayoutHandler the engine asks (the name is kept: it is what this panel's state has always been
+ * called). One per panel; the renderer keys the panel's page by it.
  */
-public final class ComputerLayoutHandler implements JsonLayoutHandler {
+public final class ComputerLayoutHandler {
 
     public static final int MAX_TRAINS = 16;
     public static final int MAX_SCHEDULE_ENTRIES = 12;
@@ -133,8 +131,7 @@ public final class ComputerLayoutHandler implements JsonLayoutHandler {
         }
     }
 
-    @Override
-    public Integer getDynamicNumber(String[] classes, String key, int def) {
+    private Integer number(String key) {
         return switch (key) {
             case "pw" -> pw;
             case "ph" -> ph;
@@ -153,8 +150,7 @@ public final class ComputerLayoutHandler implements JsonLayoutHandler {
         };
     }
 
-    @Override
-    public Integer getDynamicColor(String[] classes, String key, int def) {
+    private Integer color(String key) {
         if (computer == null) return null;
         String hex = switch (key) {
             case "panelTitle" -> computer.getColorOrDefault("panelTitle", "#4fc3f7");
@@ -168,16 +164,6 @@ public final class ComputerLayoutHandler implements JsonLayoutHandler {
             default -> null;
         };
         return hex == null ? null : parseHex(hex);
-    }
-
-    @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        if (classes == null) return null;
-        for (String c : classes) {
-            String t = resolveTextClass(c);
-            if (t != null) return t;
-        }
-        return null;
     }
 
     private String resolveTextClass(String c) {
@@ -237,7 +223,8 @@ public final class ComputerLayoutHandler implements JsonLayoutHandler {
                 if (sv != null && !sv.entries().isEmpty()) {
                     int cur = sv.current();
                     if (cur < 0 || cur >= sv.entries().size()) yield null;
-                    yield trf("tsu.monitor.dest_fmt", sv.entries().get(cur));
+                    String dest = sv.entries().get(cur);
+                    yield trf("tsu.monitor.dest_fmt", dest);
                 }
                 try {
                     var opt = TrackNetworkScanner.getTrainById(t.id());
@@ -270,8 +257,7 @@ public final class ComputerLayoutHandler implements JsonLayoutHandler {
         };
     }
 
-    @Override
-    public Boolean getDynamicBool(String[] classes, String key, boolean def) {
+    private Boolean bool(String key) {
         if (panel == null) return null;
         switch (key) {
             case "signal_green_visible": return netData != null && signalGreen() > 0;
@@ -311,8 +297,7 @@ public final class ComputerLayoutHandler implements JsonLayoutHandler {
         return null;
     }
 
-    @Override
-    public Animation getDynamicAnimation(String[] classes, String key) {
+    private Animation animation(String key) {
         if (key == null) return null;
         if ("schedule_anim".equals(key)) {
             return scheduleSlideIn
@@ -326,6 +311,57 @@ public final class ComputerLayoutHandler implements JsonLayoutHandler {
         }
         return null;
     }
+
+    private Object page;
+    private com.trainsystemutilities.client.gui.PagePush p;
+    private java.util.Set<String> texts = java.util.Set.of();
+
+    /**
+     * The panel's values, WRITTEN into its page: what this class answered the pull, in the same state
+     * ({@link #updateForPanel} first). Each text is what the node's own class resolves to - a single by
+     * its literal, a numbered family by its concatenation (the vocabulary gate reads both from here) -
+     * pushed where the panel's document declares it; every other kind by the keys the document
+     * declares. The paused badge's text is its family field: under the pull the node's style class
+     * {@code signal-red} came first and the red-signal count showed in its place.
+     */
+    public void push(Object opened) {
+        if (opened == null) return;
+        if (opened != page) {
+            page = opened;
+            p = new com.trainsystemutilities.client.gui.PagePush(opened);
+            p.textByKeyOnly();
+            texts = new java.util.HashSet<>(p.state().textKeys());
+        }
+        if (texts.contains("stat-label")) p.text("stat-label", resolveTextClass("stat-label"));
+        if (texts.contains("stat-value")) p.text("stat-value", resolveTextClass("stat-value"));
+        if (texts.contains("signal-title")) p.text("signal-title", resolveTextClass("signal-title"));
+        if (texts.contains("signal-total")) p.text("signal-total", resolveTextClass("signal-total"));
+        if (texts.contains("signal-green")) p.text("signal-green", resolveTextClass("signal-green"));
+        if (texts.contains("signal-red")) p.text("signal-red", resolveTextClass("signal-red"));
+        if (texts.contains("clock-text")) p.text("clock-text", resolveTextClass("clock-text"));
+        if (texts.contains("train-list-title")) p.text("train-list-title", resolveTextClass("train-list-title"));
+        if (texts.contains("train-list-page")) p.text("train-list-page", resolveTextClass("train-list-page"));
+        if (texts.contains("schedule-title")) p.text("schedule-title", resolveTextClass("schedule-title"));
+        if (texts.contains("schedule-train-name")) p.text("schedule-train-name", resolveTextClass("schedule-train-name"));
+        if (texts.contains("schedule-overflow")) p.text("schedule-overflow", resolveTextClass("schedule-overflow"));
+        if (texts.contains("schedule-page")) p.text("schedule-page", resolveTextClass("schedule-page"));
+        for (int n = 0; n < MAX_TRAINS; n++) {
+            for (String f : TRAIN_FIELDS) {
+                if (texts.contains("train" + n + "_" + f)) {
+                    p.text("train" + n + "_" + f, resolveTextClass("train" + n + "_" + f));
+                }
+            }
+        }
+        for (int n = 0; n < MAX_SCHEDULE_ENTRIES; n++) {
+            if (texts.contains("sched" + n)) p.text("sched" + n, resolveTextClass("sched" + n));
+        }
+        for (String key : p.state().numberKeys()) p.number(key, number(key));
+        for (String key : p.state().colorKeys()) p.color(key, color(key));
+        for (String key : p.state().boolKeys()) p.bool(key, bool(key));
+        for (String key : p.state().animationKeys()) p.animation(key, animation(key));
+    }
+
+    private static final String[] TRAIN_FIELDS = {"name", "status", "cars", "dest", "paused"};
 
     // ===== helpers =====
 

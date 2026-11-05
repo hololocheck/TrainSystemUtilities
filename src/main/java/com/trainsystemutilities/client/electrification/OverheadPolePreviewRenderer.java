@@ -113,10 +113,6 @@ public final class OverheadPolePreviewRenderer {
     }
 
     private static ItemStack findHeldTool(LocalPlayer player) {
-        ItemStack main = player.getMainHandItem();
-        if (main.is(ModItems.OVERHEAD_POLE_AUTO_TOOL.get())) return main;
-        ItemStack off = player.getOffhandItem();
-        if (off.is(ModItems.OVERHEAD_POLE_AUTO_TOOL.get())) return off;
-        return ItemStack.EMPTY;
+        return com.manta.api.hud.HeldTools.find(player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
     }
 }

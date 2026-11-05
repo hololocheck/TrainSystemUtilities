@@ -61,9 +61,10 @@ public class TrainPresetCommand {
     }
 
     private static int doShowForceConsume(CommandSourceStack src) {
-        src.sendSuccess(() -> Component.literal(
-                        "forceConsume = " + forceConsumeEnabled
-                                + " (true \u3067\u30af\u30ea\u30a8\u30a4\u30c6\u30a3\u30d6\u3067\u3082\u7d20\u6750\u3092\u6d88\u8cbb)")
+        // The flag goes as its text: a Boolean argument crosses the chat packet as an NBT byte and is drawn "0" / "1"
+        // (measured on the real client, 2026-10-07).
+        src.sendSuccess(() -> Component.translatable("tsu.cmd.force_consume_status_fmt",
+                        String.valueOf(forceConsumeEnabled))
                 .withStyle(ChatFormatting.AQUA), false);
         return 1;
     }

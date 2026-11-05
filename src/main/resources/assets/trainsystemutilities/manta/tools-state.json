@@ -1,0 +1,256 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "sched-edit-train": {
+        "type": "string",
+        "maxLen": 36,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "sched-edit-state": {
+        "type": "enum",
+        "values": [
+          "NONE",
+          "DATA",
+          "TOO_LARGE"
+        ],
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "sched-edit-nbt": {
+        "type": "exact",
+        "maxLen": 60000,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "sched-edit-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      }
+    },
+    "actions": {
+      "station-range-mode": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 16
+          },
+          "delta": {
+            "type": "int",
+            "min": -1000,
+            "max": 1000
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "preset-tool-mode": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 16
+          },
+          "delta": {
+            "type": "int",
+            "min": -1000,
+            "max": 1000
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "preset-save": {
+        "params": {
+          "name": {
+            "type": "string",
+            "maxLen": 768
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      },
+      "preset-select": {
+        "params": {
+          "author-dir": {
+            "type": "string",
+            "maxLen": 576
+          },
+          "file-name": {
+            "type": "exact",
+            "maxLen": 384
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 10
+      },
+      "preset-cancel-place": {
+        "params": {},
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "preset-retry": {
+        "params": {},
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "preset-glue-refill": {
+        "params": {},
+        "permission": "any",
+        "ratePerSecond": 10
+      },
+      "preset-glue-dump": {
+        "params": {},
+        "permission": "any",
+        "ratePerSecond": 10
+      },
+      "preset-material-config": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 16
+          },
+          "value": {
+            "type": "int",
+            "min": -1000,
+            "max": 1000
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 1000
+      },
+      "preset-link-chest": {
+        "params": {
+          "x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "pole-tool": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 16
+          },
+          "delta": {
+            "type": "int",
+            "min": -1000,
+            "max": 1000
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "pole-settings": {
+        "params": {
+          "field": {
+            "type": "int",
+            "min": 0,
+            "max": 127
+          },
+          "value": {
+            "type": "int",
+            "min": -1024,
+            "max": 1024
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 1000
+      },
+      "pole-link-chest": {
+        "params": {
+          "x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "wire-type": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 16
+          },
+          "value": {
+            "type": "int",
+            "min": -100000,
+            "max": 100000
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 1000
+      },
+      "wire-preset": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 16
+          },
+          "index": {
+            "type": "int",
+            "min": 0,
+            "max": 4096
+          },
+          "name": {
+            "type": "string",
+            "maxLen": 384
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "wire-refill-open": {
+        "params": {},
+        "permission": "any",
+        "ratePerSecond": 10
+      },
+      "memory-card-reset": {
+        "params": {
+          "hand": {
+            "type": "int",
+            "min": 0,
+            "max": 1
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "save-name-input-caret"
+        ]
+      },
+      "do": "type",
+      "text": "山手線 E235系 11両",
+      "charMs": 110,
+      "say": "trainsystemutilities.wiki.play.tps.type",
+      "holdMs": 500
+    },
+    {
+      "do": "key",
+      "key": "backspace",
+      "times": 3,
+      "say": "trainsystemutilities.wiki.play.tps.edit",
+      "holdMs": 300
+    },
+    {
+      "target": {
+        "classes": [
+          "save-name-input-caret"
+        ]
+      },
+      "do": "type",
+      "text": "10両",
+      "charMs": 140,
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "save-btn"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tps.save_btn",
+      "holdMs": 1800
+    },
+    {
+      "target": {
+        "classes": [
+          "cancel-btn"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tps.cancel",
+      "holdMs": 1300
+    }
+  ]
+}

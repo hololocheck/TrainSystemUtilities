@@ -50,12 +50,7 @@ public class OverheadPoleAutoToolItem extends Item {
 
     /** 64 ブロックの自前 raycast で視線先のブロック位置を取得。 */
     public static BlockPos rayTraceBlock(Level level, Player player) {
-        Vec3 eye = player.getEyePosition(1.0f);
-        Vec3 look = player.getLookAngle();
-        Vec3 end = eye.add(look.scale(MAX_LOOK_DISTANCE));
-        BlockHitResult hit = level.clip(new ClipContext(
-                eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-        return hit.getType() == HitResult.Type.BLOCK ? hit.getBlockPos() : null;
+        return com.manta.api.hud.LookTarget.blockPos(player, level, MAX_LOOK_DISTANCE);
     }
 
     @Override

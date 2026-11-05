@@ -1,0 +1,66 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "train-row"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.rm.arrived",
+      "holdMs": 2200
+    },
+    {
+      "target": {
+        "classes": [
+          "next-row"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.rm.next",
+      "holdMs": 1800
+    },
+    {
+      "target": {
+        "classes": [
+          "function-dd-trigger"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.functions",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "function-dd-trigger"
+        ]
+      },
+      "do": "click",
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "monitor-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.monitor_off",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "monitor-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.monitor_on",
+      "holdMs": 1400
+    }
+  ]
+}

@@ -231,7 +231,10 @@ public class ModDataComponents {
                             .networkSynchronized(ByteBufCodecs.INT)
                             .build());
 
-    /** Auto-place tool: 隣接架線柱の距離 (= block 数)。 default 4。 */
+    /**
+     * Auto-place tool: 隣接架線柱の距離 (= block 数)。 default 4。 Retired 2026-10-07: nothing reads or writes it. Kept
+     * registered because stacks saved with it carry it, and an unknown id fails their decode ("No component with type").
+     */
     public static final Supplier<DataComponentType<Integer>> AUTO_POLE_SPAN =
             DATA_COMPONENTS.register("auto_pole_span", () ->
                     DataComponentType.<Integer>builder()
@@ -239,7 +242,10 @@ public class ModDataComponents {
                             .networkSynchronized(ByteBufCodecs.INT)
                             .build());
 
-    /** Auto-place tool: 編集モード (0=Height, 1=Clearance, 2=Span)。 ctrl+wheel で循環。 */
+    /**
+     * Auto-place tool: 旧 編集モード (0=Height, 1=Clearance, 2=Span)。 Retired 2026-10-07 (shift+wheel always adjusts
+     * the height): nothing reads or writes it. Kept registered for the stacks that carry it, as {@link #AUTO_POLE_SPAN}.
+     */
     public static final Supplier<DataComponentType<Integer>> AUTO_POLE_EDIT_MODE =
             DATA_COMPONENTS.register("auto_pole_edit_mode", () ->
                     DataComponentType.<Integer>builder()
@@ -294,7 +300,7 @@ public class ModDataComponents {
                             .networkSynchronized(ByteBufCodecs.INT)
                             .build());
 
-    /** Auto-place tool: SELECTION 内のサブモード (= 0=GUI戻る, 1=選択, 2=配置)。 ctrl+wheel で切替。 */
+    /** Auto-place tool: SELECTION 内のサブモード (= 0=GUI戻る, 1=配置)。 ctrl+wheel で切替。 */
     public static final Supplier<DataComponentType<Integer>> AUTO_POLE_SUBMODE =
             DATA_COMPONENTS.register("auto_pole_submode", () ->
                     DataComponentType.<Integer>builder()

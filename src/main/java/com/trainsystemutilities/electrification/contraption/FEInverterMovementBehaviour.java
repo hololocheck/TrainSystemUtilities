@@ -21,9 +21,7 @@ public class FEInverterMovementBehaviour implements MovementBehaviour {
     public void startMoving(MovementContext context) {
         ContraptionElectrificationState.registerInverter(context.contraption, context.localPos);
         TrainSystemUtilities.LOGGER.info(
-                "[Electrification] FEInverter assembled at local {} (electrified={})",
-                context.localPos,
-                ContraptionElectrificationState.isElectrified(context.contraption));
+                "[Electrification] FEInverter assembled at local {}", context.localPos);
     }
 
     @Override

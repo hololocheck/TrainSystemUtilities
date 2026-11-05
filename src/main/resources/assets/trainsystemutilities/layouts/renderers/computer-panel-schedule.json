@@ -8,6 +8,7 @@
   "dynamicH": "ph",
   "children": [
     {
+      "textKey": "schedule-title",
       "tag": "span",
       "classes": [
         "panel-title",
@@ -20,6 +21,7 @@
       "fontWeight": "bold"
     },
     {
+      "textKey": "schedule-train-name",
       "tag": "span",
       "classes": [
         "train-name",
@@ -35,6 +37,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched0",
       "tag": "span",
       "classes": [
         "sched0",
@@ -48,6 +51,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched1",
       "tag": "span",
       "classes": [
         "sched1",
@@ -61,6 +65,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched2",
       "tag": "span",
       "classes": [
         "sched2",
@@ -74,6 +79,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched3",
       "tag": "span",
       "classes": [
         "sched3",
@@ -87,6 +93,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched4",
       "tag": "span",
       "classes": [
         "sched4",
@@ -100,6 +107,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched5",
       "tag": "span",
       "classes": [
         "sched5",
@@ -113,6 +121,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched6",
       "tag": "span",
       "classes": [
         "sched6",
@@ -126,6 +135,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched7",
       "tag": "span",
       "classes": [
         "sched7",
@@ -139,6 +149,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched8",
       "tag": "span",
       "classes": [
         "sched8",
@@ -152,6 +163,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched9",
       "tag": "span",
       "classes": [
         "sched9",
@@ -165,6 +177,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched10",
       "tag": "span",
       "classes": [
         "sched10",
@@ -178,6 +191,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "sched11",
       "tag": "span",
       "classes": [
         "sched11",
@@ -191,6 +205,7 @@
       "animationKey": "schedule_anim"
     },
     {
+      "textKey": "schedule-overflow",
       "tag": "span",
       "classes": [
         "train-info-text",
@@ -203,6 +218,7 @@
       "visibleKey": "schedule_overflow_visible"
     },
     {
+      "textKey": "schedule-page",
       "tag": "span",
       "classes": [
         "train-info-text",

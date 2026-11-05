@@ -1,0 +1,163 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "page-gen": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "page-offset": {
+        "type": "int",
+        "min": 0,
+        "max": 4096,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "page-total": {
+        "type": "int",
+        "min": 0,
+        "max": 4096,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "page-rows": {
+        "type": "list",
+        "maxLength": 48,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "p-name": {
+            "type": "string",
+            "maxLen": 128
+          },
+          "p-author": {
+            "type": "string",
+            "maxLen": 128
+          },
+          "p-size-x": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "p-size-y": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "p-size-z": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "p-blocks": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "p-entities": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "p-created-hi": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "p-created-lo": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "p-author-dir": {
+            "type": "exact",
+            "maxLen": 192
+          },
+          "p-file-name": {
+            "type": "exact",
+            "maxLen": 384
+          },
+          "p-imported": {
+            "type": "boolean"
+          }
+        }
+      },
+      "page-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "mat-author-dir": {
+        "type": "exact",
+        "maxLen": 192,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "mat-file-name": {
+        "type": "exact",
+        "maxLen": 384,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "mat-missing": {
+        "type": "string",
+        "maxLen": 8192,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "mat-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      }
+    },
+    "actions": {
+      "list-page": {
+        "params": {
+          "offset": {
+            "type": "int",
+            "min": 0,
+            "max": 4096
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 100
+      },
+      "delete": {
+        "params": {
+          "author-dir": {
+            "type": "exact",
+            "maxLen": 192
+          },
+          "file-name": {
+            "type": "exact",
+            "maxLen": 384
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      },
+      "material": {
+        "params": {
+          "author-dir": {
+            "type": "exact",
+            "maxLen": 192
+          },
+          "file-name": {
+            "type": "exact",
+            "maxLen": 384
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 10
+      }
+    }
+  }
+}

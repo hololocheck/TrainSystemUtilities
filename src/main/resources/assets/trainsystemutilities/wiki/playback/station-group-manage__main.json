@@ -1,0 +1,107 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "sgm-list"
+        ],
+        "at": [
+          0.5,
+          0.04
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sgm.pick",
+      "holdMs": 2000
+    },
+    {
+      "target": {
+        "classes": [
+          "sgm-list"
+        ],
+        "at": [
+          0.5,
+          0.127
+        ]
+      },
+      "do": "click",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "sgm-name-caret"
+        ]
+      },
+      "do": "type",
+      "text": "駅",
+      "say": "trainsystemutilities.wiki.play.sgm.rename",
+      "holdMs": 500
+    },
+    {
+      "target": {
+        "classes": [
+          "sgm-rename-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sgm.apply",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "sgm-delete-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sgm.delete",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "manta-confirm-no"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sgm.cancel",
+      "holdMs": 1000
+    },
+    {
+      "target": {
+        "classes": [
+          "sgm-list"
+        ],
+        "at": [
+          0.5,
+          0.215
+        ]
+      },
+      "do": "click",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "sgm-delete-btn"
+        ]
+      },
+      "do": "click",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "manta-confirm-yes"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sgm.deleted",
+      "holdMs": 2200
+    }
+  ]
+}

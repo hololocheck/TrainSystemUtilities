@@ -126,6 +126,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "depArr0_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -136,6 +137,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "depArr0_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -184,6 +186,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "depArr1_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -194,6 +197,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "depArr1_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -242,6 +246,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "depArr2_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -252,6 +257,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "depArr2_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -300,6 +306,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "depArr3_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -310,6 +317,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "depArr3_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -357,6 +365,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr0_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -367,6 +376,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "arr0_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -377,6 +387,7 @@
                               "color": "#888888"
                             },
                             {
+                              "textKey": "arr0_dest",
                               "tag": "span",
                               "classes": [
                                 "dest",
@@ -406,6 +417,7 @@
                               "dynamicW": "arr0_badge_w"
                             },
                             {
+                              "textKey": "arr0_route",
                               "tag": "span",
                               "classes": [
                                 "route-type",
@@ -429,6 +441,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr0_coupling",
                               "tag": "span",
                               "classes": [
                                 "badge-coupling",
@@ -443,6 +456,7 @@
                               "visibleKey": "arr0_coupling_visible"
                             },
                             {
+                              "textKey": "arr0_decoupling",
                               "tag": "span",
                               "classes": [
                                 "badge-decoupling",
@@ -457,6 +471,7 @@
                               "visibleKey": "arr0_decoupling_visible"
                             },
                             {
+                              "textKey": "arr0_partner",
                               "tag": "span",
                               "classes": [
                                 "coupling-partner",
@@ -468,6 +483,7 @@
                               "visibleKey": "arr0_partner_visible"
                             },
                             {
+                              "textKey": "arr0_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -479,6 +495,7 @@
                               "visibleKey": "arr0_arrtime_visible"
                             },
                             {
+                              "textKey": "arr0_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -490,6 +507,7 @@
                               "visibleKey": "arr0_deptime_visible"
                             },
                             {
+                              "textKey": "arr0_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -501,6 +519,7 @@
                               "visibleKey": "arr0_stopinfo_visible"
                             },
                             {
+                              "textKey": "arr0_countdown",
                               "tag": "span",
                               "classes": [
                                 "countdown",
@@ -549,6 +568,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr1_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -559,6 +579,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "arr1_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -569,6 +590,7 @@
                               "color": "#888888"
                             },
                             {
+                              "textKey": "arr1_dest",
                               "tag": "span",
                               "classes": [
                                 "dest",
@@ -598,6 +620,7 @@
                               "dynamicW": "arr1_badge_w"
                             },
                             {
+                              "textKey": "arr1_route",
                               "tag": "span",
                               "classes": [
                                 "route-type",
@@ -621,6 +644,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr1_coupling",
                               "tag": "span",
                               "classes": [
                                 "badge-coupling",
@@ -635,6 +659,7 @@
                               "visibleKey": "arr1_coupling_visible"
                             },
                             {
+                              "textKey": "arr1_decoupling",
                               "tag": "span",
                               "classes": [
                                 "badge-decoupling",
@@ -649,6 +674,7 @@
                               "visibleKey": "arr1_decoupling_visible"
                             },
                             {
+                              "textKey": "arr1_partner",
                               "tag": "span",
                               "classes": [
                                 "coupling-partner",
@@ -660,6 +686,7 @@
                               "visibleKey": "arr1_partner_visible"
                             },
                             {
+                              "textKey": "arr1_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -671,6 +698,7 @@
                               "visibleKey": "arr1_arrtime_visible"
                             },
                             {
+                              "textKey": "arr1_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -682,6 +710,7 @@
                               "visibleKey": "arr1_deptime_visible"
                             },
                             {
+                              "textKey": "arr1_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -693,6 +722,7 @@
                               "visibleKey": "arr1_stopinfo_visible"
                             },
                             {
+                              "textKey": "arr1_countdown",
                               "tag": "span",
                               "classes": [
                                 "countdown",
@@ -741,6 +771,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr2_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -751,6 +782,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "arr2_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -761,6 +793,7 @@
                               "color": "#888888"
                             },
                             {
+                              "textKey": "arr2_dest",
                               "tag": "span",
                               "classes": [
                                 "dest",
@@ -790,6 +823,7 @@
                               "dynamicW": "arr2_badge_w"
                             },
                             {
+                              "textKey": "arr2_route",
                               "tag": "span",
                               "classes": [
                                 "route-type",
@@ -813,6 +847,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr2_coupling",
                               "tag": "span",
                               "classes": [
                                 "badge-coupling",
@@ -827,6 +862,7 @@
                               "visibleKey": "arr2_coupling_visible"
                             },
                             {
+                              "textKey": "arr2_decoupling",
                               "tag": "span",
                               "classes": [
                                 "badge-decoupling",
@@ -841,6 +877,7 @@
                               "visibleKey": "arr2_decoupling_visible"
                             },
                             {
+                              "textKey": "arr2_partner",
                               "tag": "span",
                               "classes": [
                                 "coupling-partner",
@@ -852,6 +889,7 @@
                               "visibleKey": "arr2_partner_visible"
                             },
                             {
+                              "textKey": "arr2_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -863,6 +901,7 @@
                               "visibleKey": "arr2_arrtime_visible"
                             },
                             {
+                              "textKey": "arr2_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -874,6 +913,7 @@
                               "visibleKey": "arr2_deptime_visible"
                             },
                             {
+                              "textKey": "arr2_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -885,6 +925,7 @@
                               "visibleKey": "arr2_stopinfo_visible"
                             },
                             {
+                              "textKey": "arr2_countdown",
                               "tag": "span",
                               "classes": [
                                 "countdown",
@@ -933,6 +974,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr3_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -943,6 +985,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "arr3_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -953,6 +996,7 @@
                               "color": "#888888"
                             },
                             {
+                              "textKey": "arr3_dest",
                               "tag": "span",
                               "classes": [
                                 "dest",
@@ -982,6 +1026,7 @@
                               "dynamicW": "arr3_badge_w"
                             },
                             {
+                              "textKey": "arr3_route",
                               "tag": "span",
                               "classes": [
                                 "route-type",
@@ -1005,6 +1050,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr3_coupling",
                               "tag": "span",
                               "classes": [
                                 "badge-coupling",
@@ -1019,6 +1065,7 @@
                               "visibleKey": "arr3_coupling_visible"
                             },
                             {
+                              "textKey": "arr3_decoupling",
                               "tag": "span",
                               "classes": [
                                 "badge-decoupling",
@@ -1033,6 +1080,7 @@
                               "visibleKey": "arr3_decoupling_visible"
                             },
                             {
+                              "textKey": "arr3_partner",
                               "tag": "span",
                               "classes": [
                                 "coupling-partner",
@@ -1044,6 +1092,7 @@
                               "visibleKey": "arr3_partner_visible"
                             },
                             {
+                              "textKey": "arr3_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -1055,6 +1104,7 @@
                               "visibleKey": "arr3_arrtime_visible"
                             },
                             {
+                              "textKey": "arr3_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -1066,6 +1116,7 @@
                               "visibleKey": "arr3_deptime_visible"
                             },
                             {
+                              "textKey": "arr3_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -1077,6 +1128,7 @@
                               "visibleKey": "arr3_stopinfo_visible"
                             },
                             {
+                              "textKey": "arr3_countdown",
                               "tag": "span",
                               "classes": [
                                 "countdown",
@@ -1125,6 +1177,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr4_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -1135,6 +1188,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "arr4_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -1145,6 +1199,7 @@
                               "color": "#888888"
                             },
                             {
+                              "textKey": "arr4_dest",
                               "tag": "span",
                               "classes": [
                                 "dest",
@@ -1174,6 +1229,7 @@
                               "dynamicW": "arr4_badge_w"
                             },
                             {
+                              "textKey": "arr4_route",
                               "tag": "span",
                               "classes": [
                                 "route-type",
@@ -1197,6 +1253,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr4_coupling",
                               "tag": "span",
                               "classes": [
                                 "badge-coupling",
@@ -1211,6 +1268,7 @@
                               "visibleKey": "arr4_coupling_visible"
                             },
                             {
+                              "textKey": "arr4_decoupling",
                               "tag": "span",
                               "classes": [
                                 "badge-decoupling",
@@ -1225,6 +1283,7 @@
                               "visibleKey": "arr4_decoupling_visible"
                             },
                             {
+                              "textKey": "arr4_partner",
                               "tag": "span",
                               "classes": [
                                 "coupling-partner",
@@ -1236,6 +1295,7 @@
                               "visibleKey": "arr4_partner_visible"
                             },
                             {
+                              "textKey": "arr4_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -1247,6 +1307,7 @@
                               "visibleKey": "arr4_arrtime_visible"
                             },
                             {
+                              "textKey": "arr4_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -1258,6 +1319,7 @@
                               "visibleKey": "arr4_deptime_visible"
                             },
                             {
+                              "textKey": "arr4_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -1269,6 +1331,7 @@
                               "visibleKey": "arr4_stopinfo_visible"
                             },
                             {
+                              "textKey": "arr4_countdown",
                               "tag": "span",
                               "classes": [
                                 "countdown",
@@ -1317,6 +1380,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr5_name",
                               "tag": "span",
                               "classes": [
                                 "train-name",
@@ -1327,6 +1391,7 @@
                               "colorKey": "colorTrainName"
                             },
                             {
+                              "textKey": "arr5_detail",
                               "tag": "span",
                               "classes": [
                                 "detail",
@@ -1337,6 +1402,7 @@
                               "color": "#888888"
                             },
                             {
+                              "textKey": "arr5_dest",
                               "tag": "span",
                               "classes": [
                                 "dest",
@@ -1366,6 +1432,7 @@
                               "dynamicW": "arr5_badge_w"
                             },
                             {
+                              "textKey": "arr5_route",
                               "tag": "span",
                               "classes": [
                                 "route-type",
@@ -1389,6 +1456,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "arr5_coupling",
                               "tag": "span",
                               "classes": [
                                 "badge-coupling",
@@ -1403,6 +1471,7 @@
                               "visibleKey": "arr5_coupling_visible"
                             },
                             {
+                              "textKey": "arr5_decoupling",
                               "tag": "span",
                               "classes": [
                                 "badge-decoupling",
@@ -1417,6 +1486,7 @@
                               "visibleKey": "arr5_decoupling_visible"
                             },
                             {
+                              "textKey": "arr5_partner",
                               "tag": "span",
                               "classes": [
                                 "coupling-partner",
@@ -1428,6 +1498,7 @@
                               "visibleKey": "arr5_partner_visible"
                             },
                             {
+                              "textKey": "arr5_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -1439,6 +1510,7 @@
                               "visibleKey": "arr5_arrtime_visible"
                             },
                             {
+                              "textKey": "arr5_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -1450,6 +1522,7 @@
                               "visibleKey": "arr5_deptime_visible"
                             },
                             {
+                              "textKey": "arr5_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -1461,6 +1534,7 @@
                               "visibleKey": "arr5_stopinfo_visible"
                             },
                             {
+                              "textKey": "arr5_countdown",
                               "tag": "span",
                               "classes": [
                                 "countdown",
@@ -1478,6 +1552,7 @@
                   ]
                 },
                 {
+                  "textKey": "arr-empty-text",
                   "classes": [
                     "arr-empty-text"
                   ],
@@ -1554,6 +1629,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "depNext0_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -1602,6 +1678,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "depNext1_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -1650,6 +1727,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "depNext2_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -1698,6 +1776,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "depNext3_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -1745,6 +1824,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next0_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -1755,6 +1835,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next0_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -1783,6 +1864,7 @@
                               "dynamicW": "next0_badge_w"
                             },
                             {
+                              "textKey": "next0_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -1790,7 +1872,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next0_route_visible"
                             }
                           ]
@@ -1806,6 +1888,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next0_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -1817,6 +1900,7 @@
                               "visibleKey": "next0_stopinfo_visible"
                             },
                             {
+                              "textKey": "next0_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -1828,6 +1912,7 @@
                               "visibleKey": "next0_from_visible"
                             },
                             {
+                              "textKey": "next0_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -1839,6 +1924,7 @@
                               "visibleKey": "next0_arrtime_visible"
                             },
                             {
+                              "textKey": "next0_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -1850,6 +1936,7 @@
                               "visibleKey": "next0_deptime_visible"
                             },
                             {
+                              "textKey": "next0_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -1898,6 +1985,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next1_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -1908,6 +1996,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next1_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -1936,6 +2025,7 @@
                               "dynamicW": "next1_badge_w"
                             },
                             {
+                              "textKey": "next1_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -1943,7 +2033,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next1_route_visible"
                             }
                           ]
@@ -1959,6 +2049,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next1_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -1970,6 +2061,7 @@
                               "visibleKey": "next1_stopinfo_visible"
                             },
                             {
+                              "textKey": "next1_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -1981,6 +2073,7 @@
                               "visibleKey": "next1_from_visible"
                             },
                             {
+                              "textKey": "next1_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -1992,6 +2085,7 @@
                               "visibleKey": "next1_arrtime_visible"
                             },
                             {
+                              "textKey": "next1_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -2003,6 +2097,7 @@
                               "visibleKey": "next1_deptime_visible"
                             },
                             {
+                              "textKey": "next1_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2051,6 +2146,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next2_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -2061,6 +2157,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next2_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2089,6 +2186,7 @@
                               "dynamicW": "next2_badge_w"
                             },
                             {
+                              "textKey": "next2_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2096,7 +2194,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next2_route_visible"
                             }
                           ]
@@ -2112,6 +2210,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next2_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -2123,6 +2222,7 @@
                               "visibleKey": "next2_stopinfo_visible"
                             },
                             {
+                              "textKey": "next2_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2134,6 +2234,7 @@
                               "visibleKey": "next2_from_visible"
                             },
                             {
+                              "textKey": "next2_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -2145,6 +2246,7 @@
                               "visibleKey": "next2_arrtime_visible"
                             },
                             {
+                              "textKey": "next2_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -2156,6 +2258,7 @@
                               "visibleKey": "next2_deptime_visible"
                             },
                             {
+                              "textKey": "next2_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2204,6 +2307,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next3_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -2214,6 +2318,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next3_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2242,6 +2347,7 @@
                               "dynamicW": "next3_badge_w"
                             },
                             {
+                              "textKey": "next3_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2249,7 +2355,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next3_route_visible"
                             }
                           ]
@@ -2265,6 +2371,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next3_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -2276,6 +2383,7 @@
                               "visibleKey": "next3_stopinfo_visible"
                             },
                             {
+                              "textKey": "next3_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2287,6 +2395,7 @@
                               "visibleKey": "next3_from_visible"
                             },
                             {
+                              "textKey": "next3_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -2298,6 +2407,7 @@
                               "visibleKey": "next3_arrtime_visible"
                             },
                             {
+                              "textKey": "next3_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -2309,6 +2419,7 @@
                               "visibleKey": "next3_deptime_visible"
                             },
                             {
+                              "textKey": "next3_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2357,6 +2468,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next4_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -2367,6 +2479,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next4_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2395,6 +2508,7 @@
                               "dynamicW": "next4_badge_w"
                             },
                             {
+                              "textKey": "next4_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2402,7 +2516,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next4_route_visible"
                             }
                           ]
@@ -2418,6 +2532,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next4_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -2429,6 +2544,7 @@
                               "visibleKey": "next4_stopinfo_visible"
                             },
                             {
+                              "textKey": "next4_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2440,6 +2556,7 @@
                               "visibleKey": "next4_from_visible"
                             },
                             {
+                              "textKey": "next4_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -2451,6 +2568,7 @@
                               "visibleKey": "next4_arrtime_visible"
                             },
                             {
+                              "textKey": "next4_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -2462,6 +2580,7 @@
                               "visibleKey": "next4_deptime_visible"
                             },
                             {
+                              "textKey": "next4_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2510,6 +2629,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next5_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -2520,6 +2640,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next5_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2548,6 +2669,7 @@
                               "dynamicW": "next5_badge_w"
                             },
                             {
+                              "textKey": "next5_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2555,7 +2677,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next5_route_visible"
                             }
                           ]
@@ -2571,6 +2693,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next5_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -2582,6 +2705,7 @@
                               "visibleKey": "next5_stopinfo_visible"
                             },
                             {
+                              "textKey": "next5_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2593,6 +2717,7 @@
                               "visibleKey": "next5_from_visible"
                             },
                             {
+                              "textKey": "next5_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -2604,6 +2729,7 @@
                               "visibleKey": "next5_arrtime_visible"
                             },
                             {
+                              "textKey": "next5_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -2615,6 +2741,7 @@
                               "visibleKey": "next5_deptime_visible"
                             },
                             {
+                              "textKey": "next5_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2663,6 +2790,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next6_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -2673,6 +2801,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next6_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2701,6 +2830,7 @@
                               "dynamicW": "next6_badge_w"
                             },
                             {
+                              "textKey": "next6_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2708,7 +2838,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next6_route_visible"
                             }
                           ]
@@ -2724,6 +2854,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next6_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -2735,6 +2866,7 @@
                               "visibleKey": "next6_stopinfo_visible"
                             },
                             {
+                              "textKey": "next6_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2746,6 +2878,7 @@
                               "visibleKey": "next6_from_visible"
                             },
                             {
+                              "textKey": "next6_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -2757,6 +2890,7 @@
                               "visibleKey": "next6_arrtime_visible"
                             },
                             {
+                              "textKey": "next6_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -2768,6 +2902,7 @@
                               "visibleKey": "next6_deptime_visible"
                             },
                             {
+                              "textKey": "next6_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2816,6 +2951,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next7_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -2826,6 +2962,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next7_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2854,6 +2991,7 @@
                               "dynamicW": "next7_badge_w"
                             },
                             {
+                              "textKey": "next7_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2861,7 +2999,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next7_route_visible"
                             }
                           ]
@@ -2877,6 +3015,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next7_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -2888,6 +3027,7 @@
                               "visibleKey": "next7_stopinfo_visible"
                             },
                             {
+                              "textKey": "next7_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2899,6 +3039,7 @@
                               "visibleKey": "next7_from_visible"
                             },
                             {
+                              "textKey": "next7_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -2910,6 +3051,7 @@
                               "visibleKey": "next7_arrtime_visible"
                             },
                             {
+                              "textKey": "next7_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -2921,6 +3063,7 @@
                               "visibleKey": "next7_deptime_visible"
                             },
                             {
+                              "textKey": "next7_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -2969,6 +3112,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next8_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -2979,6 +3123,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next8_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3007,6 +3152,7 @@
                               "dynamicW": "next8_badge_w"
                             },
                             {
+                              "textKey": "next8_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3014,7 +3160,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next8_route_visible"
                             }
                           ]
@@ -3030,6 +3176,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next8_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -3041,6 +3188,7 @@
                               "visibleKey": "next8_stopinfo_visible"
                             },
                             {
+                              "textKey": "next8_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3052,6 +3200,7 @@
                               "visibleKey": "next8_from_visible"
                             },
                             {
+                              "textKey": "next8_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -3063,6 +3212,7 @@
                               "visibleKey": "next8_arrtime_visible"
                             },
                             {
+                              "textKey": "next8_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -3074,6 +3224,7 @@
                               "visibleKey": "next8_deptime_visible"
                             },
                             {
+                              "textKey": "next8_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3122,6 +3273,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next9_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -3132,6 +3284,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next9_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3160,6 +3313,7 @@
                               "dynamicW": "next9_badge_w"
                             },
                             {
+                              "textKey": "next9_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3167,7 +3321,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next9_route_visible"
                             }
                           ]
@@ -3183,6 +3337,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next9_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -3194,6 +3349,7 @@
                               "visibleKey": "next9_stopinfo_visible"
                             },
                             {
+                              "textKey": "next9_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3205,6 +3361,7 @@
                               "visibleKey": "next9_from_visible"
                             },
                             {
+                              "textKey": "next9_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -3216,6 +3373,7 @@
                               "visibleKey": "next9_arrtime_visible"
                             },
                             {
+                              "textKey": "next9_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -3227,6 +3385,7 @@
                               "visibleKey": "next9_deptime_visible"
                             },
                             {
+                              "textKey": "next9_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3275,6 +3434,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next10_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -3285,6 +3445,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next10_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3313,6 +3474,7 @@
                               "dynamicW": "next10_badge_w"
                             },
                             {
+                              "textKey": "next10_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3320,7 +3482,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next10_route_visible"
                             }
                           ]
@@ -3336,6 +3498,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next10_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -3347,6 +3510,7 @@
                               "visibleKey": "next10_stopinfo_visible"
                             },
                             {
+                              "textKey": "next10_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3358,6 +3522,7 @@
                               "visibleKey": "next10_from_visible"
                             },
                             {
+                              "textKey": "next10_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -3369,6 +3534,7 @@
                               "visibleKey": "next10_arrtime_visible"
                             },
                             {
+                              "textKey": "next10_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -3380,6 +3546,7 @@
                               "visibleKey": "next10_deptime_visible"
                             },
                             {
+                              "textKey": "next10_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3428,6 +3595,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next11_name",
                               "tag": "span",
                               "classes": [
                                 "next-name",
@@ -3438,6 +3606,7 @@
                               "colorKey": "colorNextName"
                             },
                             {
+                              "textKey": "next11_detail",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3466,6 +3635,7 @@
                               "dynamicW": "next11_badge_w"
                             },
                             {
+                              "textKey": "next11_route",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3473,7 +3643,7 @@
                               ],
                               "w": 50,
                               "h": 12,
-                              "colorKey": "colorStopSec",
+                              "colorKey": "colorRouteType",
                               "visibleKey": "next11_route_visible"
                             }
                           ]
@@ -3489,6 +3659,7 @@
                           "align": "center",
                           "children": [
                             {
+                              "textKey": "next11_stopinfo",
                               "tag": "span",
                               "classes": [
                                 "stop-info",
@@ -3500,6 +3671,7 @@
                               "visibleKey": "next11_stopinfo_visible"
                             },
                             {
+                              "textKey": "next11_from",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3511,6 +3683,7 @@
                               "visibleKey": "next11_from_visible"
                             },
                             {
+                              "textKey": "next11_arrtime",
                               "tag": "span",
                               "classes": [
                                 "arr-time",
@@ -3522,6 +3695,7 @@
                               "visibleKey": "next11_arrtime_visible"
                             },
                             {
+                              "textKey": "next11_deptime",
                               "tag": "span",
                               "classes": [
                                 "dep-time",
@@ -3533,6 +3707,7 @@
                               "visibleKey": "next11_deptime_visible"
                             },
                             {
+                              "textKey": "next11_stopsec",
                               "tag": "span",
                               "classes": [
                                 "next-detail",
@@ -3550,6 +3725,7 @@
                   ]
                 },
                 {
+                  "textKey": "next-empty-text",
                   "classes": [
                     "next-empty-text"
                   ],

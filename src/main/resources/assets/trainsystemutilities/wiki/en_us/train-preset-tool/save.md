@@ -1,58 +1,27 @@
 ---
-title: Train Preset Save
+title: Saving a Train Preset
 id: train-preset-tool/save
 tags: [tool, preset, train]
 ---
 
-# Train Preset Save
+# Saving a Train Preset
 
 ```embed:item id=trainsystemutilities:train_preset_tool size=48 label=true
 ```
 
-![](bws:trainsystemutilities:wiki/screens/train-preset-save__ja_jp.png)
-
-The save screen of the **Train Preset Tool**, which serializes a train structure to JSON and stores it as a template. Select a range with the tool, then perform the save action to open this screen.
+Save a consist as a preset to place it again or share it. Hold the Train Preset Tool and switch to "Range Selection" mode with Alt + mouse wheel.
 
 [[TOC]]
 
-## Features
+1. Right-click one corner so that the range encloses the train you want to save.
+2. Right-click the opposite corner to fix the range.
+3. Right-click once more to open the save screen.
+4. Enter a preset name and save with Enter or the save button.
 
-- Scans all blocks + carriage entities within the range
-- Saves as JSON to **internal storage** (file: `<gamedir>/trainsystemutilities/presets/<author>/<name>.json`)
-- Can be moved to another world / another player
-- Can also be shared online via [Preset Place](../preset-place/overview.md)
+![](bws:trainsystemutilities:wiki/screens/train-preset-save__en_us.png)
 
-## Holding / Modes
+Shift + right-click clears the range. The current mode and selection are shown above the hotbar and in the tooltip.
 
-The **Train Preset Tool** has 3 modes. Right after you switch to it, it is in **GUI mode**. Saving uses **Selection mode**.
+Saved data goes to `<world>/trainsystemutilities/presets/<author-uuid>/<name>.tsupreset` (`<world>` is the world's folder). To use it in another world, copy the file, or publish it on [Preset Place](../preset-place/overview.md) and bring it in from there.
 
-- **GUI mode** (initial state): Right-click opens the [Preset Browse / Place](browse.md) screen.
-- **Selection mode**: The mode for specifying the two points (Pos1 / Pos2) that enclose the train. After deciding the range, right-clicking opens this **save screen**.
-- **Place mode**: The mode for placing a saved preset into the world (see [Preset Browse / Place](browse.md)).
-
-Switch modes with **Alt + mouse wheel**. While held, the current mode is shown above the hotbar.
-
-## Opening / Usage
-
-1. **Hold** the Train Preset Tool.
-2. Switch to **Selection mode** with **Alt + wheel**.
-3. To enclose the train you want to save, **right-click the position of the first corner** (default: **right mouse button**) (`Pos1` is recorded).
-4. **Right-click the opposite corner** (`Pos2` is recorded and the range is finalized). To record a precise spot, aim at the block and right-click.
-5. With both points set, **right-click once more** to open the **save screen**.
-6. **Type a preset name with the keyboard** into the input field on the screen and press **Enter** to save (**left-clicking the save button** also saves). You cannot save when the name is empty.
-7. **Shift + right-click** clears the recorded range (Pos1 / Pos2). Use it when you want to start over.
-
-> [!TIP]
-> You can check the current mode and whether Pos1 / Pos2 are recorded from the tooltip shown when you **hover the mouse over** the tool.
-
-## Limits
-
-- Max volume: 256×256×256 blocks (16.7M block cap)
-- Large ranges are rejected early to prevent server freeze
-- Blocks in unloaded chunks are excluded
-
-## Related
-
-- [Preset Browse / Place](browse.md)
-- [Material Refill](refill.md)
-- [Preset Place Overview](../preset-place/overview.md)
+The selection can be up to 256×256×256 blocks in volume. Larger ranges are not processed. Blocks in chunks that are not loaded are left out, so save while the parts you need are loaded.

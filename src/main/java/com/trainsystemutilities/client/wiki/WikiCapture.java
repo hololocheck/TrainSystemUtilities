@@ -34,6 +34,10 @@ public final class WikiCapture {
 
     private static final Logger LOGGER = LoggerFactory.getLogger("TSU-WikiCapture");
 
+    /** capture 名 (id / id__state) → logical dimensions [w, h]。embed:screen が aspect ratio に使用。
+     *  キャプチャが走った画面・state のみ entries が入る。 */
+    public static final java.util.Map<String, int[]> LAYOUT_DIMS = new java.util.concurrent.ConcurrentHashMap<>();
+
     private WikiCapture() {}
 
     public static void captureCurrentScreen() {
@@ -89,10 +93,10 @@ public final class WikiCapture {
         String primaryName = id + "__" + state + "__" + lang;
         Set<String> names = textureNames(id, state, lang);
 
-        WikiPrebuildCapture.LAYOUT_DIMS.put(id + "__" + state,
+        LAYOUT_DIMS.put(id + "__" + state,
                 new int[]{result.logicalWidth(), result.logicalHeight()});
         if ("main".equals(state)) {
-            WikiPrebuildCapture.LAYOUT_DIMS.put(id,
+            LAYOUT_DIMS.put(id,
                     new int[]{result.logicalWidth(), result.logicalHeight()});
         }
 
@@ -170,7 +174,8 @@ public final class WikiCapture {
         return out.isBlank() ? fallback : out;
     }
 
-    private static Set<String> textureNames(String id, String state, String lang) {
+    /** The names one capture is registered under (a wiki page names one of them; WikiCaptureReferencesTest asks this). */
+    static Set<String> textureNames(String id, String state, String lang) {
         LinkedHashSet<String> names = new LinkedHashSet<>();
         names.add(id + "__" + state + "__" + lang);
         names.add(id + "__" + state);

@@ -153,6 +153,19 @@ public final class MonitorDisplaySettings {
         return (c != null && !c.isEmpty()) ? c : defaultColor;
     }
 
+    /**
+     * The colour a monitor draws for {@code key} on a face, or "" for the drawing's own default. 次列車
+     * ({@code nextName}) with no colour of its own follows 列車名 ({@code trainName}): a next train's name is a
+     * train name until it is given one (2026-10-07: the user set 列車名, and the train on their monitor - a next
+     * train - kept its grey). The railway management screen's tiles read the same.
+     */
+    public String getMonitorColor(String key, boolean back) {
+        String prefix = back ? "back." : "";
+        String c = getColor(prefix + key);
+        if ((c == null || c.isEmpty()) && "nextName".equals(key)) c = getColor(prefix + "trainName");
+        return c == null ? "" : c;
+    }
+
     // === NBT (key / default は抽出前と完全一致) ===
 
     public void writeNbt(CompoundTag tag) {

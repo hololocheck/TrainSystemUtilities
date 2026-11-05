@@ -1,9 +1,13 @@
 package com.trainsystemutilities.client.renderer;
 
 import com.manta.api.world.CSSWorldRenderer;
-import com.manta.api.ir.compiler.JsonToIrCompiler;
-import com.manta.api.ir.IrNode;
-import com.manta.api.screen.JsonLayoutHandler;
+import com.manta.api.screen.JsonLayoutHandler.ImageRef;
+import com.manta.api.state.AnimationSlot;
+import com.manta.api.state.BoolSlot;
+import com.manta.api.state.ImageFitSlot;
+import com.manta.api.state.ImageSlot;
+import com.manta.api.state.MantaState;
+import com.manta.api.state.NumberSlot;
 import com.manta.api.anim.Animation;
 import com.manta.api.anim.Easing;
 import com.google.gson.JsonObject;
@@ -43,16 +47,15 @@ public class PosterMonitorRenderer {
     private static CSSWorldRenderer cssRenderer;
     private static final Set<BlockPos> posterManagedMonitors = new HashSet<>();
     private static final Map<Long, PosterAnimState> animStates = new HashMap<>();
-    /** Compiled IR (= JSON load + JsonToIrCompiler 1 回のみ)。 サイズは handler 経由で動的。 */
-    private static IrNode posterIrTemplate;
+    /** The layout as a document (= JSON load 1 回のみ; Manta 6 Phase 6 - Manta decides the engine per its registry)。 サイズは handler 経由で動的。 */
+    private static CSSWorldRenderer.Document posterDocument;
 
-    private static IrNode getPosterIr() {
-        if (posterIrTemplate == null) {
-            String json = TsuLayouts.load("layouts/renderers/poster-monitor.json");
-            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
-            posterIrTemplate = JsonToIrCompiler.compile(root).root();
+    private static CSSWorldRenderer.Document getPosterDocument() {
+        if (posterDocument == null) {
+            posterDocument = CSSWorldRenderer.Document.parse(
+                    TsuLayouts.load("layouts/renderers/poster-monitor.json"));
         }
-        return posterIrTemplate;
+        return posterDocument;
     }
 
     public static boolean isPosterManaged(BlockPos pos) {
@@ -70,7 +73,7 @@ public class PosterMonitorRenderer {
         boolean hasBack = false;
         // 表面[0] / 裏面[1] 別に Renderer / Handler をキャッシュ (IR は共通 template)
         CSSWorldRenderer[] renderers = new CSSWorldRenderer[2];
-        PosterHandler[] cachedHandlers = new PosterHandler[2];
+        PosterFace[] faces = new PosterFace[2];
     }
 
     @SubscribeEvent
@@ -238,62 +241,77 @@ public class PosterMonitorRenderer {
             anim.renderers[faceIdx] = new CSSWorldRenderer(Minecraft.getInstance().font);
         }
 
-        // Handler は size を含めて毎フレーム最新 state を提供 (IR は static template)
-        if (anim.cachedHandlers[faceIdx] == null) {
-            anim.cachedHandlers[faceIdx] = new PosterHandler(be, anim, cssW, cssH, pad);
+        // Manta 7 Phase 5: the face WRITES its values into its page (nothing is asked) - the page is
+        // opened at the monitor's css size (its root's cssW / cssH are that size), then drawn.
+        if (anim.faces[faceIdx] == null) {
+            anim.faces[faceIdx] = new PosterFace();
         }
-        anim.cachedHandlers[faceIdx].update(be, anim, cssW, cssH, pad);
-
-        // V3 真の native path: static IR template + handler dispatch
-        anim.renderers[faceIdx].renderV3FromIr(getPosterIr(),
-                anim.cachedHandlers[faceIdx], poseStack, bufferSource);
+        PosterFace face = anim.faces[faceIdx];
+        CSSWorldRenderer r = anim.renderers[faceIdx];
+        face.push(r.page(getPosterDocument(), face, cssW, cssH), be, anim, cssW, cssH, pad);
+        r.render(getPosterDocument(), face, poseStack, bufferSource);
 
         poseStack.popPose();
         poseStack.popPose();
     }
 
     /**
-     * V3 {@link JsonLayoutHandler} 実装。 layout は
-     * {@code assets/trainsystemutilities/layouts/renderers/poster-monitor.json} (= 静的 template)、
-     * dynamic data (size / image / visibility / animation) はこの handler が解決する。
+     * One monitor face's poster values, WRITTEN into its page each frame (Manta 7 Phase 5): what the
+     * pull handler answered, in the same state - the padding and content box, the image and how it
+     * fits, the slide animation while a transition runs, and whether the poster shows. The page's
+     * root size keys (cssW / cssH) are written by the renderer with the size the page opened at.
      */
-    private static final class PosterHandler implements JsonLayoutHandler {
-        private PosterManagementBlockEntity be;
-        private PosterAnimState anim;
-        private int cssW;
-        private int cssH;
-        private int pad;
+    private static final class PosterFace {
+        private Object page;
+        private MantaState st;
+        private NumberSlot nPad, nContentW, nContentH;
+        private ImageFitSlot fPoster;
+        private ImageSlot iPoster;
+        private AnimationSlot aPoster;
+        private BoolSlot bVisible;
 
-        PosterHandler(PosterManagementBlockEntity be, PosterAnimState anim,
-                       int cssW, int cssH, int pad) {
-            this.be = be; this.anim = anim;
-            this.cssW = cssW; this.cssH = cssH; this.pad = pad;
+        void push(Object opened, PosterManagementBlockEntity be, PosterAnimState anim, int cssW, int cssH, int pad) {
+            if (opened == null) {
+                return;
+            }
+            if (opened != page) {
+                page = opened;
+                st = MantaState.of(opened);
+                nPad = st.number("pad");
+                nContentW = st.number("contentW");
+                nContentH = st.number("contentH");
+                // The fit is elided with the image (no slot): pushed by its bgImageFitKey. Asking number() for it
+                // threw on the render thread - a client crash whenever a poster was in view (manta 2.60.0-2.61.0).
+                fPoster = st.imageFit("posterFit");
+                iPoster = st.image("posterImg");
+                aPoster = st.animation("posterAnim");
+                bVisible = st.bool("posterVisible");
+                st.textByKeyOnly();
+            }
+            st.set(nPad, pad);
+            st.set(nContentW, cssW - pad * 2);
+            st.set(nContentH, cssH - pad * 2);
+            // 「モニターに合わせる」ON = CONTAIN (全体を収める) / OFF = COVER (埋めて切り抜く)。
+            // 値は IrNode.bgImageFit と同じ 0=STRETCH / 1=COVER / 2=CONTAIN。
+            st.set(fPoster, be.isFitToMonitor() ? 2 : 1);
+            ImageRef image = image(be, anim);
+            if (image == null) {
+                st.clear(iPoster);
+            } else {
+                st.set(iPoster, image);
+            }
+            Animation slide = slide(be, anim, cssW, cssH);
+            if (slide == null) {
+                st.clear(aPoster);
+            } else {
+                st.set(aPoster, slide);
+            }
+            List<UUID> images = be.getActiveImageIds();
+            st.set(bVisible, !images.isEmpty() && be.isMonitorEnabled());
         }
 
-        void update(PosterManagementBlockEntity be, PosterAnimState anim,
-                     int cssW, int cssH, int pad) {
-            this.be = be; this.anim = anim;
-            this.cssW = cssW; this.cssH = cssH; this.pad = pad;
-        }
-
-        @Override
-        public Integer getDynamicNumber(String[] classes, String key, int def) {
-            return switch (key) {
-                case "cssW" -> cssW;
-                case "cssH" -> cssH;
-                case "pad" -> pad;
-                case "contentW" -> cssW - pad * 2;
-                case "contentH" -> cssH - pad * 2;
-                // 「モニターに合わせる」ON = CONTAIN (全体を収める) / OFF = COVER (埋めて切り抜く)。
-                // 値は IrNode.bgImageFit と同じ 0=STRETCH / 1=COVER / 2=CONTAIN。
-                case "posterFit" -> be.isFitToMonitor() ? 2 : 1;
-                default -> null;
-            };
-        }
-
-        @Override
-        public ImageRef getDynamicImage(String[] classes, String key) {
-            if (!"posterImg".equals(key)) return null;
+        /** The image shown: the previous one while it slides out, else the current one; none until its texture is loaded. */
+        private static ImageRef image(PosterManagementBlockEntity be, PosterAnimState anim) {
             List<UUID> images = be.getActiveImageIds();
             if (images.isEmpty()) return null;
             // phaseOut: show previous image. Otherwise show current.
@@ -314,25 +332,19 @@ public class PosterMonitorRenderer {
             return new ImageRef(tex, size[0], size[1]);
         }
 
-        @Override
-        public Animation getDynamicAnimation(String[] classes, String key) {
-            if (!"posterAnim".equals(key)) return null;
+        /** The slide while a transition runs, else none. */
+        private static Animation slide(PosterManagementBlockEntity be, PosterAnimState anim, int cssW, int cssH) {
             if (!anim.transitioning) return null;
             long durationMs = (long)(be.getAnimationDuration() * 500); // half-duration
-            // 完全に off-screen にするには image width / height 分の translate が必要
-            float sh = (float) (cssW - pad * 2);
-            float sv = (float) (cssH - pad * 2);
+            // The slide covers the whole face (MANTA_6_CUTOVER decision 24a, 2026-09-12): the
+            // document's scissor sits on its root (the face) instead of poster-clip (the padding),
+            // so BOTH engines clip the image at the monitor's edge - Manta 5's ScissorNode clips in
+            // world space too, and taking the scissor off altogether left the Manta 5 fallback with
+            // no clip at all (final reading, 2026-09-12). cssW - 2 * pad stopped at the inner edge.
+            float sh = (float) cssW;
+            float sv = (float) cssH;
             AnimationType type = be.getAnimationType();
             return buildSlideAnim(type, anim.phaseOut, durationMs, sh, sv);
-        }
-
-        @Override
-        public Boolean getDynamicBool(String[] classes, String key, boolean def) {
-            if ("posterVisible".equals(key)) {
-                List<UUID> images = be.getActiveImageIds();
-                return !images.isEmpty() && be.isMonitorEnabled();
-            }
-            return null;
         }
 
         private static Animation buildSlideAnim(AnimationType type, boolean phaseOut,

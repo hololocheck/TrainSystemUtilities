@@ -1,0 +1,42 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "segments": {
+        "type": "list",
+        "maxLength": 4000,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "seg-x1": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "seg-z1": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "seg-x2": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "seg-z2": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          }
+        }
+      }
+    },
+    "actions": {
+      "map": {
+        "params": {},
+        "permission": "any",
+        "ratePerSecond": 5
+      }
+    }
+  }
+}

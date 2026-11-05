@@ -184,7 +184,7 @@ public class FEInverterBlock extends BaseEntityBlock {
     }
 
     /** HEAD / TAIL の位置から CENTER の位置を算出。 */
-    private static BlockPos centerPosOf(BlockPos pos, BlockState state) {
+    public static BlockPos centerPosOf(BlockPos pos, BlockState state) {
         Direction facing = state.getValue(FACING);
         return switch (state.getValue(PART)) {
             case HEAD -> pos.relative(facing.getOpposite());

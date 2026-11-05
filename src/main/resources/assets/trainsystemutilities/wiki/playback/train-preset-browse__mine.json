@@ -1,0 +1,82 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "mine-tile"
+        ],
+        "index": 0
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tpb.list",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "mine-tile"
+        ],
+        "index": 0
+      },
+      "do": "drag",
+      "to": {
+        "classes": [
+          "preview-3d"
+        ]
+      },
+      "durationMs": 1100,
+      "own": true,
+      "say": "trainsystemutilities.wiki.play.tpb.drag",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "preview-3d-canvas"
+        ]
+      },
+      "do": "drag",
+      "by": [
+        70,
+        10
+      ],
+      "durationMs": 900,
+      "own": true,
+      "say": "trainsystemutilities.wiki.play.tpb.rotate",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "pending-proceed-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tpb.proceed",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "manta-confirm-yes"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tpb.confirm",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "materials-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tpb.materials",
+      "holdMs": 2600
+    }
+  ]
+}

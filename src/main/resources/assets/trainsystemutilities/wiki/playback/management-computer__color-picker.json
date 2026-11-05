@@ -1,0 +1,65 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "cp-hue-bar"
+        ],
+        "at": [
+          0.1,
+          0.5
+        ]
+      },
+      "do": "drag",
+      "by": [
+        110,
+        0
+      ],
+      "durationMs": 1200,
+      "say": "trainsystemutilities.wiki.play.cp.hue",
+      "holdMs": 500
+    },
+    {
+      "target": {
+        "classes": [
+          "cp-sv-panel"
+        ],
+        "at": [
+          0.2,
+          0.2
+        ]
+      },
+      "do": "drag",
+      "by": [
+        90,
+        50
+      ],
+      "durationMs": 1200,
+      "say": "trainsystemutilities.wiki.play.cp.sv",
+      "holdMs": 500
+    },
+    {
+      "target": {
+        "classes": [
+          "cp-add"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.cp.add",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "cp-info-hex"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.cp.values",
+      "holdMs": 1500
+    }
+  ]
+}

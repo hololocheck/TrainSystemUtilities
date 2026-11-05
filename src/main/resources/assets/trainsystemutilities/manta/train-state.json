@@ -1,0 +1,142 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "open-elec-train": {
+        "type": "string",
+        "maxLen": 36,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "open-elec-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "mon-rows": {
+        "type": "list",
+        "maxLength": 48,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "mon-entity": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "mon-train": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "mon-route": {
+            "type": "string",
+            "maxLen": 64
+          },
+          "mon-type": {
+            "type": "string",
+            "maxLen": 64
+          },
+          "mon-coupling": {
+            "type": "string",
+            "maxLen": 64
+          },
+          "mon-partner": {
+            "type": "string",
+            "maxLen": 256
+          }
+        }
+      },
+      "mon-stops": {
+        "type": "list",
+        "maxLength": 96,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "mon-stop-row": {
+            "type": "int",
+            "min": 0,
+            "max": 47
+          },
+          "mon-stop-name": {
+            "type": "string",
+            "maxLen": 256
+          },
+          "mon-stop-sec": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "mon-stop-arr-hi": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "mon-stop-arr-lo": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "mon-stop-dep-hi": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "mon-stop-dep-lo": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "mon-stop-at": {
+            "type": "boolean"
+          }
+        }
+      },
+      "mon-seq": {
+        "type": "int",
+        "min": 0,
+        "max": 65535,
+        "sync": "s2c",
+        "persist": "none"
+      }
+    },
+    "actions": {
+      "pantograph": {
+        "params": {
+          "train": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 2
+          },
+          "car": {
+            "type": "int",
+            "min": 0,
+            "max": 1024
+          },
+          "x": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "y": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "z": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      }
+    }
+  }
+}

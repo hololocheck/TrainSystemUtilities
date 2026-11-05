@@ -1,0 +1,11 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {"target": {"classes": ["sb-like-btn"]}, "do": "hover", "say": "trainsystemutilities.wiki.play.ppd.like", "holdMs": 1300},
+    {"target": {"classes": ["sb-dl-btn"]}, "do": "hover", "say": "trainsystemutilities.wiki.play.ppd.download", "holdMs": 1400},
+    {"target": {"classes": ["sb-3d-btn"]}, "do": "hover", "say": "trainsystemutilities.wiki.play.ppd.view3d", "holdMs": 1400},
+    {"target": {"classes": ["sb-report-btn"]}, "do": "hover", "say": "trainsystemutilities.wiki.play.ppd.report", "holdMs": 1300}
+  ]
+}

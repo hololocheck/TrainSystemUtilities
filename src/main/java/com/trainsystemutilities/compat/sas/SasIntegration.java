@@ -84,4 +84,31 @@ public final class SasIntegration {
         try { belugalab.sas.api.SasApi.stopAudio(level, pos); }
         catch (Throwable ignored) {}
     }
+
+    /**
+     * For the wiki's demo inventory only (the railway management block's SAS page): SAS's recording medium carrying a
+     * recording's name, format and length - SAS's own item and data components, looked up by id, with no audio behind
+     * them (改善1, 2026-10-07: the page puts a recording into an entry). EMPTY when SAS is not loaded or an id is missing.
+     */
+    public static ItemStack wikiRecordingMedium(String fileName, String format, int seconds) {
+        if (!isLoaded()) return ItemStack.EMPTY;
+        var item = net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(SAS_MOD_ID, "recording_medium"));
+        if (item.isEmpty()) return ItemStack.EMPTY;
+        ItemStack stack = new ItemStack(item.get());
+        if (!setComponent(stack, "audio_file_name", fileName) || !setComponent(stack, "audio_format", format)
+                || !setComponent(stack, "audio_duration_sec", seconds)) {
+            return ItemStack.EMPTY;
+        }
+        return stack;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> boolean setComponent(ItemStack stack, String id, T value) {
+        var type = net.minecraft.core.registries.BuiltInRegistries.DATA_COMPONENT_TYPE.get(
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(SAS_MOD_ID, id));
+        if (type == null) return false;
+        stack.set((net.minecraft.core.component.DataComponentType<T>) type, value);
+        return true;
+    }
 }

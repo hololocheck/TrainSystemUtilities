@@ -1,0 +1,77 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "tt-map-canvas"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.tt.map_zoom",
+      "holdMs": 500
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-map-canvas"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-map-canvas"
+        ]
+      },
+      "do": "drag",
+      "by": [
+        60,
+        30
+      ],
+      "durationMs": 900,
+      "say": "trainsystemutilities.wiki.play.tt.map_pan",
+      "holdMs": 600
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-map-canvas"
+        ]
+      },
+      "do": "drag",
+      "by": [
+        -90,
+        -20
+      ],
+      "durationMs": 900,
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-map-canvas"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 500
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-map-canvas"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 1200
+    }
+  ]
+}

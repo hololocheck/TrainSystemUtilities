@@ -1,0 +1,27 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "assign-item"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.st.assign",
+      "holdMs": 1000
+    },
+    {
+      "target": {
+        "classes": [
+          "assign-item"
+        ],
+        "index": 1
+      },
+      "do": "click",
+      "holdMs": 1500
+    }
+  ]
+}

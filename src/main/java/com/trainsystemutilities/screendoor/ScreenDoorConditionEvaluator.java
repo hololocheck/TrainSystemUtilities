@@ -7,10 +7,6 @@ import com.trainsystemutilities.structure.blockentity.PlatformScreenDoorBlockEnt
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.LongArrayTag;
-import net.minecraft.nbt.LongTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -36,7 +32,7 @@ public final class ScreenDoorConditionEvaluator {
         if (card.isEmpty() || !card.has(DataComponents.CUSTOM_DATA)) return;
         CompoundTag tag = card.get(DataComponents.CUSTOM_DATA).copyTag();
         if (!MemoryCardItem.TYPE_SCREEN_DOOR_GROUP.equals(tag.getString("Type"))) return;
-        long[] members = readMembers(tag);
+        long[] members = MemoryCardItem.readMembers(tag);
         if (members.length == 0) return;
 
         int bandColor = rmbe.getScreenDoorBandColorARGB();
@@ -54,7 +50,7 @@ public final class ScreenDoorConditionEvaluator {
         if (card.isEmpty() || !card.has(DataComponents.CUSTOM_DATA)) return;
         CompoundTag tag = card.get(DataComponents.CUSTOM_DATA).copyTag();
         if (!MemoryCardItem.TYPE_SCREEN_DOOR_GROUP.equals(tag.getString("Type"))) return;
-        long[] members = readMembers(tag);
+        long[] members = MemoryCardItem.readMembers(tag);
         if (members.length == 0) return;
         applyAction(rmbe.getLevel(), members, actionType, rmbe.getScreenDoorBandColorARGB());
     }
@@ -83,19 +79,5 @@ public final class ScreenDoorConditionEvaluator {
                 default -> {}
             }
         }
-    }
-
-    /** NBT sync で ListTag<LongTag> → LongArrayTag に自動圧縮されるため両方対応。 */
-    private static long[] readMembers(CompoundTag tag) {
-        Tag raw = tag.get(MemoryCardItem.TAG_MEMBERS);
-        if (raw instanceof LongArrayTag lat) return lat.getAsLongArray();
-        if (raw instanceof ListTag lt) {
-            long[] arr = new long[lt.size()];
-            for (int i = 0; i < lt.size(); i++) {
-                if (lt.get(i) instanceof LongTag longTag) arr[i] = longTag.getAsLong();
-            }
-            return arr;
-        }
-        return new long[0];
     }
 }

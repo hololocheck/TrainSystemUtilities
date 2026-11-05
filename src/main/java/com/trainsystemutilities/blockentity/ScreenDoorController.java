@@ -64,7 +64,7 @@ public final class ScreenDoorController {
         CompoundTag tag = card.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag();
         if (!com.trainsystemutilities.item.MemoryCardItem.TYPE_SCREEN_DOOR_GROUP
                 .equals(tag.getString("Type"))) return;
-        long[] members = readCardMembers(tag);
+        long[] members = com.trainsystemutilities.item.MemoryCardItem.readMembers(tag);
         if (members.length == 0) return;
 
         final net.minecraft.resources.ResourceKey<Level> dim = level.dimension();
@@ -97,20 +97,6 @@ public final class ScreenDoorController {
         }
         registeredPoints.clear();
         listener = null;
-    }
-
-    private static long[] readCardMembers(CompoundTag tag) {
-        net.minecraft.nbt.Tag raw = tag.get(
-                com.trainsystemutilities.item.MemoryCardItem.TAG_MEMBERS);
-        if (raw instanceof net.minecraft.nbt.LongArrayTag lat) return lat.getAsLongArray();
-        if (raw instanceof net.minecraft.nbt.ListTag lt) {
-            long[] arr = new long[lt.size()];
-            for (int i = 0; i < lt.size(); i++) {
-                if (lt.get(i) instanceof net.minecraft.nbt.LongTag longTag) arr[i] = longTag.getAsLong();
-            }
-            return arr;
-        }
-        return new long[0];
     }
 
     public void writeNbt(CompoundTag tag) {

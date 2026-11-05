@@ -21,9 +21,18 @@ final class ManagementComputerRender {
         // dialog 内座標は dialogLocalToScreenX/Y、長さ計算は dialogScaleAmount を使う。
         int dispW = scr.dialogScaleAmountAccess(overlayW);  // overlay 表示幅 (= overlayW * dialogScale)
         int dispH = scr.dialogScaleAmountAccess(overlayH);
-        // タブ dropdown はサイドバーの dropdown trigger 直下に配置。
+        // 上へ開くと答えるのは、この呼び出しで駅の assign の枝が置いた時だけ: 先の枝 (タブ・列車詳細・時刻表・記号エディタ・
+        // モニター色) がリストを置いた時に前回の反転が残らないよう、まず倒す (二度目の読みの指摘、2026-10-16)。
+        scr.assignOpensUpward = false;
+        // タブ dropdown はサイドバーの dropdown trigger 直下に配置。位置は trigger の箱から求める: 決め打ちの 35 + 18 + 18 = 71 は
+        // trigger (y 57、高さ 18、下端 75) に 4 px 重なっていた (2026-10-16、ユーザーの指摘)。下に 2 px 空けるのは同じ画面の
+        // 他の dropdown と同じ。trigger が layout に無ければ前の位置。
         if (scr.tabDropdown.isOpen()) {
-            return new int[]{scr.dialogLocalToScreenXAccess(14 + 2), scr.dialogLocalToScreenYAccess(35 + 18 + 18)};
+            int[] t = scr.findElementByClassAccess("tab-dropdown");
+            if (t == null) {
+                return new int[]{scr.dialogLocalToScreenXAccess(14 + 2), scr.dialogLocalToScreenYAccess(35 + 18 + 18)};
+            }
+            return new int[]{scr.dialogLocalToScreenXAccess(t[0]), scr.dialogLocalToScreenYAccess(t[1] + t[3] + 2)};
         }
         // 列車詳細 popup はメイン GUI の右側 (V1 と同じ)。
         // 画面右端を超えるなら左側へフォールバック。
@@ -72,7 +81,9 @@ final class ManagementComputerRender {
             int y = scr.assignBtnScreenY + 2;
             if (x < 4) x = 4;
             if (x + dispW + 4 > scr.width) x = scr.width - dispW - 4;
-            if (y + dispH + 4 > scr.height) y = scr.assignBtnScreenY - scr.dialogScaleAmountAccess(14) - dispH - 4;
+            // 下に入らなければ + ボタンの上へ。その時はボタン側から上へ開く (overlayOpensUpward、Manta 2.88.0)
+            scr.assignOpensUpward = y + dispH + 4 > scr.height;
+            if (scr.assignOpensUpward) y = scr.assignBtnScreenY - scr.dialogScaleAmountAccess(14) - dispH - 4;
             if (y < 4) y = 4;
             return new int[]{x, y};
         }
@@ -84,6 +95,8 @@ final class ManagementComputerRender {
         // Phase 5d FIX: overlay2 もスケール対応 (= overlayW/H は論理サイズ、表示は overlay2Scale=dialogScale 倍)
         int dispW = scr.dialogScaleAmountAccess(overlayW);
         int dispH = scr.dialogScaleAmountAccess(overlayH);
+        // overlayDefaultPosition と同じく、条件追加の枝が置いた時だけ上へ開くと答える (先の色選びの枝の時は倒れたまま)。
+        scr.addCondOpensUpward = false;
         if (scr.symEditor.isOpen() && scr.showColorPicker) {
             // editor (overlay1) の右隣に color picker (overlay2) を配置
             int x = scr.overlayX() + scr.dialogScaleAmountAccess(scr.overlayW() + 6);
@@ -100,7 +113,9 @@ final class ManagementComputerRender {
             // 画面端クリップ
             if (x + dispW + 4 > scr.width) x = scr.width - dispW - 4;
             if (x < 4) x = 4;
-            if (y + dispH + 4 > scr.height) y = scr.schedEditor.addCondBtnScreenY() - dispH - 4;  // 下に入らなければ上に
+            // 下に入らなければ上に。その時はボタン側から上へ開く (overlay2OpensUpward、Manta 2.88.0)
+            scr.addCondOpensUpward = y + dispH + 4 > scr.height;
+            if (scr.addCondOpensUpward) y = scr.schedEditor.addCondBtnScreenY() - dispH - 4;
             if (y < 4) y = 4;
             return new int[]{x, y};
         }
@@ -147,7 +162,7 @@ final class ManagementComputerRender {
             }
             case "sym-tile-badge" -> {
                 int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
-                var syms = scr.serverBE().getLineSymbols();
+                var syms = scr.be().getLineSymbols();
                 if (ri >= 0 && ri < syms.size()) {
                     scr.drawSymbolBadge(g, x, y, Math.min(w, h), syms.get(ri));
                 }
@@ -155,7 +170,9 @@ final class ManagementComputerRender {
             case "map" -> scr.mapRenderer.draw(g, x, y, w, h, scr.fontOrNull(), scr.leftPosAccess(), scr.topPosAccess(), scr.mapNodes, scr.mapEdges, scr.mapStations, scr.mapSignals, scr.mapTrains);
             case "owner-face" -> com.manta.api.hud.OwnerFacePainter.draw(
                     g, x, y, w, h, scr.be().getOwnerUUID());
-            case "train-model" -> scr.trainModel.draw(g, x, y, w, h, scr.minecraftAccess(), scr.fontOrNull(), scr.selectedTrainId, scr.overlayX(), scr.overlayY());
+            // wiki: サンプル列車は server に居ない — 渡すと preview を server に request する (= wiki の描画から packet)
+            case "train-model" -> scr.trainModel.draw(g, x, y, w, h, scr.minecraftAccess(), scr.fontOrNull(),
+                    scr.wikiMode ? null : scr.selectedTrainId, scr.overlayX(), scr.overlayY());
             case "ed-car-list" -> scr.edCarList.draw(g, x, y, w, h, scr.fontOrNull(), scr.selectedTrainId);
             case "station-row-badge" -> {
                 int rii = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
@@ -178,7 +195,7 @@ final class ManagementComputerRender {
             }
             case "assign-item-badge" -> {
                 int ri = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
-                var syms = scr.serverBE().getLineSymbols();
+                var syms = scr.be().getLineSymbols();
                 if (ri >= 0 && ri < syms.size()) {
                     scr.drawSymbolBadge(g, x, y, Math.min(w, h), syms.get(ri));
                 }
@@ -352,6 +369,7 @@ final class ManagementComputerRender {
 
     static void applyScheduleEdit(ManagementComputerScreenV2 scr) {
         if (scr.scheduleSelectedTrainId == null) { scr.schedEditor.close(); return; }
+        if (scr.wikiMode) { scr.wikiApplyScheduleEdit(); scr.schedEditor.close(); return; }
         try {
             var nbt = new net.minecraft.nbt.CompoundTag();
             var entriesList = new net.minecraft.nbt.ListTag();
@@ -394,10 +412,14 @@ final class ManagementComputerRender {
             nbt.put("Entries", entriesList);
             nbt.putBoolean("Cyclic", scr.schedEditor.isCyclic());
 
-            // MP 対応: server 権威の payload で適用 (ゲートは ApplyScheduleEditPayload.handle で検証)
-            net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                    new com.trainsystemutilities.network.ApplyScheduleEditPayload(
-                            scr.be().getBlockPos(), scr.scheduleSelectedTrainId, nbt));
+            // MP 対応: server 権威の action で適用 (ゲートは network.ApplyScheduleEditAction で検証)
+            String snbt = com.trainsystemutilities.network.ManagementComputerData.snbtParam(nbt);
+            if (snbt == null) {
+                scr.dataTooLarge();
+            } else {
+                scr.sendData(com.trainsystemutilities.network.ManagementComputerData.SCHEDULE_APPLY,
+                        com.trainsystemutilities.network.ManagementComputerData.uuidParam(scr.scheduleSelectedTrainId), snbt);
+            }
         } catch (Exception e) {
             com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug(
                     "applyScheduleEdit failed for train {}", scr.scheduleSelectedTrainId, e);
@@ -413,9 +435,8 @@ final class ManagementComputerRender {
             boolean inFilled = !scr.getMenu().slots.get(2).getItem().isEmpty();
             if (inFilled && scr.getMenu().slots.get(3).getItem().isEmpty()
                     && scr.be().getExportProgress() == 0 && !scr.exportRequestSent) {
-                net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                        new com.trainsystemutilities.network.ExportTimetablePayload(
-                                scr.be().getBlockPos(), scr.scheduleSelectedTrainId));
+                scr.sendData(com.trainsystemutilities.network.ManagementComputerData.EXPORT_TIMETABLE,
+                        com.trainsystemutilities.network.ManagementComputerData.uuidParam(scr.scheduleSelectedTrainId));
                 scr.exportRequestSent = true;
             }
             if (!inFilled) scr.exportRequestSent = false;
@@ -425,7 +446,8 @@ final class ManagementComputerRender {
         if (scr.tabDropdown.isOpen()) return;
         scr.refreshNetworkData();
         if (scr.selectedTrainId != null) {
-            scr.refreshSelectedTrainSnapshot(scr.selectedTrainId);
+            // wiki: 事前設定 snapshot を保持 (サンプル列車は BE の cache に無く、refresh は選択を外す)
+            if (!scr.wikiMode) scr.refreshSelectedTrainSnapshot(scr.selectedTrainId);
         } else if (scr.tabs.is("schedule") && scr.scheduleSelectedTrainId != null) {
             // 時刻表タブで列車タイルを選択したときも明細 snapshot を更新する
             // (旧実装は selectedTrainId のみ対象で scheduleSelectedTrainId が未反映 →「スケジュールなし」固定だった)
@@ -453,14 +475,19 @@ final class ManagementComputerRender {
     }
 
     static void renderSymbolTileHoverPreview(ManagementComputerScreenV2 scr, GuiGraphics g, int mouseX, int mouseY) {
-        var symbols = scr.serverBE().getLineSymbols();
+        var symbols = scr.be().getLineSymbols();
         // タイル位置: (CONTENT_X + 6, CONTENT_Y + 22) から 7 cols × stride (36+4)。
         // gen 側の SYM_TAB_PAD=6, SYM_TILE=36, SYM_GAP=4, SYM_COLS=7。
         final int SYM_TILE = 36, SYM_GAP = 4, SYM_COLS = 7;
         final int CONTENT_X_LOCAL = 148, CONTENT_Y_LOCAL = 35;  // gen 側と整合
-        int gridX0 = scr.leftPosAccess() + CONTENT_X_LOCAL + 6;
-        int gridY0 = scr.topPosAccess()  + CONTENT_Y_LOCAL + 22;
-        int idx = scr.symbolHover.update(mouseX, mouseY,
+        // タイルの stride / サイズは dialog-local の値なので、grid もマウスも local で扱う。
+        // leftPos + local は UI スケールつまみが 1.0 のときしか描画位置と一致しない
+        // (実機 2026-09-12、つまみ 0.910)。hit 結果は index だけで、下の描画には使わない。
+        int gridX0 = CONTENT_X_LOCAL + 6;
+        int gridY0 = CONTENT_Y_LOCAL + 22;
+        int idx = scr.symbolHover.update(
+                (int) Math.round(scr.toLocalMxAccess(mouseX)),
+                (int) Math.round(scr.toLocalMyAccess(mouseY)),
                 gridX0, gridY0, SYM_TILE, SYM_GAP, SYM_COLS, symbols.size());
         if (idx < 0) return;
         var sym = symbols.get(idx);
@@ -487,10 +514,7 @@ final class ManagementComputerRender {
         g.pose().pushPose();
         g.pose().translate(0, 0, 400);
         g.fill(px, py, px + panelW, py + panelH, 0xDD1a1a2e);
-        g.fill(px, py, px + panelW, py + 1, 0xFF4fc3f7);
-        g.fill(px, py + panelH - 1, px + panelW, py + panelH, 0xFF4fc3f7);
-        g.fill(px, py, px + 1, py + panelH, 0xFF4fc3f7);
-        g.fill(px + panelW - 1, py, px + panelW, py + panelH, 0xFF4fc3f7);
+        com.manta.api.draw.SmoothRenderer.strokeRoundedRect(g, px, py, panelW, panelH, 0f, 1f, 0xFF4fc3f7);
 
         int iconSize = Math.min(drawW - 4, 30);
         int iconX = px + padding + 2;
@@ -501,16 +525,14 @@ final class ManagementComputerRender {
         int textX = iconX + iconSize + 6;
         int textY = py + padding + 2;
         if (!sym.getName().isEmpty()) {
-            g.drawString(scr.fontOrNull(), sym.getName(), textX, textY, 0xFF4fc3f7, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontOrNull(), sym.getName(), textX, textY, 0xFF4fc3f7);
             textY += 11;
         }
-        g.drawString(scr.fontOrNull(), sym.getLetters() + " " + sym.getNumberStr(), textX, textY, 0xFFFFFFFF, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontOrNull(), sym.getLetters() + " " + sym.getNumberStr(), textX, textY, 0xFFFFFFFF);
         textY += 11;
-        g.drawString(scr.fontOrNull(),
-                net.minecraft.network.chat.Component.translatable("tsu.mc.sym_color_label_fmt", sym.getBorderColor()).getString(),
-                textX, textY, 0xFF888888, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontOrNull(), net.minecraft.network.chat.Component.translatable("tsu.mc.sym_color_label_fmt", sym.getBorderColor()).getString(), textX, textY, 0xFF888888);
         textY += 11;
-        g.drawString(scr.fontOrNull(), "R: " + sym.getBorderRadius() + "px", textX, textY, 0xFF888888, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontOrNull(), "R: " + sym.getBorderRadius() + "px", textX, textY, 0xFF888888);
         g.pose().popPose();
     }
 
@@ -572,12 +594,12 @@ final class ManagementComputerRender {
 
     static void drawLayoutPreview(ManagementComputerScreenV2 scr, GuiGraphics g, int cx, int cy, int cw, int ch,
                                     int mouseX, int mouseY) {
-        int monW = scr.serverBE().getMonitorW();
-        int monH = scr.serverBE().getMonitorH();
+        int monW = scr.be().getMonitorW();
+        int monH = scr.be().getMonitorH();
         if (monW <= 0 || monH <= 0) {
             String msg = ManagementComputerScreenV2.tr("tsu.mc.monitor_unlinked");
-            int tw = scr.fontOrNull().width(msg);
-            g.drawString(scr.fontOrNull(), msg, cx + (cw - tw) / 2, cy + ch / 2 - 4, 0xFFff8888, false);
+            int tw = com.manta.api.text.MantaText.uiWidth(scr.fontOrNull(), msg);
+            com.manta.api.text.MantaText.draw(g, scr.fontOrNull(), msg, cx + (cw - tw) / 2, cy + ch / 2 - 4, 0xFFff8888);
             scr.layoutPrevW = scr.layoutPrevH = 0;
             return;
         }
@@ -613,27 +635,22 @@ final class ManagementComputerRender {
             int bcCol = selected ? 0xFFffc107 : 0xFF4fc3f7;
             g.fill(px, py, px + pw, py + ph, bgCol);
             // 枠
-            g.fill(px, py, px + pw, py + 1, bcCol);
-            g.fill(px, py + ph - 1, px + pw, py + ph, bcCol);
-            g.fill(px, py + 1, px + 1, py + ph - 1, bcCol);
-            g.fill(px + pw - 1, py + 1, px + pw, py + ph - 1, bcCol);
+            com.manta.api.draw.SmoothRenderer.strokeRoundedRect(g, px, py, pw, ph, 0f, 1f, bcCol);
             // ラベル
             String label = p.getType().getDisplayName();
-            int tw = scr.fontOrNull().width(label);
+            int tw = com.manta.api.text.MantaText.uiWidth(scr.fontOrNull(), label);
             if (tw < pw - 4 && scr.fontOrNull().lineHeight < ph - 2) {
-                g.drawString(scr.fontOrNull(), label, px + 3, py + 3,
-                        selected ? 0xFFffc107 : 0xFFFFFFFF, false);
+                com.manta.api.text.MantaText.draw(g, scr.fontOrNull(), label, px + 3, py + 3, selected ? 0xFFffc107 : 0xFFFFFFFF);
             }
         }
         // ヘルプ
         if (scr.layoutEditor.getLayout().isEmpty()) {
             String hint = ManagementComputerScreenV2.tr("tsu.mc.layout_click_hint");
-            int tw = scr.fontOrNull().width(hint);
-            g.drawString(scr.fontOrNull(), hint, prevX + (prevW - tw) / 2, prevY + prevH / 2 - 4,
-                    0xFF666688, false);
+            int tw = com.manta.api.text.MantaText.uiWidth(scr.fontOrNull(), hint);
+            com.manta.api.text.MantaText.draw(g, scr.fontOrNull(), hint, prevX + (prevW - tw) / 2, prevY + prevH / 2 - 4, 0xFF666688);
         } else if (scr.layoutEditor.selectedIndex() >= 0) {
             String help = net.minecraft.network.chat.Component.translatable("tsu.mc.layout_help").getString();
-            g.drawString(scr.fontOrNull(), help, cx + 4, cy + ch - 11, 0xFF888888, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontOrNull(), help, cx + 4, cy + ch - 11, 0xFF888888);
         }
     }
 }

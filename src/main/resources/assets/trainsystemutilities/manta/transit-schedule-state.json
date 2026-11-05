@@ -1,0 +1,39 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "trains": {
+        "type": "list",
+        "maxLength": 256,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "train-id": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "train-name": {
+            "type": "string",
+            "maxLen": 128
+          },
+          "train-next": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "train-eta": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        }
+      }
+    },
+    "actions": {
+      "schedule": {
+        "params": {},
+        "permission": "any",
+        "ratePerSecond": 5
+      }
+    }
+  }
+}

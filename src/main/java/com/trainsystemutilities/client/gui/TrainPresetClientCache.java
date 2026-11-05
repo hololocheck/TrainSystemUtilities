@@ -1,6 +1,6 @@
 package com.trainsystemutilities.client.gui;
 
-import com.trainsystemutilities.network.TrainPresetListResponsePayload;
+import com.trainsystemutilities.network.PresetsData;
 import com.trainsystemutilities.preset.TrainPreset;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public final class TrainPresetClientCache {
 
-    private static List<TrainPresetListResponsePayload.Item> list = Collections.emptyList();
+    private static List<PresetsData.Item> list = Collections.emptyList();
     private static long lastUpdateMs = 0L;
 
     private static final int PRESET_DATA_LIMIT = 32;
@@ -40,12 +40,12 @@ public final class TrainPresetClientCache {
         }
     }
 
-    public static void setList(List<TrainPresetListResponsePayload.Item> items) {
+    public static void setList(List<PresetsData.Item> items) {
         list = new ArrayList<>(items);
         lastUpdateMs = System.currentTimeMillis();
     }
 
-    public static List<TrainPresetListResponsePayload.Item> getList() { return list; }
+    public static List<PresetsData.Item> getList() { return list; }
 
     public static long lastUpdateMs() { return lastUpdateMs; }
 

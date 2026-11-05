@@ -4,10 +4,6 @@ import com.manta.api.hud.HeldTools;
 import com.manta.api.hud.ModifierKeys;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.item.TrainPresetToolItem;
-import com.trainsystemutilities.network.TrainPresetCancelPlacePayload;
-import com.trainsystemutilities.network.TrainPresetLinkChestPayload;
-import com.trainsystemutilities.network.TrainPresetRetryPayload;
-import com.trainsystemutilities.network.TrainPresetToolModePayload;
 import com.trainsystemutilities.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -22,7 +18,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -49,13 +44,14 @@ public class TrainPresetToolClientHandler {
         ItemStack stack = findHeldTool();
         if (stack.isEmpty()) return;
 
+        // ここだけは R3.3.1 の優先順を使わない: 下の action は ctrl を優先させる設計。
         long window = mc.getWindow().getWindow();
         boolean alt = ModifierKeys.alt(window);
         boolean ctrl = ModifierKeys.ctrl(window);
         if (!alt && !ctrl) return;
 
         double dy = event.getScrollDeltaY();
-        if (Math.abs(dy) < 0.0001) return;
+        if (com.manta.api.hud.WheelInput.isDead(dy)) return;
 
         // スクロールクールダウン: 高速スクロール時のスキップ防止
         if (!SCROLL_COOLDOWN.tryAccept()) {
@@ -63,11 +59,11 @@ public class TrainPresetToolClientHandler {
             return;
         }
 
-        int delta = dy > 0 ? 1 : -1;
+        int delta = com.manta.api.hud.WheelInput.direction(dy);
         // ctrl + ホイール: action 1 (回転値) 優先
         // alt + ホイール (ctrl なし): action 0 (モード循環)
         int action = ctrl ? 1 : 0;
-        PacketDistributor.sendToServer(new TrainPresetToolModePayload(action, delta));
+        ToolsClient.presetToolMode(action, delta);
         event.setCanceled(true);
     }
 
@@ -83,14 +79,14 @@ public class TrainPresetToolClientHandler {
         // shift + 中クリック (button 2): PLACE モード中はキャンセル、それ以外でチェスト視線中はリンク
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_MIDDLE && mc.player.isShiftKeyDown()) {
             if (TrainPresetToolItem.getToolMode(stack) == TrainPresetToolItem.TOOL_MODE_PLACE) {
-                PacketDistributor.sendToServer(new TrainPresetCancelPlacePayload());
+                ToolsClient.presetCancelPlace();
                 event.setCanceled(true);
                 return;
             }
 
             BlockPos chestPos = findLookedAtChest(mc);
             if (chestPos != null) {
-                PacketDistributor.sendToServer(new TrainPresetLinkChestPayload(chestPos));
+                ToolsClient.presetLinkChest(chestPos);
                 event.setCanceled(true);
             }
             return;
@@ -100,7 +96,7 @@ public class TrainPresetToolClientHandler {
         if (event.getButton() == GLFW.GLFW_MOUSE_BUTTON_MIDDLE
                 && TrainPresetToolItem.getToolMode(stack) == TrainPresetToolItem.TOOL_MODE_PLACE
                 && TrainPresetToolItem.isPlaceResumeReady(stack)) {
-            PacketDistributor.sendToServer(new TrainPresetRetryPayload());
+            ToolsClient.presetRetry();
             event.setCanceled(true);
         }
     }

@@ -6,35 +6,12 @@ tags: [management-computer, ticket]
 
 # Tickets Tab
 
-The management computer's Tickets tab. **Choose which stations are sold** at the ticket vending machines.
+![](bws:trainsystemutilities:wiki/screens/management-computer__tickets__en_us.png)
+
+A screen for setting the destinations that can be chosen at [Ticket Vending Machines](../structure/ticket-vending-machine.md). Choose "Tickets" on the Management Computer.
 
 [[TOC]]
 
-## How to open
+The station groups on this computer's track network appear in a list. Use each station's switch to choose whether it is shown as a destination. The setting is shared across the whole world and applies to every ticket vending machine.
 
-1. **Place** a **Management Computer** block and **right-click** it to open the screen.
-2. **Click** the top-left dropdown and choose **"🎫 Tickets"**.
-
-## Overview
-
-Lists the stations registered on the network (station groups created with the [Station Range Tool](../tools/station-range-tool.md)), each with a **sellable toggle**. Stations turned ON here appear in the destination list of every [ticket vending machine](../structure/ticket-vending-machine.md).
-
-## Usage
-
-- **Click the toggle switch** on each station row to switch sellable on/off (ON = green).
-- When there are many stations, roll the **mouse wheel** over the list to scroll (a scrollbar appears on the right).
-- The title shows "Sellable stations (sellable / total)".
-
-## How it connects to machines
-
-- The setting is **shared network-wide** and applies to all machines immediately (machines read the server-side setting).
-- If no stations are registered, it shows "No stations on the network". Create stations first with the [Station Range Tool](../tools/station-range-tool.md).
-
-> [!NOTE]
-> In the initial state, before you set anything sellable, machines show every station except their own as a destination (a ready-to-use default). Once you curate here, machines are narrowed to just the chosen stations.
-
-## Related
-
-- [Ticket Vending Machine (block)](../structure/ticket-vending-machine.md)
-- [Station Range Tool](../tools/station-range-tool.md)
-- [Management Computer overview](overview.md)
+If a station does not appear, register a station group with the [Station Range Tool](../tools/station-range-tool.md) first. In the initial state, before any destination is selected, every station on the same track network except the machine's own is shown. Once you make a selection, only the selected stations are shown.

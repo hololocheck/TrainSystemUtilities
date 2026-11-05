@@ -70,6 +70,9 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     private final List<LineSymbol> lineSymbols = new ArrayList<>();
     // 駅→路線記号割り当て（駅名 → LineSymbol UUID）
     private final java.util.Map<String, java.util.UUID> stationSymbolMap = new java.util.concurrent.ConcurrentHashMap<>();
+    // 駅→その割り当てをした player（⑲、2026-10-01）。 公開のときに一緒に渡し、 非公開の鉄道管理ブロックが守る駅では
+    // store が持ち主以外を断る。 無い = 2026-10-01 より前の割り当て (認めたものとして扱う)。 カードにも載る。
+    private final java.util.Map<String, java.util.UUID> stationSymbolActors = new java.util.concurrent.ConcurrentHashMap<>();
     // 駅→RailwayManagementBE位置キャッシュ（駅名 → BlockPos）
     // server tick 内の scan/clear と client→server execute 内の lookup が並行する可能性があるため Concurrent。
     private final java.util.Map<String, BlockPos> stationManagerPosMap = new java.util.concurrent.ConcurrentHashMap<>();
@@ -433,6 +436,12 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         return SERVER_INSTANCES;
     }
 
+    /**
+     * The computer's host on manta:data (network.ManagementComputerData, MANTA_7_CONCEPT C4): server side, opened in
+     * {@link #onLoad} and closed in {@link #setRemoved}.
+     */
+    private com.manta.api.data.Host dataHost;
+
     /** いずれかのロード済みコンピューターが trainId を電子式時刻表として管理しているか (= live 参照)。 server only。
      *  運転士モブ右クリックの横取り ({@link com.trainsystemutilities.mixin.ScheduleItemEntityInteractionMixin}) で使う。 */
     public static boolean isTrainElectronicAnywhere(UUID trainId) {
@@ -456,10 +465,76 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         }
     }
 
+    /**
+     * The wiki's route map (client dummy BE only): the map cache - nodes, edges, stations, signals, trains - from
+     * {@code wiki/demo/route-map.json}, the test world's own map (改善1, 2026-10-07: the user asked the wiki to show the
+     * real test world's map, panned and zoomed). Read once per call; a missing or unreadable file leaves the map empty,
+     * as it was.
+     */
+    public void wikiSeedMap(com.google.gson.JsonObject map) {
+        if (map == null) return;
+        cachedNodes = new ArrayList<>();
+        for (var n : map.getAsJsonArray("nodes")) {
+            var a = n.getAsJsonArray();
+            cachedNodes.add(new com.trainsystemutilities.network.TrackNetworkScanner.NodeInfo(
+                    a.get(0).getAsInt(), a.get(1).getAsDouble(), a.get(2).getAsDouble()));
+        }
+        cachedEdges = new ArrayList<>();
+        for (var e : map.getAsJsonArray("edges")) {
+            var a = e.getAsJsonArray();
+            List<double[]> pts = new ArrayList<>();
+            for (var p : a.get(2).getAsJsonArray()) {
+                pts.add(new double[]{p.getAsJsonArray().get(0).getAsDouble(), p.getAsJsonArray().get(1).getAsDouble()});
+            }
+            cachedEdges.add(new com.trainsystemutilities.network.TrackNetworkScanner.EdgeInfo(
+                    a.get(0).getAsInt(), a.get(1).getAsInt(), pts));
+        }
+        cachedStations = new ArrayList<>();
+        for (var s : map.getAsJsonArray("stations")) {
+            var a = s.getAsJsonArray();
+            cachedStations.add(new com.trainsystemutilities.network.TrackNetworkScanner.StationInfo(a.get(0).getAsString(),
+                    new BlockPos(a.get(1).getAsInt(), a.get(2).getAsInt(), a.get(3).getAsInt())));
+        }
+        cachedSignals = new ArrayList<>();
+        var states = com.trainsystemutilities.network.TrackNetworkScanner.SignalState.values();
+        for (var s : map.getAsJsonArray("signals")) {
+            var a = s.getAsJsonArray();
+            int ord = a.get(3).getAsInt();
+            cachedSignals.add(new com.trainsystemutilities.network.TrackNetworkScanner.SignalInfo(
+                    new BlockPos(a.get(0).getAsInt(), a.get(1).getAsInt(), a.get(2).getAsInt()),
+                    states[ord >= 0 && ord < states.length ? ord : 0]));
+        }
+        cachedTrains = new ArrayList<>();
+        int i = 0;
+        for (var t : map.getAsJsonArray("trains")) {
+            var a = t.getAsJsonArray();
+            cachedTrains.add(new com.trainsystemutilities.network.TrackNetworkScanner.TrainInfo(
+                    UUID.nameUUIDFromBytes(("tsu-wiki-map-train-" + i++).getBytes(java.nio.charset.StandardCharsets.UTF_8)),
+                    a.get(0).getAsString(), a.get(1).getAsInt(), a.get(2).getAsDouble(), false, a.get(5).getAsString(),
+                    a.get(3).getAsDouble(), a.get(4).getAsDouble()));
+        }
+        // The overview's counts read these, not the lists.
+        cachedStationCount = cachedStations.size();
+        cachedTrainCount = cachedTrains.size();
+        cachedSignalCount = cachedSignals.size();
+        // The test world's monitor wall: the layout editor previews on its shape (unlinked, it shows nothing).
+        if (map.has("monitor")) {
+            var m = map.getAsJsonArray("monitor");
+            monitorW = m.get(0).getAsInt();
+            monitorH = m.get(1).getAsInt();
+        }
+    }
+
     @Override
     public void onLoad() {
         super.onLoad();
+        // Not for an entity already removed: NeoForge runs onLoad a tick late, for one removed in between too, and
+        // its setRemoved - the only remove - has come and gone.
+        if (isRemoved()) return;
         if (level != null && !level.isClientSide()) SERVER_INSTANCES.add(this);
+        if (level instanceof net.minecraft.server.level.ServerLevel sl && dataHost == null) {
+            dataHost = com.trainsystemutilities.network.ManagementComputerData.open(this, sl);
+        }
         // reload 時点でスロットに入っているカードは「反映済み」として起動する。
         // これをしないと lastCardSettings == null のせいで毎 load でカードが BE を上書きし、
         // chunk unload (保存 → setRemoved の順) で書き戻せなかった編集がそこで巻き戻る
@@ -479,6 +554,10 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         // 記号の取り下げもここではしない — unload のたびに全駅から記号が消える。
         // 取り下げは ManagementComputerBlock.onRemove = 実際に壊されたときだけ。
         SERVER_INSTANCES.remove(this);
+        if (dataHost != null) {
+            dataHost.close();
+            dataHost = null;
+        }
         super.setRemoved();
     }
 
@@ -504,6 +583,14 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             if (exact != null) return exact;
         }
         return stationSymbolMap.get(stationName);
+    }
+
+    /** その駅の割り当てをした player — {@link #getSymbolIdForStation} と同じ引き方 (完全なキー、 次に旧形式の駅名)。 */
+    private UUID getSymbolActorForStation(String stationName, BlockPos stationPos) {
+        if (stationPos != null && stationSymbolMap.containsKey(stationKey(stationName, stationPos))) {
+            return stationSymbolActors.get(stationKey(stationName, stationPos));
+        }
+        return stationSymbolActors.get(stationName);
     }
 
     private LineSymbol getSymbolById(UUID id) {
@@ -631,6 +718,11 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
 
         CompoundTag onCard = ManagementComputerSettings.readSettings(memoryCard);
         if (onCard != null && (slotMoved || !onCard.equals(lastCardSettings))) {
+            // 前のカードで公開したものを、 割り当てた player の名で先に取り下げる (⑲): カードを抜かずに 1 クリックで
+            // 差し替えるとスロットが空になる sync tick が無く、 applySettings が割り当てた player の記録を新しいカードの
+            // ものに置き換えた後では、 名前の付いた古い記号を誰も取り下げられなくなる (二次読みの指摘)。 下の publish が
+            // 同じ呼び出しの中で公開し直すので、 表示は途切れない。
+            withdrawSymbolsFromStore();
             applySettings(onCard, registries);
             lastCardSettings = onCard.copy();
             lastOwnSettings = captureSettings(registries);
@@ -740,10 +832,7 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             merged.putInt("MonW", 0);
             merged.putInt("MonH", 0);
         }
-        for (String k : settings.getAllKeys()) {
-            var t = settings.get(k);
-            if (t != null) merged.put(k, t.copy());
-        }
+        ManagementComputerSettings.overlay(merged, settings);
         loadAdditional(merged, registries);
     }
 
@@ -1427,6 +1516,31 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         }
         onLineSymbolsChanged();
     }
+    /**
+     * The wiki's computer (a client dummy, 改善1 2026-10-07): a symbol saved in its editor lands on its own list and
+     * nowhere else - not {@link #saveLineSymbol}, whose change propagation scans the client's level and publishes to the
+     * symbol store the player's real screens read.
+     */
+    public void wikiSaveLineSymbol(int index, LineSymbol symbol) {
+        if (symbol == null) return;
+        if (index >= 0 && index < lineSymbols.size()) {
+            lineSymbols.set(index, symbol);
+        } else {
+            lineSymbols.add(symbol);
+        }
+    }
+
+    /**
+     * The wiki's computer (改善1, second reading): a symbol assigned to a station in its own map only - not
+     * {@link #assignSymbolToStation}, which scans the client's level for the station's manager and publishes to the
+     * symbol store the player's real screens read.
+     */
+    public void wikiAssignSymbol(String stationName, BlockPos stationPos, UUID symbolId) {
+        String key = stationKey(stationName, stationPos);
+        if (symbolId != null) stationSymbolMap.put(key, symbolId);
+        else stationSymbolMap.remove(key);
+    }
+
     public void removeLineSymbol(int index) {
         if (index >= 0 && index < lineSymbols.size()) {
             seedLegacyPublishedKeys();   // lineSymbols を触る前に seed する (触った後では復元できない)
@@ -1537,7 +1651,8 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     public void assignSymbolToStation(String stationName, java.util.UUID symbolId) {
         seedLegacyPublishedKeys();   // map を消す前に seed する (消した後では復元できない)
         if (symbolId != null) stationSymbolMap.put(stationName, symbolId);
-        else { stationSymbolMap.remove(stationName); withdrawSymbolKey(stationName); }
+        else { stationSymbolMap.remove(stationName); withdrawSymbolKey(stationName, null); }
+        stationSymbolActors.remove(stationName);
         symbolPropagationDirty = true;
         setChanged();
         publishSymbolsToStore();
@@ -1594,16 +1709,31 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             String k = stationKey(st.name(), st.position());
             LineSymbol sym = getSymbolForStation(st.name(), st.position());
             if (sym == null) continue;
-            store.setSymbol(k, sym);
-            nowPublished.add(k);
+            // 割り当てた player と一緒に渡す: 非公開の鉄道管理ブロックが守る駅では、 持ち主でなければ store が断る (⑲)。
+            // 断られた駅は公開したものに数えない (取り下げの対象にもならない)。
+            if (store.setSymbol(k, sym, getSymbolActorForStation(st.name(), st.position()))) nowPublished.add(k);
         }
-        // 明示的に解除された (= 自分が出していたが今は割り当てが無い) キーだけ取り下げる。
+        // 明示的に解除された (= 自分が出していたが今は割り当てが無い) キーだけ取り下げる。 取り下げも、
+        // そのキーを最後に割り当てた player の名で — 守られた駅の記号をシステムとして消さない (⑲)。
         for (String k : publishedSymbolKeys) {
-            if (!nowPublished.contains(k)) store.setSymbol(k, null);
+            if (!nowPublished.contains(k)) store.setSymbol(k, null, stationSymbolActors.get(k));
         }
         if (!publishedSymbolKeys.equals(nowPublished)) {
             publishedSymbolKeys.clear();
             publishedSymbolKeys.addAll(nowPublished);
+            setChanged();
+        }
+        pruneSymbolActors();
+    }
+
+    /**
+     * 割り当ても公開も残っていないキーの「割り当てた player」を捨てる (⑲): 名前での取り下げが済んだ後は要らず、 残すと
+     * 何も設定していないコンピューターの設定が空でなくなり、 空カードを汚さない判定 ({@code isEmpty}) が効かない
+     * (二次読みの指摘)。 公開中のキーの記録は、 その名での取り下げのために残す。
+     */
+    private void pruneSymbolActors() {
+        if (stationSymbolActors.keySet().removeIf(
+                k -> !stationSymbolMap.containsKey(k) && !publishedSymbolKeys.contains(k))) {
             setChanged();
         }
     }
@@ -1612,12 +1742,17 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
     public void withdrawSymbolsFromStore() {
         if (level == null || level.isClientSide()) return;
         seedLegacyPublishedKeys();
-        if (publishedSymbolKeys.isEmpty()) return;
+        if (publishedSymbolKeys.isEmpty()) {
+            pruneSymbolActors();
+            return;
+        }
         var server = level.getServer();
         if (server == null) return;
         var store = com.trainsystemutilities.station.LineSymbolStore.get(server);
-        for (String k : publishedSymbolKeys) store.setSymbol(k, null);
+        // キーを割り当てた player の名で (⑲): 守られた駅に他人が出していた古いキーで、 持ち主の記号を消さない。
+        for (String k : publishedSymbolKeys) store.setSymbol(k, null, stationSymbolActors.get(k));
         publishedSymbolKeys.clear();
+        pruneSymbolActors();
         setChanged();
     }
 
@@ -1697,13 +1832,18 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         return null;
     }
 
-    public void assignSymbolToStation(String stationName, BlockPos stationPos, java.util.UUID symbolId) {
+    /** {@code actor}: 割り当て / 解除をした player (⑲ — 公開のときに一緒に渡す)。 */
+    public void assignSymbolToStation(String stationName, BlockPos stationPos, java.util.UUID symbolId,
+                                      java.util.UUID actor) {
         seedLegacyPublishedKeys();   // map を消す前に seed する (消した後では復元できない)
         String key = stationKey(stationName, stationPos);
         if (symbolId != null) stationSymbolMap.put(key, symbolId);
         else stationSymbolMap.remove(key);
+        if (actor != null) stationSymbolActors.put(key, actor);
+        else stationSymbolActors.remove(key);
         if (stationPos != null) {
             stationSymbolMap.remove(stationName);
+            stationSymbolActors.remove(stationName);
         }
         symbolPropagationDirty = true;
         setChanged();
@@ -1713,18 +1853,18 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
         // cachedStations が空だと早期 return するので、 スキャン結果に依存させない。
         // legacy の bare name 側も一緒に落とす — 旧 store エントリがそちらの形で残っている。
         if (symbolId == null) {
-            withdrawSymbolKey(key);
-            if (stationPos != null) withdrawSymbolKey(stationName);
+            withdrawSymbolKey(key, actor);
+            if (stationPos != null) withdrawSymbolKey(stationName, actor);
         }
         publishSymbolsToStore();
     }
 
-    /** 指定した stationKey の公開を取り下げる (明示的な割り当て解除)。 */
-    private void withdrawSymbolKey(String key) {
+    /** 指定した stationKey の公開を取り下げる (明示的な割り当て解除)。 {@code actor} の名で — 守られた駅では持ち主だけ (⑲)。 */
+    private void withdrawSymbolKey(String key, java.util.UUID actor) {
         if (level == null || level.isClientSide()) return;
         var server = level.getServer();
         if (server == null) return;
-        com.trainsystemutilities.station.LineSymbolStore.get(server).setSymbol(key, null);
+        com.trainsystemutilities.station.LineSymbolStore.get(server).setSymbol(key, null, actor);
         if (publishedSymbolKeys.remove(key)) setChanged();
     }
 
@@ -1819,6 +1959,12 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             symMap.putUUID(entry.getKey(), entry.getValue());
         }
         tag.put("StationSymbolMap", symMap);
+        // 駅→割り当てた player（⑲。 割り当てと一緒にカードへ載る）
+        CompoundTag actorMap = new CompoundTag();
+        for (var entry : stationSymbolActors.entrySet()) {
+            actorMap.putUUID(entry.getKey(), entry.getValue());
+        }
+        tag.put("StationSymbolActors", actorMap);
         CompoundTag managerMap = new CompoundTag();
         for (var entry : stationManagerPosMap.entrySet()) {
             if (entry.getValue() != null) {
@@ -1995,6 +2141,14 @@ public class ManagementComputerBlockEntity extends BlockEntity implements Contai
             CompoundTag symMap2 = tag.getCompound("StationSymbolMap");
             for (String key : symMap2.getAllKeys()) {
                 if (symMap2.hasUUID(key)) stationSymbolMap.put(key, symMap2.getUUID(key));
+            }
+        }
+        // 2026-10-01 より前のカード / BE には無い: 割り当てた player の分からない割り当て = 認めたもの (⑲)。
+        stationSymbolActors.clear();
+        if (tag.contains("StationSymbolActors")) {
+            CompoundTag actorMap = tag.getCompound("StationSymbolActors");
+            for (String key : actorMap.getAllKeys()) {
+                if (actorMap.hasUUID(key)) stationSymbolActors.put(key, actorMap.getUUID(key));
             }
         }
         stationManagerPosMap.clear();

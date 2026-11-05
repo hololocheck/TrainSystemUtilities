@@ -7,6 +7,7 @@
   "dynamicH": "ph",
   "children": [
     {
+      "textKey": "stat-label",
       "tag": "span",
       "classes": [
         "panel-title",
@@ -19,6 +20,7 @@
       "fontWeight": "bold"
     },
     {
+      "textKey": "stat-value",
       "tag": "span",
       "classes": [
         "stat-large",

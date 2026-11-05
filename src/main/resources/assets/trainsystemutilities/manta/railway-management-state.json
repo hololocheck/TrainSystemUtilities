@@ -1,0 +1,173 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "ann-enabled": {
+        "type": "boolean",
+        "default": false,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "ann-attenuation": {
+        "type": "boolean",
+        "default": true,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "ann-entries": {
+        "type": "list",
+        "maxLength": 16,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "ann-entry-type": {
+            "type": "enum",
+            "values": [
+              "NONE",
+              "ON_DETECTION_PASS",
+              "ON_DETECTION_STOPPED"
+            ]
+          },
+          "ann-entry-delay": {
+            "type": "int",
+            "min": -3600,
+            "max": 3600
+          },
+          "ann-entry-play-count": {
+            "type": "int",
+            "min": 1,
+            "max": 10
+          }
+        }
+      },
+      "ann-shared-detection": {
+        "type": "list",
+        "maxLength": 64,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "ann-shared-detection-name": {
+            "type": "exact",
+            "maxLen": 128
+          }
+        }
+      },
+      "ann-shared-range": {
+        "type": "list",
+        "maxLength": 64,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "ann-shared-range-name": {
+            "type": "exact",
+            "maxLen": 128
+          }
+        }
+      },
+      "ann-playing": {
+        "type": "int",
+        "min": -1,
+        "max": 15,
+        "default": -1,
+        "sync": "s2c",
+        "persist": "none"
+      }
+    },
+    "actions": {
+      "announcement": {
+        "params": {
+          "op": {
+            "type": "int",
+            "min": 0,
+            "max": 10
+          },
+          "a1": {
+            "type": "int",
+            "min": -1000000,
+            "max": 1000000
+          },
+          "a2": {
+            "type": "int",
+            "min": -1000000,
+            "max": 1000000
+          },
+          "a3": {
+            "type": "int",
+            "min": -1000000,
+            "max": 1000000
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 1000
+      },
+      "announcement-share": {
+        "params": {
+          "station": {
+            "type": "exact",
+            "maxLen": 128
+          },
+          "share-type": {
+            "type": "int",
+            "min": 0,
+            "max": 1
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "door-band-color": {
+        "params": {
+          "argb": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "door-condition": {
+        "params": {
+          "op": {
+            "type": "int",
+            "min": 0,
+            "max": 2
+          },
+          "idx": {
+            "type": "int",
+            "min": 0,
+            "max": 2147483647
+          },
+          "track": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "event": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "door-action": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 1000
+      },
+      "door-test": {
+        "params": {
+          "door-action": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      }
+    }
+  }
+}

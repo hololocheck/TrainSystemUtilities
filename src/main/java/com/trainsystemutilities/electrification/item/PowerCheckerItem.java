@@ -1,11 +1,12 @@
 package com.trainsystemutilities.electrification.item;
 
-import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
-import com.simibubi.create.content.trains.entity.Train;
+import com.trainsystemutilities.electrification.block.FEInverterBlock;
+import com.trainsystemutilities.electrification.block.SubstationMultiblock;
 import com.trainsystemutilities.electrification.contraption.ContraptionElectrificationState;
+import com.trainsystemutilities.electrification.contraption.ContraptionElectrificationTicker;
 import com.trainsystemutilities.electrification.wire.EnergizedWireState;
 import com.trainsystemutilities.electrification.wire.WireConnection;
 import com.trainsystemutilities.electrification.wire.WireNetworkSavedData;
@@ -19,10 +20,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
@@ -33,7 +36,7 @@ import java.util.List;
  * <ul>
  *   <li>碍子 (Insulator): 接続している架線数・通電数・通電架線リスト</li>
  *   <li>変電所 (Substation): 通電生成数</li>
- *   <li>FE インバータ / パンタグラフ: 設置時は単体情報、列車組込時は所属列車の Info.storedEnergy</li>
+ *   <li>FE インバータ / パンタグラフ: 設置したブロックの情報と、近くの電化列車 1 編成分の合計</li>
  * </ul>
  */
 public class PowerCheckerItem extends Item {
@@ -42,30 +45,57 @@ public class PowerCheckerItem extends Item {
         super(props);
     }
 
+    /**
+     * Reads a target before the block's own right-click. The Cubicle, the FE Inverter and the Pantograph consume an
+     * ordinary right-click themselves (useWithoutItem), and ServerPlayerGameMode#useItemOn only goes on to the held
+     * item's {@link #useOn} when the player sneaks; NeoForge calls this ahead of both.
+     */
     @Override
-    public InteractionResult useOn(UseOnContext context) {
+    public InteractionResult onItemUseFirst(ItemStack stack, UseOnContext context) {
         Player player = context.getPlayer();
         Level level = context.getLevel();
         BlockPos pos = context.getClickedPos();
         if (player == null) return InteractionResult.PASS;
-        if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (!(level instanceof ServerLevel sLevel)) return InteractionResult.PASS;
 
         BlockState state = level.getBlockState(pos);
         Block block = state.getBlock();
-
-        if (block == ModBlocks.INSULATOR.get()) {
-            reportInsulator(sLevel, player, pos);
-        } else if (block == ModBlocks.SUBSTATION.get()) {
-            reportSubstation(sLevel, player, pos);
+        // A part away from the core reads as its core: a Cubicle's dummies, an FE Inverter's front and back.
+        if (block == ModBlocks.SUBSTATION_DUMMY.get()) {
+            BlockPos core = SubstationMultiblock.findCore(level, pos);
+            if (core != null) {
+                pos = core;
+                block = ModBlocks.SUBSTATION.get();
+            }
         } else if (block == ModBlocks.FE_INVERTER.get()) {
-            reportContraptionBlock(sLevel, player, pos, Component.translatable("block.trainsystemutilities.fe_inverter"));
-        } else if (block == ModBlocks.PANTOGRAPH.get()) {
-            reportContraptionBlock(sLevel, player, pos, Component.translatable("block.trainsystemutilities.pantograph"));
-        } else {
-            send(player, Component.translatable("tsu.pwck.not_target", block.getName()), ChatFormatting.GRAY);
-            return InteractionResult.SUCCESS;
+            BlockPos center = FEInverterBlock.centerPosOf(pos, state);
+            if (level.getBlockState(center).is(block)) pos = center;
         }
+
+        // The client claims the click for a target and reports nothing; the server's report reaches its chat.
+        ServerLevel sLevel = level instanceof ServerLevel s ? s : null;
+        if (block == ModBlocks.INSULATOR.get()) {
+            if (sLevel != null) reportInsulator(sLevel, player, pos);
+        } else if (block == ModBlocks.SUBSTATION.get()) {
+            if (sLevel != null) reportSubstation(sLevel, player, pos);
+        } else if (block == ModBlocks.FE_INVERTER.get()) {
+            if (sLevel != null) reportContraptionBlock(sLevel, player, pos, Component.translatable("block.trainsystemutilities.fe_inverter"));
+        } else if (block == ModBlocks.PANTOGRAPH.get()) {
+            if (sLevel != null) reportContraptionBlock(sLevel, player, pos, Component.translatable("block.trainsystemutilities.pantograph"));
+        } else {
+            return InteractionResult.PASS; // not a target: the block's own right-click, then useOn
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    /** Reached only for a block {@link #onItemUseFirst} passed on, when that block's own right-click did not consume it. */
+    @Override
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        Level level = context.getLevel();
+        if (player == null) return InteractionResult.PASS;
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
+        Block block = level.getBlockState(context.getClickedPos()).getBlock();
+        send(player, Component.translatable("tsu.pwck.not_target", block.getName()), ChatFormatting.GRAY);
         return InteractionResult.SUCCESS;
     }
 
@@ -98,7 +128,7 @@ public class PowerCheckerItem extends Item {
                 energized.size() > 0 ? ChatFormatting.GREEN : ChatFormatting.GRAY);
     }
 
-    /** 設置済みパンタ/インバータの状態を表示。列車に組み込まれている場合はその Info も表示。 */
+    /** 設置済みパンタ/インバータの状態と、近くの電化列車 1 編成分の合計を表示。 */
     private void reportContraptionBlock(ServerLevel level, Player player, BlockPos pos, Component label) {
         send(player, Component.translatable("tsu.pwck.header_block", label, pos.toShortString()), ChatFormatting.AQUA);
         // ワールド配置: BE は単体
@@ -108,44 +138,36 @@ public class PowerCheckerItem extends Item {
                 : Component.literal(be.getClass().getSimpleName());
         send(player, Component.translatable("tsu.pwck.world_be", beName), ChatFormatting.WHITE);
         if (be instanceof com.trainsystemutilities.electrification.blockentity.PantographBlockEntity pbe) {
-            send(player, Component.translatable("tsu.pwck.deployed", pbe.isDeployed()), ChatFormatting.GRAY);
+            send(player, Component.translatable("tsu.pwck.deployed", String.valueOf(pbe.isDeployed())), ChatFormatting.GRAY);
         }
-        // 近傍の電化列車を列挙
-        Train nearestTrain = null;
-        Contraption nearestC = null;
-        double bestDist = 64 * 64;
-        for (Train train : Create.RAILWAYS.trains.values()) {
-            if (train == null || train.carriages == null) continue;
-            for (Carriage car : train.carriages) {
-                Contraption c = contraptionOf(car);
-                if (c == null || c.entity == null) continue;
-                if (c.entity.level() != level) continue;
-                double d = c.entity.distanceToSqr(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
-                if (d < bestDist) {
-                    ContraptionElectrificationState.Info info = ContraptionElectrificationState.getInfo(c);
-                    if (info != null && info.isElectrified()) {
-                        bestDist = d;
-                        nearestTrain = train;
-                        nearestC = c;
-                    }
-                }
+        // The pantograph and the inverter may be on different cars, so the train is read as a whole.
+        ContraptionElectrificationTicker.NearbyTrain nearby =
+                ContraptionElectrificationTicker.nearestElectrifiedTrain(level, Vec3.atCenterOf(pos), 64);
+        if (nearby == null) {
+            send(player, Component.translatable("tsu.pwck.no_nearby_train"), ChatFormatting.GRAY);
+            return;
+        }
+        int stored = 0, capacity = 0, pantographs = 0, deployed = 0, inverters = 0, contacting = 0;
+        for (Carriage car : nearby.train().carriages) {
+            ContraptionElectrificationState.Info info = ContraptionElectrificationState.getInfo(contraptionOf(car));
+            if (info == null) continue;
+            pantographs += info.pantographs.size();
+            deployed += info.deployedPantographs.size();
+            contacting += info.contactingPantographs.size();
+            if (!info.inverters.isEmpty()) {
+                inverters += info.inverters.size();
+                stored += info.getStoredEnergy();
+                capacity += ContraptionElectrificationState.Info.CAPACITY;
             }
         }
-        if (nearestC != null) {
-            ContraptionElectrificationState.Info info = ContraptionElectrificationState.getInfo(nearestC);
-            send(player, Component.translatable("tsu.pwck.nearest_train", nearestTrain.name,
-                    String.format("%.1f", Math.sqrt(bestDist))), ChatFormatting.GOLD);
-            send(player, Component.translatable("tsu.pwck.fe_energy", info.getStoredEnergy(),
-                    ContraptionElectrificationState.Info.CAPACITY),
-                    info.getStoredEnergy() > 0 ? ChatFormatting.GREEN : ChatFormatting.RED);
-            send(player, Component.translatable("tsu.pwck.pantograph_count",
-                    info.pantographs.size(), info.deployedPantographs.size()), ChatFormatting.WHITE);
-            send(player, Component.translatable("tsu.pwck.inverter_count", info.inverters.size()), ChatFormatting.WHITE);
-            send(player, Component.translatable("tsu.pwck.contacting", info.contactingPantographs.size()),
-                    info.contactingPantographs.isEmpty() ? ChatFormatting.GRAY : ChatFormatting.GREEN);
-        } else {
-            send(player, Component.translatable("tsu.pwck.no_nearby_train"), ChatFormatting.GRAY);
-        }
+        send(player, Component.translatable("tsu.pwck.nearest_train", nearby.train().name,
+                String.format("%.1f", nearby.distance())), ChatFormatting.GOLD);
+        send(player, Component.translatable("tsu.pwck.fe_energy", stored, capacity),
+                stored > 0 ? ChatFormatting.GREEN : ChatFormatting.RED);
+        send(player, Component.translatable("tsu.pwck.pantograph_count", pantographs, deployed), ChatFormatting.WHITE);
+        send(player, Component.translatable("tsu.pwck.inverter_count", inverters), ChatFormatting.WHITE);
+        send(player, Component.translatable("tsu.pwck.contacting", contacting),
+                contacting == 0 ? ChatFormatting.GRAY : ChatFormatting.GREEN);
     }
 
     private static Contraption contraptionOf(Carriage carriage) {

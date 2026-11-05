@@ -1,17 +1,16 @@
 package com.trainsystemutilities.client.electrification;
 
 import com.manta.api.hud.HeldTools;
-import com.manta.api.hud.ModifierKeys;
 import com.trainsystemutilities.TrainSystemUtilities;
-import com.trainsystemutilities.network.WireConnectorTypePayload;
+import com.trainsystemutilities.network.WireConnectorTypeAction;
 import com.trainsystemutilities.registry.ModItems;
+import com.trainsystemutilities.client.ToolsClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * 架線接続ツール所持時のクライアント入力処理。
@@ -35,20 +34,18 @@ public final class WireConnectorClientHandler {
         ItemStack stack = findHeldTool();
         if (stack.isEmpty()) return;
 
-        long window = mc.getWindow().getWindow();
-        if (!ModifierKeys.alt(window)) return;
+        if (!com.manta.api.hud.WheelInput.mods(mc.getWindow().getWindow()).alt()) return;
 
         double dy = event.getScrollDeltaY();
-        if (Math.abs(dy) < 0.0001) return;
+        if (com.manta.api.hud.WheelInput.isDead(dy)) return;
 
         if (!SCROLL_COOLDOWN.tryAccept()) {
             event.setCanceled(true);
             return;
         }
 
-        int delta = dy > 0 ? 1 : -1;
-        PacketDistributor.sendToServer(
-                new WireConnectorTypePayload(WireConnectorTypePayload.ACTION_MODE_CYCLE, delta));
+        int delta = com.manta.api.hud.WheelInput.direction(dy);
+        ToolsClient.wireType(WireConnectorTypeAction.ACTION_MODE_CYCLE, delta);
         event.setCanceled(true);
     }
 

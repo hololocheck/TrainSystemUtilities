@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * クライアント側で保持する「電化列車の状態」キャッシュ。
  *
- * <p>サーバから周期的に {@code TrainElectrificationSyncPayload} で配信される最新スナップショット。
+ * <p>サーバの電化の全体 host ({@code ElectrificationData}) が周期的に公開する最新スナップショット。
  * 管理コンピューターの列車タブ / 電化詳細タブから参照される。
  *
  * <p>NavPath や StationGroup のクライアントキャッシュと同じパターン。

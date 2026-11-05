@@ -68,8 +68,11 @@ public class PosterManagementMenu extends AbstractContainerMenu {
         if (id == 6) { blockEntity.toggleFitToMonitor(); return true; }
         // 7: 1枚のみでアニメーション切替
         if (id == 7) { blockEntity.toggleAnimateSingle(); return true; }
-        // 8: プライベートモード切替
-        if (id == 8) { blockEntity.togglePrivateMode(); return true; }
+        // 8: プライベートモード切替 (持ち主か OP だけ - PermissionHelper.mayTogglePrivate)
+        if (id == 8) {
+            if (com.trainsystemutilities.util.PermissionHelper.mayTogglePrivate(player, blockEntity.getOwnerUUID(), blockEntity.getOwnerName())) blockEntity.togglePrivateMode();
+            return true;
+        }
         // 500-599: 画像有効/無効切替
         if (id >= 500 && id < 600) { blockEntity.toggleImageEnabled(id - 500); return true; }
         // 10: アニメーション種類を次に変更

@@ -2,6 +2,7 @@
   "classes": ["poster-outer"],
   "dynamicW": "cssW",
   "dynamicH": "cssH",
+  "scissor": true,
   "children": [
     {
       "classes": ["poster-clip"],
@@ -9,7 +10,6 @@
       "dynamicY": "pad",
       "dynamicW": "contentW",
       "dynamicH": "contentH",
-      "scissor": true,
       "children": [
         {
           "classes": ["poster-image"],

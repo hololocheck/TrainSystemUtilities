@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
 /**
- * Client-side: server からの AnnouncementSyncPayload で受信した
- * 各 BE の {@link AnnouncementConfig} を保持するキャッシュ。
+ * Client-side: 管理画面が開いている間、 その BE の host (network.RailwayManagementData、 manta:data) から
+ * 届いた {@link AnnouncementConfig} と再生中の entry を保持するキャッシュ (画面を閉じても最後の値は残る)。
  *
  * <p>Screen は {@link #getConfig(BlockPos)} で表示データを取得する。
  */

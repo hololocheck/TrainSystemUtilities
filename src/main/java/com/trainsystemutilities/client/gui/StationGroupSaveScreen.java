@@ -1,16 +1,16 @@
 package com.trainsystemutilities.client.gui;
 
 import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.PageLayer;
+import com.manta.api.state.MantaState;
 import com.manta.api.controller.TextInputController;
 import com.manta.api.render.TextCaretRenderer;
-import com.trainsystemutilities.network.StationGroupCreatePayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -19,6 +19,12 @@ import org.lwjgl.glfw.GLFW;
  */
 @OnlyIn(Dist.CLIENT)
 public class StationGroupSaveScreen extends JsonLayoutPlainScreen {
+
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
 
     @Override
     protected String wikiPageId() { return null; }
@@ -39,17 +45,37 @@ public class StationGroupSaveScreen extends JsonLayoutPlainScreen {
     @Override
     protected String layoutJson() { return TsuLayouts.load("layouts/station-group-save.json"); }
 
+    // ===== Manta 7 push (Phase 4, TSU batch 1, 2026-09-23) =====
+    // The page's values are WRITTEN here each frame before the engine draws, and once when the page
+    // opens: the screen overrides no getDynamic*. The hint toggle and the entrance are the base's.
+    private MantaState pushed;
+    private com.manta.api.state.TextSlot tName, tStatus;
+    private com.manta.api.state.ColorSlot cBorder;
+
     @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        for (String c : classes) {
-            if ("sg-name-input-value".equals(c)) return name.value();
-            if ("sg-status".equals(c)) {
-                return String.format("(%d,%d,%d) ~ (%d,%d,%d)",
-                        pos1.getX(), pos1.getY(), pos1.getZ(),
-                        pos2.getX(), pos2.getY(), pos2.getZ());
-            }
-        }
-        return null;
+    protected void pageOpened(Object page, PageLayer layer) {
+        if (layer != PageLayer.PRIMARY) return;
+        pushed = MantaState.of(page);
+        tName = pushed.text("sg-name-input-value");
+        tStatus = pushed.text("sg-status");
+        cBorder = pushed.color("sg-name-input-border");
+        pushed.textByKeyOnly();
+        pushAll();
+    }
+
+    private void pushAll() {
+        if (pushed == null || !pushed.isOpen()) return;
+        pushed.set(tName, name.value());
+        pushed.set(tStatus, String.format("(%d,%d,%d) ~ (%d,%d,%d)",
+                pos1.getX(), pos1.getY(), pos1.getZ(),
+                pos2.getX(), pos2.getY(), pos2.getZ()));
+        pushed.clear(cBorder);   // nothing answered it: the box's own border
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        pushAll();
+        super.render(g, mouseX, mouseY, partialTick);
     }
 
     @Override
@@ -82,22 +108,9 @@ public class StationGroupSaveScreen extends JsonLayoutPlainScreen {
     private void doSave() {
         String n = name.value().trim();
         if (n.isEmpty()) return;
-        // creatorPos: 番線連番 AUTO モードの「内側 = 1 番線」基準点。
-        // numberingDir: ツールに記録された LEFT/RIGHT/AUTO の選択値を一緒に送る。
-        var mc = Minecraft.getInstance();
-        net.minecraft.core.BlockPos creator = mc.player != null
-                ? mc.player.blockPosition() : net.minecraft.core.BlockPos.ZERO;
-        int numDir = 0;
-        if (mc.player != null) {
-            for (var hand : net.minecraft.world.InteractionHand.values()) {
-                var stack = mc.player.getItemInHand(hand);
-                if (stack.is(com.trainsystemutilities.registry.ModItems.STATION_RANGE_TOOL.get())) {
-                    numDir = com.trainsystemutilities.item.StationRangeToolItem.getNumberingDir(stack);
-                    break;
-                }
-            }
-        }
-        PacketDistributor.sendToServer(new StationGroupCreatePayload(n, pos1, pos2, creator, numDir));
+        // The range, the creator's position and the numbering direction are the server's (the held tool's state
+        // and the player's position, TSU-NET-001): the create action carries the name alone.
+        com.trainsystemutilities.client.StationsClient.create(n);
         onClose();
     }
 

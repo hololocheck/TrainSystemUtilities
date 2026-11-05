@@ -2,13 +2,13 @@ package com.trainsystemutilities.command;
 
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
-import com.simibubi.create.Create;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
 import com.simibubi.create.content.trains.entity.Train;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.electrification.contraption.ContraptionElectrificationState;
+import com.trainsystemutilities.electrification.contraption.ContraptionElectrificationTicker;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -54,9 +54,8 @@ public final class PantographCommand {
                     .withStyle(ChatFormatting.RED));
             return 0;
         }
-        // クライアント側で screen を開く payload を送信
-        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(sp,
-                new com.trainsystemutilities.network.OpenElectrificationScreenPayload(train.id));
+        // クライアント側で screen を開く (本人の train host のイベント)
+        com.trainsystemutilities.network.TrainData.openElectrification(sp, train.id);
         return Command.SINGLE_SUCCESS;
     }
 
@@ -73,7 +72,8 @@ public final class PantographCommand {
             Contraption c = contraptionOf(carriage);
             if (c == null) continue;
             ContraptionElectrificationState.Info info = ContraptionElectrificationState.getInfo(c);
-            if (info == null || !info.isElectrified()) continue;
+            // Every car of the electrified train: its pantographs need no inverter on their own car.
+            if (info == null) continue;
             int before = info.deployedPantographs.size();
             info.setAllPantographsDeployed(deploy);
             toggled += Math.abs(info.deployedPantographs.size() - before);
@@ -94,7 +94,7 @@ public final class PantographCommand {
                     .withStyle(ChatFormatting.RED));
             return 0;
         }
-        sp.sendSystemMessage(Component.translatable("tsu.pantograph.electrified_train_fmt", train.id)
+        sp.sendSystemMessage(Component.translatable("tsu.pantograph.electrified_train_fmt", train.id.toString())
                 .withStyle(ChatFormatting.AQUA));
         int idx = 0;
         for (Carriage carriage : train.carriages) {
@@ -113,29 +113,11 @@ public final class PantographCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    /** プレイヤーから 64 ブロック以内の電化列車を探す。 */
+    /** プレイヤーから 64 ブロック以内の電化列車を探す (パンタとインバータは別の車両でもよい)。 */
     private static Train nearestElectrifiedTrain(ServerPlayer sp) {
-        Train best = null;
-        double bestDist = 64 * 64;
-        for (Train train : Create.RAILWAYS.trains.values()) {
-            for (Carriage c : train.carriages) {
-                if (c == null || c.anyAvailableEntity() == null) continue;
-                var ent = c.anyAvailableEntity();
-                if (ent.level() != sp.serverLevel()) continue;
-                double d = ent.distanceToSqr(sp);
-                if (d < bestDist) {
-                    Contraption con = contraptionOf(c);
-                    if (con == null) continue;
-                    ContraptionElectrificationState.Info info =
-                            ContraptionElectrificationState.getInfo(con);
-                    if (info != null && info.isElectrified()) {
-                        best = train;
-                        bestDist = d;
-                    }
-                }
-            }
-        }
-        return best;
+        ContraptionElectrificationTicker.NearbyTrain nearby =
+                ContraptionElectrificationTicker.nearestElectrifiedTrain(sp.serverLevel(), sp.position(), 64);
+        return nearby == null ? null : nearby.train();
     }
 
     private static Contraption contraptionOf(Carriage carriage) {

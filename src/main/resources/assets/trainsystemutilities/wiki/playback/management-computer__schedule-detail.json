@@ -1,0 +1,37 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "sched-pause"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.sched.pause",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-share-btn"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.sched.share",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-edit"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sched.edit",
+      "holdMs": 1500
+    }
+  ]
+}

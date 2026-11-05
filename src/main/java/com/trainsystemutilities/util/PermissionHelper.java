@@ -76,7 +76,30 @@ public final class PermissionHelper {
      * owner 設定済みなら owner 本人 or OP のみ。station group の rename / delete 等で使う。
      */
     public static boolean canManageOwned(ServerPlayer player, java.util.UUID ownerUuid) {
-        return ownerUuid == null || isOwnerOrOp(player, ownerUuid);
+        return canManageOwned(ownerUuid, player == null ? null : player.getUUID(), isOp(player));
+    }
+
+    /** {@link #canManageOwned(ServerPlayer, java.util.UUID)} の判定そのもの - player を作らずに test できる形。 */
+    public static boolean canManageOwned(java.util.UUID ownerUuid, java.util.UUID playerUuid, boolean op) {
+        return ownerUuid == null || op || ownerUuid.equals(playerUuid);
+    }
+
+    /**
+     * 管理ブロック (管理コンピュータ・鉄道管理・ポスター管理) の非公開の切替。持ち主か OP だけ (持ち主が未記録なら誰でも)
+     * - 誰が開けるかを決める設定なので、開けた人なら誰でも変えられる他の設定と違う。2026-10-02 まで 3 つの menu は
+     * 持ち主かを確かめずに切り替えていた (公開のブロックを開けた誰でも、持ち主以外を締め出せた)。断ったらアクションバーで言う。
+     *
+     * <p>届くのはロック (公開 → 非公開) の側だけで、解除に届くのは持ち主だけ: 非公開のブロックは各 BE の {@code canAccess}
+     * が持ち主にしか開かせない (OP も開けない、既存の方針)。だから断りの文言は「ロックできるのは」と言う。
+     */
+    public static boolean mayTogglePrivate(Player player, java.util.UUID ownerUuid, String ownerName) {
+        if (player instanceof ServerPlayer sp && canManageOwned(sp, ownerUuid)) return true;
+        if (player != null) {
+            player.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                    "message.trainsystemutilities.private_toggle_owner_only",
+                    ownerName == null || ownerName.isEmpty() ? String.valueOf(ownerUuid) : ownerName), true);
+        }
+        return false;
     }
 
     /** block GUI / payload の proximity gate 距離 (= vanilla container reach 相当の 8 ブロック)。 */

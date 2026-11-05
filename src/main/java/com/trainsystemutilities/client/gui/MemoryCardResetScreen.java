@@ -1,19 +1,19 @@
 package com.trainsystemutilities.client.gui;
 
 import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.PageLayer;
+import com.manta.api.state.MantaState;
 import com.trainsystemutilities.blockentity.ManagementComputerSettings;
 import com.trainsystemutilities.item.MemoryCardItem;
-import com.trainsystemutilities.network.MemoryCardResetPayload;
+import com.trainsystemutilities.client.ToolsClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * メモリーカードの初期化確認ダイアログ。
@@ -25,36 +25,92 @@ import net.neoforged.neoforge.network.PacketDistributor;
 @OnlyIn(Dist.CLIENT)
 public class MemoryCardResetScreen extends JsonLayoutPlainScreen {
 
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
+
     private final InteractionHand hand;
+
+    /** 共通の確認ダイアログ (R4.27.1)。この画面はダイアログそのものなので開いたまま。 */
+    private final com.manta.api.screen.ConfirmDialog<Void> resetConfirm = com.manta.api.screen.ConfirmDialog.<Void>danger()
+            .title("tsu.memory_card.reset_title")
+            .yes("tsu.memory_card.reset_action")
+            .no("tsu.memory_card.reset_cancel")
+            .warning("tsu.memory_card.reset_warning")
+            .body(ignored -> symbolSummary())
+            .detail(ignored -> linkSummary());
 
     public MemoryCardResetScreen(InteractionHand hand) {
         super(Component.translatable("tsu.memory_card.reset_title"));
         this.hand = hand;
+        this.resetConfirm.ask();
+    }
+
+    /**
+     * The wiki's stand-in's card: a demo one linked to a railway management block, carrying three line symbols and four
+     * station assignments - not the card in the player's hand (改善1, 2026-10-07). Null: the card in hand.
+     */
+    private ItemStack wikiCard = null;
+
+    /** The wiki's stand-in (WikiLiveCapture): the reset confirmation for the demo card. */
+    public static MemoryCardResetScreen wikiCreate() {
+        MemoryCardResetScreen s = new MemoryCardResetScreen(InteractionHand.MAIN_HAND);
+        ItemStack card = new ItemStack(com.trainsystemutilities.registry.ModItems.MEMORY_CARD.get());
+        CompoundTag link = new CompoundTag();
+        link.putString("Type", "railway_manager");
+        link.putString("StationName", "東京");
+        card.set(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(link));
+        CompoundTag settings = new CompoundTag();
+        net.minecraft.nbt.ListTag symbols = new net.minecraft.nbt.ListTag();
+        for (int i = 0; i < 3; i++) symbols.add(new CompoundTag());
+        settings.put("LineSymbols", symbols);
+        CompoundTag map = new CompoundTag();
+        for (String n : new String[] {"東京", "品川", "新宿", "上野"}) map.putString(n, "JY");
+        settings.put("StationSymbolMap", map);
+        ManagementComputerSettings.writeSettings(card, settings);
+        s.wikiCard = card;
+        return s;
     }
 
     @Override
     protected String wikiPageId() { return null; }
 
     @Override
-    protected String layoutJson() { return TsuLayouts.load("layouts/memory-card-reset.json"); }
+    protected String layoutJson() {
+        return com.manta.api.screen.MantaLayouts.load(com.manta.api.screen.ConfirmDialog.LAYOUT);
+    }
+
+    // ===== Manta 7 push (Phase 4, TSU batch 2, 2026-09-23) =====
+    // The dialog IS the page: ConfirmDialog.push writes its texts and the action button's colour. The
+    // counts read the card in hand, so it runs each frame too (an unchanged value costs nothing).
+    private MantaState pushed;
+
+    @Override
+    protected void pageOpened(Object page, PageLayer layer) {
+        if (layer != PageLayer.PRIMARY) return;
+        pushed = MantaState.of(page);
+        resetConfirm.push(pushed);
+    }
+
+    @Override
+    public void render(net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        if (pushed != null && pushed.isOpen()) resetConfirm.push(pushed);
+        super.render(g, mouseX, mouseY, partialTick);
+    }
 
     private ItemStack card() {
+        if (wikiCard != null) return wikiCard;
         var player = Minecraft.getInstance().player;
         return player == null ? ItemStack.EMPTY : player.getItemInHand(hand);
     }
 
-    @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        for (String c : classes) {
-            if ("mcr-summary-symbols".equals(c)) {
-                ItemStack stack = card();
-                return Component.translatable("tsu.memory_card.reset_summary_symbols",
-                        String.valueOf(ManagementComputerSettings.symbolCount(stack)),
-                        String.valueOf(ManagementComputerSettings.assignmentCount(stack))).getString();
-            }
-            if ("mcr-summary-link".equals(c)) return linkSummary();
-        }
-        return null;
+    private String symbolSummary() {
+        ItemStack stack = card();
+        return Component.translatable("tsu.memory_card.reset_summary_symbols",
+                String.valueOf(ManagementComputerSettings.symbolCount(stack)),
+                String.valueOf(ManagementComputerSettings.assignmentCount(stack))).getString();
     }
 
     private String linkSummary() {
@@ -74,20 +130,19 @@ public class MemoryCardResetScreen extends JsonLayoutPlainScreen {
         }
         if (MemoryCardItem.TYPE_SCREEN_DOOR_GROUP.equals(type)) {
             return Component.translatable("tsu.memory_card.reset_summary_link_doors",
-                    String.valueOf(tag.getList(MemoryCardItem.TAG_MEMBERS, Tag.TAG_LONG).size())).getString();
+                    String.valueOf(MemoryCardItem.readMembers(tag).length)).getString();
         }
         return Component.translatable("tsu.memory_card.reset_summary_link_none").getString();
     }
 
     @Override
     public void onElementClick(String[] classes, int mouseX, int mouseY, int button) {
-        for (String c : classes) {
-            if ("mcr-confirm".equals(c)) {
-                PacketDistributor.sendToServer(new MemoryCardResetPayload(hand.ordinal()));
-                onClose();
-                return;
-            }
-            if ("mcr-cancel".equals(c)) { onClose(); return; }
+        // この画面はダイアログ自体なので、どちらを押しても画面ごと閉じる。
+        if (resetConfirm.handleClick(classes, ignored -> {
+                    if (wikiCard == null) ToolsClient.memoryCardReset(hand.ordinal());
+                })) {
+            if (!resetConfirm.isOpen()) onClose();
+            return;
         }
     }
 

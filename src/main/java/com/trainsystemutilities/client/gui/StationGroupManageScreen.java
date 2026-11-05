@@ -1,13 +1,12 @@
 package com.trainsystemutilities.client.gui;
 
 import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.PageLayer;
+import com.manta.api.state.MantaState;
 import com.manta.api.controller.PixelScrollViewport;
 import com.manta.api.controller.TextInputController;
 import com.manta.api.controller.TileGrid;
 import com.manta.api.render.TextCaretRenderer;
-import com.trainsystemutilities.network.StationGroupDeletePayload;
-import com.trainsystemutilities.network.StationGroupListRequestPayload;
-import com.trainsystemutilities.network.StationGroupRenamePayload;
 import com.trainsystemutilities.station.StationGroup;
 import com.trainsystemutilities.station.StationGroupClientCache;
 import net.minecraft.ChatFormatting;
@@ -16,7 +15,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.UUID;
@@ -28,6 +26,12 @@ import java.util.UUID;
  */
 @OnlyIn(Dist.CLIENT)
 public class StationGroupManageScreen extends JsonLayoutPlainScreen {
+
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
 
     @Override
     protected String wikiPageId() { return "tools/station-range-tool"; }
@@ -45,17 +49,25 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
     private boolean nameFocused = false;
     /** タイルリストのスクロール (= §4.19 標準 PixelScrollViewport)。 */
     private final PixelScrollViewport listScroll =
-            new PixelScrollViewport(() -> StationGroupClientCache.all().size() * (TILE_H + TILE_GAP), LIST_VIEWPORT_H);
+            new PixelScrollViewport(() -> groups().size() * (TILE_H + TILE_GAP), LIST_VIEWPORT_H);
     /** 削除確認ダイアログ表示フラグ。 */
-    private boolean showDeleteConfirm = false;
+    /** 共通の確認ダイアログ (R4.27.1)。レイアウトは manta の 1 枚、ここは文言だけ。 */
+    private final com.manta.api.screen.ConfirmDialog<Void> deleteConfirm =
+            com.manta.api.screen.ConfirmDialog.<Void>danger()
+                    .title("tsu.station_tool.delete_confirm_title")
+                    .yes("tsu.station_tool.delete_yes")
+                    .body(ignored -> {
+                        StationGroup g = selected();
+                        return g == null ? "" : Component.translatable(
+                                "tsu.station_tool.delete_prompt_fmt", g.name()).getString();
+                    });
 
     public StationGroupManageScreen() {
         super(Component.translatable("tsu.station_tool.manage_title"));
     }
 
     public static void open() {
-        // 開いた時点で最新リストを要求 (push されているはずだが念のため)
-        PacketDistributor.sendToServer(new StationGroupListRequestPayload());
+        // The list is the server-wide station groups host's, kept current since login (client.StationsClient).
         Minecraft.getInstance().setScreen(new StationGroupManageScreen());
     }
 
@@ -64,84 +76,134 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
 
     @Override
     protected String overlayJson() {
-        if (showDeleteConfirm) {
-            return TsuLayouts.load("layouts/station-group-manage-delete.json");
+        if (deleteConfirm.isOpen()) {
+            return com.manta.api.screen.MantaLayouts.load(
+                    com.manta.api.screen.ConfirmDialog.LAYOUT);
         }
         return null;
     }
 
     private StationGroup selected() {
         if (selectedId == null) return null;
-        for (var g : StationGroupClientCache.all()) if (g.id().equals(selectedId)) return g;
+        for (var g : groups()) if (g.id().equals(selectedId)) return g;
         return null;
     }
 
-    @Override
-    public Boolean getDynamicBool(String[] classes, String key, boolean defaultValue) {
-        if ("sgm-detail-visible".equals(key)) return selected() != null;
-        if ("sgm-no-selection-visible".equals(key)) return selected() == null;
-        return defaultValue;
+    /** wiki キャプチャのサンプル ({@link #wikiApplyState})。null = サーバー同期の一覧 (実データ)。 */
+    private java.util.List<StationGroup> wikiGroups = null;
+
+    /** 一覧の出どころ。wiki キャプチャの state だけ画面ローカルのサンプル (グローバルなキャッシュには入れない)。 */
+    private java.util.List<StationGroup> groups() {
+        return wikiGroups != null ? wikiGroups : StationGroupClientCache.all();
     }
 
-    /** R4.23.1 で glyph を外して icon + label にしたボタンのラベル幅 (LabelWidth 参照)。
-     *  delete-yes は station-group-manage-delete.json 側のボタン。 */
-    @Override
-    public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
-        if ("btn-apply-label-w".equals(key)) return LabelWidth.of("tsu.station_tool.btn_apply");
-        if ("btn-delete-label-w".equals(key)) return LabelWidth.of("tsu.station_tool.btn_delete");
-        if ("delete-yes-label-w".equals(key)) return LabelWidth.of("tsu.station_tool.delete_yes");
-        // **null であって defaultValue ではない。** BoxResolver は null のときだけ
-        // HintBridgeRegistry へ回すので、defaultValue を返すと hint-knob-x が静的値に
-        // 固定され、色だけ ON になってつまみが動かない toggle になる。
-        // RailwayManagementDispatch も同じ理由で null を返している。
-        return null;
-    }
-
-    @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        StationGroup g = selected();
-        for (String c : classes) {
-            if ("sgm-name-value".equals(c)) return editingName.value();
-            if ("sgm-info".equals(c) && g != null) {
-                return Component.translatable("tsu.station_tool.platforms_count_fmt",
-                        g.stationBlockPositions().size()).getString();
-            }
-            if ("sgm-range".equals(c) && g != null) {
-                return String.format("(%d,%d,%d) ~ (%d,%d,%d)",
-                        g.minPos().getX(), g.minPos().getY(), g.minPos().getZ(),
-                        g.maxPos().getX(), g.maxPos().getY(), g.maxPos().getZ());
-            }
-            if ("sgm-del-prompt".equals(c) && g != null) {
-                return Component.translatable("tsu.station_tool.delete_prompt_fmt", g.name()).getString();
-            }
+    /**
+     * wiki キャプチャ用に state を当てる (WikiLiveCapture)。 Every state lists the sample groups, each with its platforms
+     * (改善1, 2026-10-07: the page shows the list being managed - a group chosen, renamed, deleted after its confirmation -
+     * where it showed an empty list); a rename or a delete changes the sample here, and nothing is sent (no
+     * StationsClient call, no chat line). "delete" = 削除確認: 本文は選択中のグループ名なので、 サンプルの一覧から 1 つ選んで開く。
+     */
+    public void wikiApplyState(String state) {
+        java.nio.charset.Charset u = java.nio.charset.StandardCharsets.UTF_8;
+        java.util.List<StationGroup> samples = new java.util.ArrayList<>();
+        String[] names = {"東京", "品川", "新宿"};
+        int[] platforms = {4, 2, 3};
+        for (int i = 0; i < names.length; i++) {
+            net.minecraft.core.BlockPos min = new net.minecraft.core.BlockPos(i * 200, 64, 0);
+            java.util.List<net.minecraft.core.BlockPos> at = new java.util.ArrayList<>();
+            for (int p = 0; p < platforms[i]; p++) at.add(min.offset(8, 1, 3 + p * 4));
+            samples.add(new StationGroup(UUID.nameUUIDFromBytes(("tsu-wiki-station-group-" + i).getBytes(u)),
+                    names[i], "minecraft:overworld", min, min.offset(40, 12, 16),
+                    java.util.List.of(), java.util.List.copyOf(at), StationGroup.NAMING_TEMPLATE_JP, null));
         }
-        return null;
+        wikiGroups = samples;
+        if (!"delete".equals(state)) return;
+        StationGroup g = wikiGroups.get(0);
+        selectedId = g.id();
+        editingName.setValue(g.name());
+        deleteConfirm.ask();
+    }
+
+    /** A group's platform count: the sample's own positions in the wiki, else the stations host's answer. */
+    private int stationCount(StationGroup g) {
+        return wikiGroups != null ? g.stationBlockPositions().size()
+                : com.trainsystemutilities.station.StationGroupClientCache.stationCount(g.id());
+    }
+
+    /** A group's platforms: the sample's own positions in the wiki, else the stations host's answer. */
+    private java.util.List<net.minecraft.core.BlockPos> positions(StationGroup g) {
+        return wikiGroups != null ? g.stationBlockPositions()
+                : com.trainsystemutilities.station.StationGroupClientCache.positions(g.id());
+    }
+
+    // ===== Manta 7 push (Phase 4, TSU batch 2, 2026-09-23) =====
+    // The page's values are WRITTEN here each frame before the engine draws, and once when a page
+    // opens: the screen overrides no getDynamic*. The hint toggle and the entrances are the base's.
+    // The delete confirmation's page is ConfirmDialog's (push). The button labels' widths are
+    // LabelWidth's (R4.23.1: glyphs became icon + label).
+    private MantaState pushed, confirmPage;
+    private com.manta.api.state.TextSlot tName, tInfo, tRange;
+    private com.manta.api.state.ColorSlot cNameBorder;
+    private com.manta.api.state.BoolSlot bDetail, bNoSelection;
+    private com.manta.api.state.NumberSlot nApplyW, nDeleteW;
+
+    @Override
+    protected void pageOpened(Object page, PageLayer layer) {
+        if (layer == PageLayer.OVERLAY) {
+            // The one overlay this screen shows is the delete confirmation (overlayJson).
+            confirmPage = MantaState.of(page);
+            deleteConfirm.push(confirmPage);
+            return;
+        }
+        if (layer != PageLayer.PRIMARY) return;
+        pushed = MantaState.of(page);
+        tName = pushed.text("sgm-name-value");
+        tInfo = pushed.text("sgm-info");
+        tRange = pushed.text("sgm-range");
+        cNameBorder = pushed.color("sgm-name-border");
+        bDetail = pushed.bool("sgm-detail-visible");
+        bNoSelection = pushed.bool("sgm-no-selection-visible");
+        nApplyW = pushed.number("btn-apply-label-w");
+        nDeleteW = pushed.number("btn-delete-label-w");
+        pushed.textByKeyOnly();
+        pushAll();
+    }
+
+    private void pushAll() {
+        if (confirmPage != null && confirmPage.isOpen()) deleteConfirm.push(confirmPage);
+        if (pushed == null || !pushed.isOpen()) return;
+        StationGroup g = selected();
+        pushed.set(tName, editingName.value());
+        if (g == null) {
+            pushed.clear(tInfo);
+            pushed.clear(tRange);
+        } else {
+            pushed.set(tInfo, Component.translatable("tsu.station_tool.platforms_count_fmt", stationCount(g)).getString());
+            pushed.set(tRange, String.format("(%d,%d,%d) ~ (%d,%d,%d)",
+                    g.minPos().getX(), g.minPos().getY(), g.minPos().getZ(),
+                    g.maxPos().getX(), g.maxPos().getY(), g.maxPos().getZ()));
+        }
+        if (nameFocused) {
+            pushed.set(cNameBorder, 0xFF4FC3F7);
+        } else {
+            pushed.clear(cNameBorder);
+        }
+        pushed.set(bDetail, g != null);
+        pushed.set(bNoSelection, g == null);
+        pushed.set(nApplyW, LabelWidth.of("tsu.station_tool.btn_apply"));
+        pushed.set(nDeleteW, LabelWidth.of("tsu.station_tool.btn_delete"));
     }
 
     @Override
-    public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-        if ("sgm-name-border".equals(key) && nameFocused) return 0xFF4FC3F7;
-        return null;
+    public void render(net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        pushAll();
+        super.render(g, mouseX, mouseY, partialTick);
     }
 
     @Override
     public void onElementClick(String[] classes, int mouseX, int mouseY, int button) {
-        // 削除確認 overlay 中はその buttons を最優先処理
-        if (showDeleteConfirm) {
-            for (String c : classes) {
-                if ("sgm-del-popup-close".equals(c) || "mc-popup-close".equals(c)
-                        || "sgm-del-no".equals(c)) {
-                    showDeleteConfirm = false;
-                    return;
-                }
-                if ("sgm-del-yes".equals(c)) {
-                    deleteSelected();
-                    showDeleteConfirm = false;
-                    return;
-                }
-            }
-            return; // overlay 外クリックは無視 (close 操作のみ受付)
-        }
+        // 確認ダイアログが開いている間は背後に通さない (部品側の約束)。
+        if (deleteConfirm.handleClick(classes, ignored -> deleteSelected())) return;
         if (com.manta.api.hud.HintToggleHelper.handleClick(classes)) return;
         for (String c : classes) {
             if ("wiki-btn".equals(c)) {
@@ -156,7 +218,7 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
                 return;
             }
             if ("sgm-rename-btn".equals(c)) { applyRename(); return; }
-            if ("sgm-delete-btn".equals(c)) { showDeleteConfirm = true; return; }
+            if ("sgm-delete-btn".equals(c)) { deleteConfirm.ask(); return; }
             if ("sgm-list".equals(c)) {
                 // タイルクリック / 右クリック削除
                 handleListClick(mouseX, mouseY, button);
@@ -176,7 +238,7 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
         if (rect == null) return;
         // mouseX/mouseY は dialog-relative (JsonLayoutPlainScreen が screen→dialog 変換済)
         // rect も dialog-relative なので dialogX/Y を足してはいけない。
-        var groups = StationGroupClientCache.all();
+        var groups = groups();
         TileGrid grid = new TileGrid(rect[0], rect[1], 1, rect[2], TILE_H + TILE_GAP, rect[2], TILE_H);
         int idx = grid.hitTest(mouseX, mouseY, listScroll.offset(), groups.size());
         if (idx < 0) return;
@@ -187,11 +249,13 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
             selectedId = g.id();
             editingName.setValue(g.name());
             nameFocused = false;
-            showDeleteConfirm = true;
+            deleteConfirm.ask();
         } else {
             selectedId = g.id();
             editingName.setValue(g.name());
             nameFocused = false;
+            // The group's station positions are not in the list; ask for this one's (a wiki sample carries its own).
+            if (wikiGroups == null) com.trainsystemutilities.client.StationsClient.detail(g.id());
         }
     }
 
@@ -224,14 +288,13 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
     }
 
     private void drawTileList(GuiGraphics g, int x, int y, int w, int h, int mouseX, int mouseY) {
-        var groups = StationGroupClientCache.all();
+        var groups = groups();
         TileGrid grid = new TileGrid(x, y, 1, w, TILE_H + TILE_GAP, w, TILE_H);
         int hovered = grid.hitTest(mouseX, mouseY, listScroll.offset(), groups.size());
-        // scissor で外側にはみ出さないようにする (screen 座標が必要)
-        float ds = dialogScale();
-        int sx1 = dialogX() + Math.round(x * ds), sy1 = dialogY() + Math.round(y * ds);
-        int sx2 = sx1 + Math.round(w * ds), sy2 = sy1 + Math.round(h * ds);
-        g.enableScissor(sx1, sy1, sx2, sy2);
+        // 外側にはみ出さないよう clip する。矩形は canvas-local のまま渡し、原点と縮尺は
+        // pose から取る (原点を名前で書くと overlay 上で静かにずれる)。
+        int[] clip = com.manta.api.preview.GuiPreviewCamera.scissorRect(g.pose().last().pose(), x, y, w, h);
+        g.enableScissor(clip[0], clip[1], clip[2], clip[3]);
         for (int i = 0; i < groups.size(); i++) {
             var grp = groups.get(i);
             int tileY = grid.tileY(i, listScroll.offset());
@@ -242,37 +305,37 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
             int bg = active ? 0xFF1A3050 : (hover ? 0xFF2A2A40 : 0xFF1A1A2A);
             int border = active ? 0xFF4FC3F7 : 0xFF333344;
             // §2.4 SmoothRenderer 二層角丸 (border 5f + bg 4f inset 1px、 つよめ)。 旧 g.fill 4枚枠を置換
-            com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x, tileY, w, TILE_H, 5f, border);
-            com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x + 1, tileY + 1, w - 2, TILE_H - 2, 4f, bg);
+            com.manta.api.hud.HudChrome.innerRect(g, x, tileY, w, TILE_H, bg, border);
             // 名前
-            g.drawString(this.font, grp.name(), x + 6, tileY + 3,
-                    active ? 0xFFFFFFFF : 0xFFE0E0E0, false);
+            com.manta.api.text.MantaText.draw(g, this.font, grp.name(), x + 6, tileY + 3,
+                    active ? 0xFFFFFFFF : 0xFFE0E0E0);
             // 駅数
-            String count = grp.stationBlockPositions().size() + "P";
-            int cw = this.font.width(count);
-            g.drawString(this.font, count, x + w - cw - 6, tileY + 12, 0xFF80DEEA, false);
+            String count = stationCount(grp) + "P";
+            int cw = com.manta.api.text.MantaText.uiWidth(this.font, count);
+            com.manta.api.text.MantaText.draw(g, this.font, count, x + w - cw - 6, tileY + 12, 0xFF80DEEA);
         }
         g.disableScissor();
         if (groups.isEmpty()) {
             String empty = Component.translatable("tsu.station_tool.no_groups").getString();
-            int tw = this.font.width(empty);
-            g.drawString(this.font, empty, x + (w - tw) / 2, y + h / 2 - 4, 0xFF888888, false);
+            int tw = com.manta.api.text.MantaText.uiWidth(this.font, empty);
+            com.manta.api.text.MantaText.draw(g, this.font, empty, x + (w - tw) / 2, y + h / 2 - 4, 0xFF888888);
         }
     }
 
     private void drawPlatformList(GuiGraphics g, int x, int y, int w, int h) {
         StationGroup grp = selected();
         if (grp == null) return;
-        float ds = dialogScale();
-        int sx1 = dialogX() + Math.round(x * ds), sy1 = dialogY() + Math.round(y * ds);
-        g.enableScissor(sx1, sy1, sx1 + Math.round(w * ds), sy1 + Math.round(h * ds));
+        int[] clip = com.manta.api.preview.GuiPreviewCamera.scissorRect(g.pose().last().pose(), x, y, w, h);
+        g.enableScissor(clip[0], clip[1], clip[2], clip[3]);
         int rowH = 11;
-        for (int i = 0; i < grp.stationBlockPositions().size(); i++) {
+        // The positions are the manage screen's own ask (selectGroup), answered on the player's stations host.
+        var positions = positions(grp);
+        for (int i = 0; i < positions.size(); i++) {
             int ry = y + i * rowH;
             if (ry > y + h) break;
-            var p = grp.stationBlockPositions().get(i);
+            var p = positions.get(i);
             String s = String.format("%d  →  (%d, %d, %d)", i + 1, p.getX(), p.getY(), p.getZ());
-            g.drawString(this.font, s, x, ry, 0xFFAAAAAA, false);
+            com.manta.api.text.MantaText.draw(g, this.font, s, x, ry, 0xFFAAAAAA);
         }
         g.disableScissor();
     }
@@ -289,12 +352,12 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         // 削除確認 overlay 中: Y = 削除, N/ESC = キャンセル
-        if (showDeleteConfirm) {
+        if (deleteConfirm.isOpen()) {
             if (keyCode == GLFW.GLFW_KEY_ESCAPE || keyCode == GLFW.GLFW_KEY_N) {
-                showDeleteConfirm = false; return true;
+                deleteConfirm.close(); return true;
             }
             if (keyCode == GLFW.GLFW_KEY_Y || keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
-                deleteSelected(); showDeleteConfirm = false; return true;
+                deleteConfirm.close(); deleteSelected(); return true;
             }
             return true;
         }
@@ -311,7 +374,14 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
         if (g == null) return;
         String newName = editingName.value().trim();
         if (newName.isEmpty() || newName.equals(g.name())) return;
-        PacketDistributor.sendToServer(new StationGroupRenamePayload(g.id(), newName));
+        if (wikiGroups != null) {
+            // The wiki's sample: renamed here, nothing sent, no chat line.
+            wikiGroups.set(wikiGroups.indexOf(g), new StationGroup(g.id(), newName, g.dimensionId(), g.minPos(),
+                    g.maxPos(), g.stationBlockIds(), g.stationBlockPositions(), g.namingTemplate(), g.ownerUUID()));
+            nameFocused = false;
+            return;
+        }
+        com.trainsystemutilities.client.StationsClient.rename(g.id(), newName);
         nameFocused = false;
         // displayClientMessage で簡易フィードバック
         if (Minecraft.getInstance().player != null) {
@@ -324,7 +394,8 @@ public class StationGroupManageScreen extends JsonLayoutPlainScreen {
     private void deleteSelected() {
         StationGroup g = selected();
         if (g == null) return;
-        PacketDistributor.sendToServer(new StationGroupDeletePayload(g.id()));
+        if (wikiGroups != null) wikiGroups.remove(g); // the wiki's sample: nothing sent
+        else com.trainsystemutilities.client.StationsClient.delete(g.id());
         selectedId = null;
         editingName.clear();
         nameFocused = false;

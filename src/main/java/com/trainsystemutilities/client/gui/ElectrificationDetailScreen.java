@@ -1,14 +1,15 @@
 package com.trainsystemutilities.client.gui;
 
 import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.PageLayer;
+import com.manta.api.state.MantaState;
 import com.trainsystemutilities.client.electrification.ClientTrainElectrificationCache;
 import com.trainsystemutilities.electrification.contraption.TrainElectrificationView;
-import com.trainsystemutilities.network.PantographTogglePayload;
+import com.trainsystemutilities.network.PantographAction;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.UUID;
 
@@ -23,9 +24,15 @@ import java.util.UUID;
  * </ul>
  *
  * <p>{@link ClientTrainElectrificationCache} からデータを読み、操作は
- * {@link PantographTogglePayload} でサーバへ送信。サーバが状態更新後、次の周期 sync で再描画。
+ * {@link PantographAction}（player の train host の action）でサーバへ送信。サーバが状態更新後、次の周期 sync で再描画。
  */
 public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
+
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
 
     @Override
     protected String wikiPageId() { return "electrification"; }
@@ -58,21 +65,37 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
         return ClientTrainElectrificationCache.get(trainId);
     }
 
+    // ===== Manta 7 push (Phase 4, TSU batch 1, 2026-09-23) =====
+    // The page's values are WRITTEN here each frame before the engine draws, and once when the page
+    // opens: the screen overrides no getDynamic*. The hint toggle and the entrance are the base's.
+    // The layout keys the two texts `title` and `summary` (not their classes): a keyed slot is its key.
+    private MantaState pushed;
+    private com.manta.api.state.TextSlot tTitle, tSummary;
+
     @Override
-    public String getDynamicText(String[] classes, String defaultText) {
+    protected void pageOpened(Object page, PageLayer layer) {
+        if (layer != PageLayer.PRIMARY) return;
+        pushed = MantaState.of(page);
+        tTitle = pushed.text("title");
+        tSummary = pushed.text("summary");
+        pushed.textByKeyOnly();
+        pushAll();
+    }
+
+    private void pushAll() {
+        if (pushed == null || !pushed.isOpen()) return;
         TrainElectrificationView v = view();
-        for (String c : classes) {
-            if ("screen-title".equals(c)) {
-                String name = v == null ? "?" : v.trainName;
-                return Component.translatable("tsu.elec_detail.title_fmt", name).getString();
-            }
-            if ("status-summary".equals(c)) {
-                if (v == null) return Component.translatable("tsu.elec_detail.not_synced").getString();
-                return Component.translatable("tsu.elec_detail.status_fmt",
-                        v.cars.size(), v.totalPantographs(), v.totalDeployedPantographs()).getString();
-            }
-        }
-        return null;
+        pushed.set(tTitle, Component.translatable("tsu.elec_detail.title_fmt", v == null ? "?" : v.trainName).getString());
+        pushed.set(tSummary, v == null
+                ? Component.translatable("tsu.elec_detail.not_synced").getString()
+                : Component.translatable("tsu.elec_detail.status_fmt",
+                        v.cars.size(), v.totalPantographs(), v.totalDeployedPantographs()).getString());
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        pushAll();
+        super.render(g, mouseX, mouseY, partialTick);
     }
 
     @Override
@@ -83,13 +106,13 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
                 return;
             }
             if ("deploy-all-btn".equals(c)) {
-                PacketDistributor.sendToServer(new PantographTogglePayload(
-                        trainId, PantographTogglePayload.ACTION_DEPLOY_ALL, 0, BlockPos.ZERO));
+                com.trainsystemutilities.client.TrainClient.pantograph(
+                        trainId, PantographAction.ACTION_DEPLOY_ALL, 0, BlockPos.ZERO);
                 return;
             }
             if ("fold-all-btn".equals(c)) {
-                PacketDistributor.sendToServer(new PantographTogglePayload(
-                        trainId, PantographTogglePayload.ACTION_FOLD_ALL, 0, BlockPos.ZERO));
+                com.trainsystemutilities.client.TrainClient.pantograph(
+                        trainId, PantographAction.ACTION_FOLD_ALL, 0, BlockPos.ZERO);
                 return;
             }
             if ("car-list-canvas".equals(c)) {
@@ -97,9 +120,9 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
                 for (PantoHit ph : pantoHits) {
                     if (mouseX >= ph.x0 && mouseX <= ph.x1
                             && mouseY >= ph.y0 && mouseY <= ph.y1) {
-                        PacketDistributor.sendToServer(new PantographTogglePayload(
-                                trainId, PantographTogglePayload.ACTION_TOGGLE_ONE,
-                                ph.carriageIndex, ph.pos));
+                        com.trainsystemutilities.client.TrainClient.pantograph(
+                                trainId, PantographAction.ACTION_TOGGLE_ONE,
+                                ph.carriageIndex, ph.pos);
                         return;
                     }
                 }
@@ -123,14 +146,11 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
 
         TrainElectrificationView v = view();
         if (v == null) {
-            g.drawString(Minecraft.getInstance().font,
-                    Component.translatable("tsu.elec_detail.canvas_not_synced"),
-                    x + 10, y + 10, 0xFFAA0000, false);
+            com.manta.api.text.MantaText.draw(g, Minecraft.getInstance().font, Component.translatable("tsu.elec_detail.canvas_not_synced"), x + 10, y + 10, 0xFFAA0000);
             return;
         }
         if (v.cars.isEmpty()) {
-            g.drawString(Minecraft.getInstance().font, Component.translatable("tsu.elec_detail.no_cars"),
-                    x + 10, y + 10, 0xFFAAAAAA, false);
+            com.manta.api.text.MantaText.draw(g, Minecraft.getInstance().font, Component.translatable("tsu.elec_detail.no_cars"), x + 10, y + 10, 0xFFAAAAAA);
             return;
         }
 
@@ -151,27 +171,27 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
         var font = Minecraft.getInstance().font;
         String label = "Car #" + car.carriageIndex;
         int labelColor = anyInverter ? 0xFF80DEEA : 0xFFAAAAAA;
-        g.drawString(font, label, x + 4, y + 4, labelColor, false);
+        com.manta.api.text.MantaText.draw(g, font, label, x + 4, y + 4, labelColor);
 
         // インバータ数バッジ (= ラベルの右隣)。装飾版も合算してカウント表示。
         int totalInverters = car.inverterCount + car.dummyInverterCount;
         if (totalInverters > 0) {
             String invText = "⚡×" + totalInverters;
-            int invX = x + 4 + font.width(label) + 6;
-            g.drawString(font, invText, invX, y + 4, 0xFFFFD54F, false);
+            int invX = x + 4 + com.manta.api.text.MantaText.uiWidth(font, label) + 6;
+            com.manta.api.text.MantaText.draw(g, font, invText, invX, y + 4, 0xFFFFD54F);
         }
 
         // 2 行目: FE 残量 (機能版) / 装飾モード表示 (装飾版) / 状態表示 (それ以外)
         if (car.hasInverter) {
             String feText = String.format("%,d / %,d FE", car.storedEnergy, car.capacity);
             int feColor = car.inContact ? 0xFFA5D6A7 : 0xFFFFD54F;
-            g.drawString(font, feText, x + 4, y + 16, feColor, false);
+            com.manta.api.text.MantaText.draw(g, font, feText, x + 4, y + 16, feColor);
         } else if (car.dummyInverterCount > 0) {
-            g.drawString(font, Component.translatable("tsu.elec_detail.mode_decorative"), x + 4, y + 16, 0xFFB39DDB, false);
+            com.manta.api.text.MantaText.draw(g, font, Component.translatable("tsu.elec_detail.mode_decorative"), x + 4, y + 16, 0xFFB39DDB);
         } else if (!car.pantographs.isEmpty()) {
-            g.drawString(font, Component.translatable("tsu.elec_detail.mode_panto_only"), x + 4, y + 16, 0xFF80DEEA, false);
+            com.manta.api.text.MantaText.draw(g, font, Component.translatable("tsu.elec_detail.mode_panto_only"), x + 4, y + 16, 0xFF80DEEA);
         } else {
-            g.drawString(font, Component.translatable("tsu.elec_detail.mode_no_power"), x + 4, y + 16, 0xFF888888, false);
+            com.manta.api.text.MantaText.draw(g, font, Component.translatable("tsu.elec_detail.mode_no_power"), x + 4, y + 16, 0xFF888888);
         }
 
         // 2D 車両ビュー: 右側の領域
@@ -193,10 +213,7 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
         // 車体外形 (長方形枠)
         int bodyTop = y + 4;
         int bodyBot = y + h - 8;
-        g.fill(x, bodyTop, x + w, bodyTop + 1, color);          // top
-        g.fill(x, bodyBot, x + w, bodyBot + 1, color);          // bottom
-        g.fill(x, bodyTop, x + 1, bodyBot, color);              // left
-        g.fill(x + w - 1, bodyTop, x + w, bodyBot, color);      // right
+        com.manta.api.draw.SmoothRenderer.strokeRoundedRect(g, x, bodyTop, w, bodyBot + 1 - bodyTop, 0f, 1f, color);
 
         // 車輪 (4 個、下部に並べる)。塗りつぶしは「インバータ系統あり」(機能 / 装飾どちらでも)。
         int wheelY = bodyBot + 2;
@@ -231,10 +248,7 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
             g.fill(cx - 1, cy - 1, cx + 2, cy + 2, 0xFF000000);
         } else {
             // 枠線 (4 辺)
-            g.fill(cx - r, cy - r, cx + r + 1, cy - r + 1, color);  // top
-            g.fill(cx - r, cy + r, cx + r + 1, cy + r + 1, color);  // bottom
-            g.fill(cx - r, cy - r, cx - r + 1, cy + r + 1, color);  // left
-            g.fill(cx + r, cy - r, cx + r + 1, cy + r + 1, color);  // right
+            com.manta.api.draw.SmoothRenderer.strokeRoundedRect(g, cx - r, cy - r, 2 * r + 1, 2 * r + 1, 0f, 1f, color);
         }
     }
 

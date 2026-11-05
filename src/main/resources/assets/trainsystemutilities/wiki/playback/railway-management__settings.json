@@ -1,0 +1,150 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "track-display-track"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.rm.track",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-track"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-track"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-font"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.rm.font",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-font"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-pos"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.pos",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-clock"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.clock_toggle",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-clock"
+        ]
+      },
+      "do": "click",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-clockfs"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.rm.clockfs",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-clockfs"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "face-flip-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.face_back",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-track"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.rm.track_back",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "track-display-track"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "face-flip-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.face_front",
+      "holdMs": 1500
+    }
+  ]
+}

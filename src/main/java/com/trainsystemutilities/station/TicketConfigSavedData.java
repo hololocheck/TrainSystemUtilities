@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 券売機で販売可とする着駅 StationGroup の集合 (= ネットワーク全体で共通)。
  *
  * <p>管理用コンピューターの「券売機」タブで取捨選択する。 server-side のみ。
- * client へは network payload (TicketConfigSyncPayload) 経由で同期する。
+ * client へは管理用コンピューターの host (network.ManagementComputerData、 manta:data) の field で同期する。
  */
 public class TicketConfigSavedData extends SavedData {
 

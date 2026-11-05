@@ -117,7 +117,7 @@ public final class WikiRenderComponents {
             graphics.fill(sx - 3, sy - 3, sx + 3, sy + 3, 0xFF4fc3f7);
             graphics.fill(sx - 2, sy - 2, sx + 2, sy + 2, 0xFF1a1a2e);
             if (zoom > 0.55d) {
-                graphics.drawString(font, station.name(), sx + 5, sy - 4, 0xFF4fc3f7, true);
+                com.manta.api.text.MantaText.draw(graphics, font, station.name(), sx + 5, sy - 4, 0xFF4fc3f7, true);
             }
         }
 
@@ -146,7 +146,7 @@ public final class WikiRenderComponents {
             }
 
             if (zoom > 0.35d) {
-                graphics.drawString(font, train.name(), sx + 5, sy - 4, 0xFFffcc02, true);
+                com.manta.api.text.MantaText.draw(graphics, font, train.name(), sx + 5, sy - 4, 0xFFffcc02, true);
             }
         }
 
@@ -166,8 +166,8 @@ public final class WikiRenderComponents {
         int midY = y + size / 2;
         String letters = symbol.getLetters();
         String number = symbol.getNumberStr();
-        int lettersWidth = font.width(letters);
-        int numberWidth = font.width(number);
+        int lettersWidth = com.manta.api.text.MantaText.uiWidth(font, letters);
+        int numberWidth = com.manta.api.text.MantaText.uiWidth(font, number);
         float maxTextWidth = Math.max(lettersWidth, numberWidth);
         float scale = Math.min(1f, innerWidth / Math.max(1f, maxTextWidth));
         int letterY = midY - 9;
@@ -177,11 +177,11 @@ public final class WikiRenderComponents {
         if (scale < 1f) {
             graphics.pose().scale(scale, scale, 1f);
             int scaledCenterX = (int) ((x + size / 2f) / scale);
-            graphics.drawString(font, letters, scaledCenterX - lettersWidth / 2, (int) (letterY / scale), 0xFF000000, false);
-            graphics.drawString(font, number, scaledCenterX - numberWidth / 2, (int) (numberY / scale), 0xFF000000, false);
+            com.manta.api.text.MantaText.draw(graphics, font, letters, scaledCenterX - lettersWidth / 2, (int) (letterY / scale), 0xFF000000);
+            com.manta.api.text.MantaText.draw(graphics, font, number, scaledCenterX - numberWidth / 2, (int) (numberY / scale), 0xFF000000);
         } else {
-            graphics.drawString(font, letters, x + size / 2 - lettersWidth / 2, letterY, 0xFF000000, false);
-            graphics.drawString(font, number, x + size / 2 - numberWidth / 2, numberY, 0xFF000000, false);
+            com.manta.api.text.MantaText.draw(graphics, font, letters, x + size / 2 - lettersWidth / 2, letterY, 0xFF000000);
+            com.manta.api.text.MantaText.draw(graphics, font, number, x + size / 2 - numberWidth / 2, numberY, 0xFF000000);
         }
         graphics.pose().popPose();
 

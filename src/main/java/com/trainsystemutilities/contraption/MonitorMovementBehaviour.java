@@ -2,7 +2,6 @@ package com.trainsystemutilities.contraption;
 import com.manta.api.anim.Animation;
 import com.manta.api.anim.Easing;
 import com.manta.api.ir.IrNode;
-import com.manta.api.screen.JsonLayoutHandler;
 
 import com.manta.api.world.CSSWorldRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -26,12 +25,11 @@ import com.trainsystemutilities.blockentity.RailwayManagementBlockEntity;
 import com.trainsystemutilities.schedule.TrainScheduleReader;
 import com.trainsystemutilities.block.MonitorBlock;
 import com.trainsystemutilities.block.ThinDoubleSidedMonitorBlock;
-import com.trainsystemutilities.network.MonitorDisplayInfoPayload;
+import com.trainsystemutilities.network.TrainData;
 import com.trainsystemutilities.registry.ModBlocks;
 import com.trainsystemutilities.schedule.TrainCouplingManager;
 import com.trainsystemutilities.schedule.TrainTypeState;
 import com.trainsystemutilities.schedule.TrainTypes;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,7 +54,7 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
      * 同じ IrNode 参照を渡すことで CSSWorldRenderer の RenderGraph キャッシュが有効化される。
      */
     private static final ConcurrentHashMap<String, CachedIr> irCache = new ConcurrentHashMap<>();
-    private static final ConcurrentHashMap<String, MonitorMovementHandler> handlersPerMonitor = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, MovementFace> handlersPerMonitor = new ConcurrentHashMap<>();
     // SAME_GROUP_RENDER_GUARD removed — Create invokes renderInContraption multiple times per frame
     // for player-mounted carriages (different render passes). The 2ms guard blocked all but the
     // first call, causing monitors and doors to flicker on the carriage the player rides.
@@ -94,28 +92,36 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
         int contentHash;
     }
 
-    /** V3 Stable IR: JSON load + JsonToIrCompiler 1 回のみ、 全 monitor で共有。 */
-    private static volatile IrNode sharedIr;
+    /**
+     * The monitor document, parsed once and shared by every contraption monitor. Manta
+     * decides the engine by the document's bytes ({@code CSSWorldRenderer.renderDocument},
+     * MANTA_6_CUTOVER Phase 6); until 2026-09-19 this path compiled the same file to Manta 5
+     * IR itself and drew through {@code renderV3FromIr}, the one monitor face still on
+     * Manta 5 while the standing monitors had switched (Phase 7.5).
+     */
+    private static volatile CSSWorldRenderer.Document sharedDoc;
 
-    private static IrNode getSharedIr() {
-        IrNode ir = sharedIr;
-        if (ir == null) {
+    private static CSSWorldRenderer.Document getSharedDoc() {
+        CSSWorldRenderer.Document doc = sharedDoc;
+        if (doc == null) {
             synchronized (MonitorMovementBehaviour.class) {
-                ir = sharedIr;
-                if (ir == null) {
-                    String json = com.trainsystemutilities.client.gui.TsuLayouts.load(
-                            "layouts/renderers/movement-monitor.json");
-                    com.google.gson.JsonObject root =
-                            com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-                    ir = com.manta.api.ir.compiler.JsonToIrCompiler.compile(root).root();
-                    sharedIr = ir;
+                doc = sharedDoc;
+                if (doc == null) {
+                    doc = CSSWorldRenderer.Document.parse(com.trainsystemutilities.client.gui.TsuLayouts.load(
+                            "layouts/renderers/movement-monitor.json"));
+                    sharedDoc = doc;
                 }
             }
         }
-        return ir;
+        return doc;
     }
 
-    static final class MonitorMovementHandler implements JsonLayoutHandler {
+    /**
+     * One contraption monitor's values, WRITTEN into its page each frame (Manta 7 Phase 5): the values the
+     * pull handler (this class, as MonitorMovementHandler, until 2026-09-24) answered, in the same state,
+     * computed by the same code - pushed by key. Both faces draw the one page, as they drew one page before.
+     */
+    static final class MovementFace {
         int slideDistance = 128;
         int cssW, cssH;
         volatile String clockText = "";
@@ -131,8 +137,7 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
             this.animState = animState;
         }
 
-        @Override
-        public Integer getDynamicNumber(String[] classes, String key, int def) {
+        private Integer number(String key) {
             int contentW = Math.max(0, cssW - 36); // PAD * 2 = 36
             int innerH = Math.max(0, cssH - 36);
             int sectionH = Math.max(20, (innerH - 12 - 2 * 2) / 2); // HEADER_H=12, SECTION_GAP=2
@@ -147,24 +152,13 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
                     var bold = net.minecraft.network.chat.Component
                             .literal(TrainTypes.localize(info.trainType()))
                             .withStyle(net.minecraft.ChatFormatting.BOLD);
-                    yield net.minecraft.client.Minecraft.getInstance().font.width(bold) + 4;
+                    yield com.manta.api.text.MantaText.uiWidth(net.minecraft.client.Minecraft.getInstance().font, bold) + 4;
                 }
                 default -> null;
             };
         }
 
-        @Override
-        public String getDynamicText(String[] classes, String defaultText) {
-            if (classes == null) return null;
-            for (String c : classes) {
-                String t = resolveTextClass(c);
-                if (t != null) return t;
-            }
-            return null;
-        }
-
-        @Override
-        public Integer getDynamicColor(String[] classes, String key, int def) {
+        private Integer color(String key) {
             if (info == null) return null;
             return "trainType_color".equals(key) ? TrainTypes.colorArgb(info.trainType()) : null;
         }
@@ -196,8 +190,7 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
             };
         }
 
-        @Override
-        public Boolean getDynamicBool(String[] classes, String key, boolean def) {
+        private Boolean bool(String key) {
             if (info == null) return null;
             String tt = info.trainType();
             String rt = info.routeType();
@@ -229,25 +222,58 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
             };
         }
 
-        @Override
-        public Animation getDynamicAnimation(String[] classes, String key) {
+        /** The row's slide-in while its stop just changed (updateAnimState), else none. */
+        private Animation animation(String key) {
             if (animState == null) return null;
             boolean slideIn = false;
             if ("current_anim".equals(key)) slideIn = animState.currentSlideIn;
             else if ("next_anim".equals(key)) slideIn = animState.nextSlideIn;
-            else if (classes != null) {
-                for (String c : classes) {
-                    if ("anim-slide-in".equals(c)) {
-                        // legacy: 旧 class-based dispatch
-                        return Animation.of(400).easing(Easing.EASE_OUT)
-                                .translateX(slideDistance, 0).build();
-                    }
-                }
-            }
             if (!slideIn) return null;
             return Animation.of(400).easing(Easing.EASE_OUT)
                     .translateX(slideDistance, 0).build();
         }
+
+        private Object page;
+        private com.trainsystemutilities.client.gui.PagePush p;
+
+        /**
+         * The page's values by key. The text keys are spelt out (the vocabulary gate reads the keys a
+         * consumer writes from its source); each text is what the node's own class resolved to under
+         * the pull. The root's cssW / cssH are the renderer's, written with the size the page opened at.
+         */
+        void push(Object opened) {
+            if (opened == null) return;
+            if (opened != page) {
+                page = opened;
+                p = new com.trainsystemutilities.client.gui.PagePush(opened);
+                p.textByKeyOnly();
+            }
+            p.text("clockText", resolveTextClass("mc-time"));
+            p.text("trainType", resolveTextClass("trainType"));
+            p.text("routeType", resolveTextClass("routeType"));
+            p.text("current_name", resolveTextClass("current_name"));
+            p.text("current_partner", resolveTextClass("current_partner"));
+            p.text("current_arr", resolveTextClass("current_arr"));
+            p.text("current_dep", resolveTextClass("current_dep"));
+            p.text("current_stopsec", resolveTextClass("current_stopsec"));
+            p.text("next_name", resolveTextClass("next_name"));
+            p.text("next_arr", resolveTextClass("next_arr"));
+            p.text("next_dep", resolveTextClass("next_dep"));
+            p.text("next_stopsec", resolveTextClass("next_stopsec"));
+            for (String key : NUMBER_KEYS) p.number(key, number(key));
+            p.color("trainType_color", color("trainType_color"));
+            for (String key : BOOL_KEYS) p.bool(key, bool(key));
+            p.animation("current_anim", animation("current_anim"));
+            p.animation("next_anim", animation("next_anim"));
+        }
+
+        private static final String[] NUMBER_KEYS = {"contentW", "sectionH", "trainType_w"};
+        private static final String[] BOOL_KEYS = {"trainType_visible", "routeType_visible",
+                "current_row_visible", "current_empty_visible", "current_arr_visible", "current_dep_visible",
+                "current_stopsec_visible", "current_stopinfo_visible", "current_coupling_visible",
+                "current_decoupling_visible", "current_partner_visible",
+                "next_row_visible", "next_empty_visible", "next_arr_visible", "next_dep_visible",
+                "next_stopsec_visible"};
 
         /** key 先頭 prefix ("current"/"next") から該当 StopInfo を返す。 */
         private StopInfo stopFor(String key) {
@@ -734,25 +760,26 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
         // === Tier 3a: animState 先行更新 (DOM cache hit でも anim フラグは更新が必要) ===
         ContraptionAnimState animState = updateAnimState(context.contraption, info);
 
-        // === V3 Stable IR: parameterless build を 1 度だけ実行し全 monitor で共有 ===
+        // === 文書は 1 度だけ parse し全 monitor で共有 (engine は Manta が決める) ===
         int cssW = group.width() * 128;
         int cssH = group.height() * 128;
         long dayTime = context.world.getDayTime();
-        IrNode irRoot = getSharedIr();
-        MonitorMovementHandler handler = handlersPerMonitor.computeIfAbsent(monitorKey, k -> new MonitorMovementHandler());
-        handler.update(cssW, cssH, formatDayTime(dayTime), info, animState);
+        CSSWorldRenderer.Document doc = getSharedDoc();
+        MovementFace face = handlersPerMonitor.computeIfAbsent(monitorKey, k -> new MovementFace());
+        face.update(cssW, cssH, formatDayTime(dayTime), info, animState);
+        face.push(renderer.page(doc, face, cssW, cssH));
 
-        // === 通常設置モニター (MonitorWorldRenderer) と同一挙動 ===
+        // === 通常設置モニター (MonitorWorldRenderer) と同一経路 (page / render, Manta 7 Phase 5) ===
         // capture/replay キャッシュは走行中に clock / ETA を凍結させるため使わず、
-        // 毎フレーム V3 IR から描画する。CSSWorldRenderer 内部の layout キャッシュにより
+        // 毎フレーム文書から描画する。Manta の page / layout キャッシュにより
         // 毎フレーム描画でもコストは通常設置モニターと同等で、走行中もリアルタイム更新される。
         if (!DEBUG_DISABLE_MONITOR_RENDER) {
             renderFace(context, matrices, buffer, group.frontOrigin(), facing,
-                    group.width(), group.height(), false, info, renderer, irRoot, handler);
+                    group.width(), group.height(), false, info, renderer, doc, face);
 
             if (group.hasDoubleSided()) {
                 renderFace(context, matrices, buffer, group.backOrigin(), facing,
-                        group.width(), group.height(), true, info, renderer, irRoot, handler);
+                        group.width(), group.height(), true, info, renderer, doc, face);
             }
         }
 
@@ -809,21 +836,23 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
         if (last != null && last == tick) return;
         lastBroadcastTickByEntity.put(entityId, tick);
 
-        List<MonitorDisplayInfoPayload.Stop> wire = new ArrayList<>(info.stops().size());
+        List<TrainData.MonitorStop> wire = new ArrayList<>(info.stops().size());
         for (StopInfo s : info.stops()) {
-            wire.add(new MonitorDisplayInfoPayload.Stop(
+            wire.add(new TrainData.MonitorStop(
                     s.stationName(), s.stopSec(),
                     s.estArrivalDayTime(), s.estDepartureDayTime(), s.atStation()));
         }
-        PacketDistributor.sendToPlayersTrackingEntity(entity, new MonitorDisplayInfoPayload(
+        // 配る先はその entity を tracking している各プレイヤーの train host (MANTA_7_CONCEPT C4 で
+        // MonitorDisplayInfoPayload から移行)。 その tick の更新分だけを 1 まとまりにして送る。
+        TrainData.queueMonitor(entity, new TrainData.MonitorRow(
                 entityId, trainId, info.routeType(), info.trainType(),
                 info.couplingStatus(), info.couplingPartner(), wire));
     }
 
-    /** #7 MP fix: {@link MonitorDisplayInfoPayload} 受信時にクライアントの displayCache を埋める。 */
-    public static void applyServerDisplayInfo(MonitorDisplayInfoPayload p) {
+    /** #7 MP fix: サーバーの表示データ (train host の 1 行) 受信時にクライアントの displayCache を埋める。 */
+    public static void applyServerDisplayInfo(TrainData.MonitorRow p) {
         List<StopInfo> stops = new ArrayList<>(p.stops().size());
-        for (MonitorDisplayInfoPayload.Stop s : p.stops()) {
+        for (TrainData.MonitorStop s : p.stops()) {
             stops.add(new StopInfo(s.stationName(), s.stopSec(),
                     s.estArrivalDayTime(), s.estDepartureDayTime(), s.atStation()));
         }
@@ -869,7 +898,8 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
     private void renderFace(MovementContext context, ContraptionMatrices matrices,
                             MultiBufferSource buffer, BlockPos faceOrigin, Direction facing,
                             int monitorW, int monitorH, boolean isBack, TrainDisplayInfo info,
-                            CSSWorldRenderer renderer, IrNode cachedIr, JsonLayoutHandler handler) {
+                            CSSWorldRenderer renderer, CSSWorldRenderer.Document document,
+                            MovementFace face) {
         PoseStack poseStack = new PoseStack();
         poseStack.last().pose().set(matrices.getViewProjection().last().pose());
         poseStack.last().normal().set(matrices.getViewProjection().last().normal());
@@ -900,8 +930,8 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
         poseStack.translate(0, cssH, 0);
         poseStack.scale(1, -1, -1);
 
-        // V3 IR から毎フレーム描画 (通常設置モニターと同一経路)
-        renderer.renderV3FromIr(cachedIr, handler, poseStack, buffer);
+        // 文書から毎フレーム描画 (通常設置モニターと同一経路: 登録済みの bytes は Manta 6 の page)
+        renderer.render(document, face, poseStack, buffer);
         poseStack.popPose();
     }
 

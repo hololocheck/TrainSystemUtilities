@@ -1,0 +1,77 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "wire-tile-slot",
+          "slot-1"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.simple",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "sag-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.sag",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "wire-tile-slot",
+          "slot-3"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.double",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "search-box-caret"
+        ]
+      },
+      "do": "type",
+      "text": "2",
+      "charMs": 200,
+      "say": "trainsystemutilities.wiki.play.wire.search",
+      "holdMs": 1500
+    },
+    {
+      "do": "key",
+      "key": "backspace",
+      "times": 1,
+      "holdMs": 600
+    },
+    {
+      "target": {
+        "classes": [
+          "confirm-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.confirm",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "manta-confirm-no"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.cancel",
+      "holdMs": 1000
+    }
+  ]
+}

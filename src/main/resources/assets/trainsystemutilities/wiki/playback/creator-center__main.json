@@ -1,0 +1,69 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "cc-stat-box"
+        ],
+        "index": 0
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.cc.totals",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "cc-chart-area"
+        ],
+        "at": [
+          0.25,
+          0.5
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.cc.chart",
+      "holdMs": 1800
+    },
+    {
+      "target": {
+        "classes": [
+          "cc-chart-area"
+        ],
+        "at": [
+          0.62,
+          0.5
+        ]
+      },
+      "do": "hover",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "cc-chart-area"
+        ],
+        "at": [
+          0.9,
+          0.5
+        ]
+      },
+      "do": "hover",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "cc-top-row"
+        ],
+        "index": 0
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.cc.top",
+      "holdMs": 1800
+    }
+  ]
+}

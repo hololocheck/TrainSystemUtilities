@@ -81,7 +81,7 @@ public final class TransitDetailHudRenderer {
         if (show && TransitTerminalState.layoutAdjustMode()) {
             SmoothRenderer.strokeRoundedRect(g, x - 2, y - 2, HUD_W + 4, HUD_H + 4, 8f, 2f, fa(0xFFFFD54F, fade));
             String hint = Component.translatable("tsu.transit_terminal.hud_drag_hint").getString();
-            g.drawString(mc.font, hint, x, y - 12, fa(0xFFFFD54F, fade), true);
+            com.manta.api.text.MantaText.draw(g, mc.font, hint, x, y - 12, fa(0xFFFFD54F, fade), true);
         }
         HudChrome.popUiScale(g);
     }
@@ -104,8 +104,7 @@ public final class TransitDetailHudRenderer {
         // W7-1: 戻る glyph を manta:arrow-left icon へ (fade の alpha はそのまま乗る)。
         int hdrC = fa(0xFF80DEEA, fade);
         com.manta.api.render.Icons.draw(g, "manta:arrow-left", innerX, dy, 9, hdrC);
-        g.drawString(mc.font, Component.translatable("tsu.transit_terminal.hud_title").getString(),
-                innerX + 11, dy, hdrC, false);
+        com.manta.api.text.MantaText.draw(g, mc.font, Component.translatable("tsu.transit_terminal.hud_title").getString(), innerX + 11, dy, hdrC);
         dy += 12;
 
         // サマリ
@@ -116,10 +115,10 @@ public final class TransitDetailHudRenderer {
         String arrAbs = clockOf(base + route.totalTicks());
         int totalSec = Math.max(0, (route.totalTicks() - firstDep) / 20);
         String summary = depAbs + " → " + arrAbs + " (" + (totalSec / 60) + "m " + (totalSec % 60) + "s)";
-        g.drawString(mc.font, summary, innerX, dy, fa(0xFFFFFFFF, fade), false);
+        com.manta.api.text.MantaText.draw(g, mc.font, summary, innerX, dy, fa(0xFFFFFFFF, fade));
         dy += 11;
         String trans = Component.translatable("tsu.transit_terminal.transfers_fmt", legs.size() - 1).getString();
-        g.drawString(mc.font, trans, innerX, dy, fa(0xFFAAAAAA, fade), false);
+        com.manta.api.text.MantaText.draw(g, mc.font, trans, innerX, dy, fa(0xFFAAAAAA, fade));
         dy += 16;
 
         // タイムライン
@@ -132,18 +131,16 @@ public final class TransitDetailHudRenderer {
             int arrTicks = depTicks + leg.travelTicks();
 
             // 出発駅
-            g.drawString(mc.font, clockOf(base + depTicks), innerX, dy, fa(0xFFFFD54F, fade), false);
-            SmoothRenderer.fillRoundedRect(g, barColX + 2, dy + 2, 7, 7, 5f, fa(0xFF000000, fade));
-            SmoothRenderer.fillRoundedRect(g, barColX + 3, dy + 3, 5, 5, 4f, fa(color, fade));
+            com.manta.api.text.MantaText.draw(g, mc.font, clockOf(base + depTicks), innerX, dy, fa(0xFFFFD54F, fade));
+            com.manta.api.hud.HudChrome.innerRect(g, barColX + 2, dy + 2, 7, 7, fa(color, fade), fa(0xFF000000, fade));
             String fromName = nameOf(leg.fromGroupId());
-            g.drawString(mc.font, truncate(mc, fromName, HUD_W - timeColW - 50),
-                    barColX + 14, dy + 1, fa(0xFFFFFFFF, fade), false);
+            com.manta.api.text.MantaText.draw(g, mc.font, truncate(mc, fromName, HUD_W - timeColW - 50), barColX + 14, dy + 1, fa(0xFFFFFFFF, fade));
             if (leg.boardPlatform() > 0) {
                 String plat = Component.translatable("tsu.transit_terminal.platform_fmt",
                         leg.boardPlatform()).getString();
-                int pw = mc.font.width(plat);
+                int pw = com.manta.api.text.MantaText.uiWidth(mc.font, plat);
                 SmoothRenderer.fillRoundedRect(g, x + HUD_W - pw - 14, dy, pw + 8, 10, 5f, fa(0xFF1f4f3e, fade));
-                g.drawString(mc.font, plat, x + HUD_W - pw - 11, dy + 1, fa(0xFF80FFAA, fade), false);
+                com.manta.api.text.MantaText.draw(g, mc.font, plat, x + HUD_W - pw - 11, dy + 1, fa(0xFF80FFAA, fade));
             }
             dy += 12;
 
@@ -161,25 +158,22 @@ public final class TransitDetailHudRenderer {
                     trainName += Component.translatable("tsu.transit_terminal.detail_train_short").getString();
                 }
             }
-            g.drawString(mc.font, truncate(mc, trainName, HUD_W - timeColW - 16),
-                    barColX + 14, barTopY + 4, fa(0xFFE0E0E0, fade), false);
+            com.manta.api.text.MantaText.draw(g, mc.font, truncate(mc, trainName, HUD_W - timeColW - 16), barColX + 14, barTopY + 4, fa(0xFFE0E0E0, fade));
             String legInfo = (legSec / 60) + "m " + (legSec % 60) + "s";
-            g.drawString(mc.font, legInfo, barColX + 14, barTopY + 14, fa(0xFF80DEEA, fade), false);
+            com.manta.api.text.MantaText.draw(g, mc.font, legInfo, barColX + 14, barTopY + 14, fa(0xFF80DEEA, fade));
             dy += legHeight;
 
             // 到着駅
-            g.drawString(mc.font, clockOf(base + arrTicks), innerX, dy, fa(0xFFFF8A65, fade), false);
-            SmoothRenderer.fillRoundedRect(g, barColX + 2, dy + 2, 7, 7, 5f, fa(0xFF000000, fade));
-            SmoothRenderer.fillRoundedRect(g, barColX + 3, dy + 3, 5, 5, 4f, fa(color, fade));
+            com.manta.api.text.MantaText.draw(g, mc.font, clockOf(base + arrTicks), innerX, dy, fa(0xFFFF8A65, fade));
+            com.manta.api.hud.HudChrome.innerRect(g, barColX + 2, dy + 2, 7, 7, fa(color, fade), fa(0xFF000000, fade));
             String toName = nameOf(leg.toGroupId());
-            g.drawString(mc.font, truncate(mc, toName, HUD_W - timeColW - 50),
-                    barColX + 14, dy + 1, fa(0xFFFFFFFF, fade), false);
+            com.manta.api.text.MantaText.draw(g, mc.font, truncate(mc, toName, HUD_W - timeColW - 50), barColX + 14, dy + 1, fa(0xFFFFFFFF, fade));
             if (leg.alightPlatform() > 0) {
                 String plat = Component.translatable("tsu.transit_terminal.platform_fmt",
                         leg.alightPlatform()).getString();
-                int pw = mc.font.width(plat);
+                int pw = com.manta.api.text.MantaText.uiWidth(mc.font, plat);
                 SmoothRenderer.fillRoundedRect(g, x + HUD_W - pw - 14, dy, pw + 8, 10, 5f, fa(0xFF4f3a1f, fade));
-                g.drawString(mc.font, plat, x + HUD_W - pw - 11, dy + 1, fa(0xFFFFD54F, fade), false);
+                com.manta.api.text.MantaText.draw(g, mc.font, plat, x + HUD_W - pw - 11, dy + 1, fa(0xFFFFD54F, fade));
             }
             dy += 12;
 
@@ -195,7 +189,7 @@ public final class TransitDetailHudRenderer {
                     // W7-1: 待機 glyph を manta:refresh-cw icon へ。
                     int waitC = fa(0xFFAAAAAA, fade);
                     com.manta.api.render.Icons.draw(g, "manta:refresh-cw", barColX + 14, dy + 2, 8, waitC);
-                    g.drawString(mc.font, waitText, barColX + 25, dy + 2, waitC, false);
+                    com.manta.api.text.MantaText.draw(g, mc.font, waitText, barColX + 25, dy + 2, waitC);
                     dy += 12;
                 }
             }

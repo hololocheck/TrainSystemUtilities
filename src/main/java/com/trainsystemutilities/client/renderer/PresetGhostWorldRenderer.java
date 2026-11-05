@@ -102,13 +102,7 @@ public class PresetGhostWorldRenderer {
     }
 
     private static BlockPos lookTarget(Minecraft mc) {
-        if (mc.player == null || mc.level == null) return null;
-        Vec3 eye = mc.player.getEyePosition(1.0f);
-        Vec3 look = mc.player.getLookAngle();
-        Vec3 end = eye.add(look.scale(64.0));
-        BlockHitResult hit = mc.level.clip(new ClipContext(
-                eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, mc.player));
-        return hit.getType() == HitResult.Type.BLOCK ? hit.getBlockPos() : null;
+        return com.manta.api.hud.LookTarget.blockPos(mc.player, mc.level);
     }
 
     private static void renderPreview(RenderLevelStageEvent event, Minecraft mc,
@@ -153,7 +147,7 @@ public class PresetGhostWorldRenderer {
                 minX - cam.x, minY - cam.y, minZ - cam.z,
                 maxX - cam.x, maxY - cam.y, maxZ - cam.z);
         VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
-        LevelRenderer.renderLineBox(pose, consumer, aabb, r1, g1, b1, boxAlpha);
+        com.manta.api.render.WorldOutline.box(pose, bufferSource, aabb, r1, g1, b1, boxAlpha, false);
 
         boolean renderedOverlay = renderAssemblyMarker(mc, pose, bufferSource, cam, markerPos, markerDirection, ghost);
         if (!renderedOverlay && markerVec != null) {
@@ -161,7 +155,7 @@ public class PresetGhostWorldRenderer {
             AABB markerBox = new AABB(
                     markerVec.x - half - cam.x, markerVec.y - 0.0625 - cam.y, markerVec.z - half - cam.z,
                     markerVec.x + half - cam.x, markerVec.y + 0.5625 - cam.y, markerVec.z + half - cam.z);
-            LevelRenderer.renderLineBox(pose, consumer, markerBox, 1.0f, 0.85f, 0.1f, markerAlpha);
+            com.manta.api.render.WorldOutline.box(pose, bufferSource, markerBox, 1.0f, 0.85f, 0.1f, markerAlpha, false);
         }
 
         bufferSource.endBatch();

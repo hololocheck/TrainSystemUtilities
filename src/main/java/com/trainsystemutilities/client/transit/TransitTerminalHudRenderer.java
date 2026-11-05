@@ -53,30 +53,26 @@ public class TransitTerminalHudRenderer {
         int y = sh - BOTTOM_MARGIN - H + (int) yOffset;
 
         HudChrome.pushUiScale(g, (float) (x + W), (float) (y + H));  // 右下 pivot で size2 固定
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
-        HudChrome.drawRoundedRect(g, x, y, W, H, (bgA << 24) | 0x12122A, (borderA << 24) | 0x4FC3F7);
+        HudChrome.panel(g, x, y, W, H, fade, 0x12122A, 0x4FC3F7);
 
-        int titleC = ((int) (0xFF * fade) << 24) | 0x4FC3F7;
-        g.drawString(mc.font, Component.translatable("tsu.transit_terminal.title").getString(),
-                x + 8, y + 5, titleC, false);
+        int titleC = com.manta.api.hud.HudChrome.fadeAlpha(0xFF4FC3F7, fade);
+        com.manta.api.text.MantaText.draw(g, mc.font, Component.translatable("tsu.transit_terminal.title").getString(), x + 8, y + 5, titleC);
 
         ComposedRouteFinder.ComposedRoute r = TransitTerminalState.lastResult();
-        int infoC = ((int) (0xFF * fade) << 24) | 0xE0E0E0;
+        int infoC = com.manta.api.hud.HudChrome.fadeAlpha(0xFFE0E0E0, fade);
         if (r != null && r.found()) {
             int totalSec = r.totalTicks() / 20;
             String summary = Component.translatable("tsu.transit_terminal.minihud_route_fmt",
                     truncate(mc, r.fromGroupName(), 40),
                     truncate(mc, r.toGroupName(), 40),
                     totalSec / 60, totalSec % 60).getString();
-            g.drawString(mc.font, summary, x + 8, y + 17, infoC, false);
+            com.manta.api.text.MantaText.draw(g, mc.font, summary, x + 8, y + 17, infoC);
         } else {
-            int hintC = ((int) (0xC0 * fade) << 24) | 0x80808F;
-            g.drawString(mc.font, Component.translatable("tsu.transit_terminal.minihud_open_hint").getString(),
-                    x + 8, y + 17, hintC, false);
+            int hintC = com.manta.api.hud.HudChrome.fadeAlpha(0xC080808F, fade);
+            com.manta.api.text.MantaText.draw(g, mc.font, Component.translatable("tsu.transit_terminal.minihud_open_hint").getString(), x + 8, y + 17, hintC);
         }
         // 右下に「開く」アイコン — W7-1: raw ▶ を manta:play icon へ (fade の alpha はそのまま乗る)。
-        int rightArrowC = ((int) (0xFF * fade) << 24) | 0xFFD54F;
+        int rightArrowC = com.manta.api.hud.HudChrome.fadeAlpha(0xFFFFD54F, fade);
         com.manta.api.render.Icons.draw(g, "manta:play", x + W - 13, y + 16, 9, rightArrowC);
         HudChrome.popUiScale(g);
     }

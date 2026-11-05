@@ -28,7 +28,6 @@ public final class LabelWidth {
 
     /** {@code langKey} の翻訳結果の描画幅 + 2 (text box padding)。 */
     public static int of(String langKey) {
-        return Minecraft.getInstance().font.width(
-                Component.translatable(langKey).getString()) + 2;
+        return com.manta.api.text.MantaText.uiWidth(Minecraft.getInstance().font, Component.translatable(langKey).getString()) + 2;
     }
 }

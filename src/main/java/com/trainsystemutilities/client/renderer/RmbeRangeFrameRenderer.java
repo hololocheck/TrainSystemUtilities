@@ -62,10 +62,8 @@ public final class RmbeRangeFrameRenderer {
             double maxX = Math.max(p1.getX(), p2.getX()) + 1;
             double maxY = Math.max(p1.getY(), p2.getY()) + 1;
             double maxZ = Math.max(p1.getZ(), p2.getZ()) + 1;
-            AABB aabb = new AABB(
-                    minX - camera.x, minY - camera.y, minZ - camera.z,
-                    maxX - camera.x, maxY - camera.y, maxZ - camera.z);
-            LevelRenderer.renderLineBox(pose, consumer, aabb, 0.0f, 1.0f, 1.0f, 0.6f);
+            AABB aabb = com.manta.api.render.WorldOutline.blockSpan(p1, p2, camera);
+            com.manta.api.render.WorldOutline.box(pose, bufferSource, aabb, 0.0f, 1.0f, 1.0f, 0.6f, false);
 
             // 減衰モード ON のときは attenuation box (orange) も追加描画。
             // 状態は AnnouncementConfig (server-synced) から取得 (default ON)。
@@ -87,8 +85,8 @@ public final class RmbeRangeFrameRenderer {
                         AABB attAabb = new AABB(
                                 aMinX - camera.x, aMinY - camera.y, aMinZ - camera.z,
                                 aMaxX - camera.x, aMaxY - camera.y, aMaxZ - camera.z);
-                        LevelRenderer.renderLineBox(pose, consumer, attAabb,
-                                1.0f, 0.55f, 0.0f, 0.5f);
+                        com.manta.api.render.WorldOutline.box(pose, bufferSource, attAabb,
+                                1.0f, 0.55f, 0.0f, 0.5f, false);
                     }
                 }
             }

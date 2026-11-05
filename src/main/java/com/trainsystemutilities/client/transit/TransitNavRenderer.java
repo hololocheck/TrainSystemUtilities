@@ -59,7 +59,7 @@ public final class TransitNavRenderer {
             com.trainsystemutilities.TrainSystemUtilities.LOGGER.info(
                     "[NavPath] auto-recalc (player off path) platform={}", platform);
             TransitNavClientState.markPending();
-            com.trainsystemutilities.network.NavPathRequestPayload.send(
+            com.trainsystemutilities.client.TransitClient.nav(
                     TransitNavClientState.targetGroupId(), platform);
         }
 

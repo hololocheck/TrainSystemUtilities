@@ -81,8 +81,11 @@ public class PosterManagementBlock extends BaseEntityBlock {
                 }
                 // プライベートモード時のアクセス制御
                 if (!posterBE.canAccess(player)) {
-                    player.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                            "\u00a7c\u3053\u306e\u30d6\u30ed\u30c3\u30af\u306f " + (posterBE.getOwnerName().isEmpty() ? "someone" : posterBE.getOwnerName()) + " \u306b\u3088\u3063\u3066\u30ed\u30c3\u30af\u3055\u308c\u3066\u3044\u307e\u3059"), true);
+                    player.displayClientMessage(net.minecraft.network.chat.Component.translatable(
+                            "message.trainsystemutilities.block_locked", posterBE.getOwnerName().isEmpty()
+                                    ? net.minecraft.network.chat.Component.translatable("message.trainsystemutilities.block_owner_unknown")
+                                    : net.minecraft.network.chat.Component.literal(posterBE.getOwnerName()))
+                            .withStyle(net.minecraft.ChatFormatting.RED), true);
                     return InteractionResult.FAIL;
                 }
                 serverPlayer.openMenu(posterBE, pos);

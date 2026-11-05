@@ -52,6 +52,11 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
     // god-class 分割 (v2): アナウンス (config + detection listener + 共有元探索) を
     // AnnouncementManager へ切出し。 検知 card / 範囲ボード / 媒体 slot 自体は inventory slot に在置。
     private final AnnouncementManager announcement = new AnnouncementManager();
+    /**
+     * The block's host on manta:data (network.RailwayManagementData, MANTA_7_CONCEPT C4): server side, opened in
+     * {@link #onLoad} and closed in {@link #setRemoved}; the announcement settings and the entry playing are its fields.
+     */
+    private com.manta.api.data.Host dataHost;
     // god-class 分割 (v2): ホームドア (帯色 + 発火条件 + detection listener) を ScreenDoorController へ切出し。
     // メモリーカード自体は下の inventory slot (screenDoorCard) に在置。
     private final ScreenDoorController screenDoor = new ScreenDoorController();
@@ -192,6 +197,25 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
     public List<UUID> getRecentlyDeparted() { return recentlyDeparted; }
 
     /**
+     * The wiki's stand-in only (RailwayManagementScreenV2.wikiCreate - a block entity no level holds): a station and its
+     * line symbol, the trains stopped and coming, one linked monitor group, as the server's sync would have set them
+     * (改善1, 2026-10-07: the page showed a block with no train). Fields only: nothing is marked changed, no block updated.
+     */
+    public void wikiSeed(String station, LineSymbol symbol, List<ArrivedTrain> arrived, List<NextTrain> next,
+                         MonitorGroupInfo group) {
+        linkedStationName = station;
+        linkedStationPos = worldPosition;
+        assignedLineSymbol = symbol;
+        arrivedTrains.clear();
+        arrivedTrains.addAll(arrived);
+        nextTrains.clear();
+        nextTrains.addAll(next);
+        monitorGroups.clear();
+        monitorGroups.add(group);
+        linkedMonitorGroupCount = 1;
+    }
+
+    /**
      * 割り当て路線記号を {@link com.trainsystemutilities.station.LineSymbolStore} から解決する
      * (= chunk load 非依存)。 管理用コンピューターは割り当て時に store へ書き込むだけでよく、
      * 遠隔駅の本 BE でも (load 済みなら) ここで自駅キーを引いて反映する。 変化時のみ block update。
@@ -203,11 +227,13 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
      */
     private void resolveLineSymbol() {
         if (level == null || level.isClientSide()) return;
-        if (linkedStationName == null || linkedStationName.isEmpty()) return;
         var server = level.getServer();
         if (server == null) return;
         var store = com.trainsystemutilities.station.LineSymbolStore.get(server);
-        String key = ManagementComputerBlockEntity.stationKey(linkedStationName, linkedStationPos);
+        String key = linkedStationName == null || linkedStationName.isEmpty() ? null
+                : ManagementComputerBlockEntity.stationKey(linkedStationName, linkedStationPos);
+        guardStation(store, key);
+        if (key == null) return;
         LineSymbol resolved = store.getSymbol(key);
         if (resolved == assignedLineSymbol) return;          // 定常状態: 同一 snapshot / 両 null
         if (symbolsEqual(resolved, assignedLineSymbol)) {    // 値同一 (= reload 直後): block update 無しで採用
@@ -215,6 +241,37 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
             return;
         }
         setAssignedLineSymbol(resolved);                     // 実変化: setChanged + sendBlockUpdated
+    }
+
+    /** 今このブロックが store に守らせている駅のキー (実行時だけ。 読み込み直したら次の tick で登録し直す)。 */
+    private String guardedKey = null;
+
+    /**
+     * 非公開の間、 リンク先の駅の記号を持ち主以外に変えさせない (2026-10-01 ユーザー判断 ⑲): store に持ち主を登録する。
+     * 管理用コンピューターがこのブロックを見つけられない (chunk が未ロード) ときも store が断る。 公開・持ち主なしなら
+     * 登録を外し、 リンク先が変わったら前の駅の登録を外す。 chunk の unload では外さない (守るのはまさにその間)。
+     */
+    private void guardStation(com.trainsystemutilities.station.LineSymbolStore store, String key) {
+        String holder = guardHolder();
+        if (guardedKey != null && !guardedKey.equals(key)) store.setGuard(guardedKey, null, holder);
+        if (key != null) store.setGuard(key, privateMode ? ownerUUID : null, holder);
+        guardedKey = key;
+    }
+
+    /** ブロックが壊された (別のブロックに置き換わった) ときに {@code RailwayManagementBlock#onRemove} が呼ぶ: 駅の登録を外す。 */
+    public void releaseStationGuard() {
+        if (level == null || level.isClientSide()) return;
+        var server = level.getServer();
+        if (server == null) return;
+        String key = guardedKey != null ? guardedKey
+                : linkedStationName == null || linkedStationName.isEmpty() ? null
+                : ManagementComputerBlockEntity.stationKey(linkedStationName, linkedStationPos);
+        if (key != null) com.trainsystemutilities.station.LineSymbolStore.get(server).setGuard(key, null, guardHolder());
+        guardedKey = null;
+    }
+
+    private String guardHolder() {
+        return (level == null ? "?" : level.dimension().location().toString()) + "@" + worldPosition.asLong();
     }
 
     private static boolean symbolsEqual(LineSymbol a, LineSymbol b) {
@@ -693,6 +750,17 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
     public void setAnnouncementConfig(com.trainsystemutilities.announce.AnnouncementConfig cfg) {
         announcement.setConfig(cfg);
         setChanged();
+        publishAnnouncementConfig();
+    }
+
+    /** The host this block's screens subscribe to; null on the client and before {@link #onLoad}. */
+    public com.manta.api.data.Host dataHost() { return dataHost; }
+
+    private void publishAnnouncementConfig() {
+        if (dataHost != null) {
+            com.trainsystemutilities.network.RailwayManagementData.publishConfig(
+                    dataHost, announcement.getConfig());
+        }
     }
 
     /**
@@ -772,6 +840,10 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
         // BE removal 時に detection listener を解除 (chunk unload 含む)
         announcement.unregisterListener();
         unregisterScreenDoorDetectionListeners();
+        if (dataHost != null) {
+            dataHost.close();
+            dataHost = null;
+        }
     }
 
     /** Phase 21: ホームドア group の detection listener を再登録 (ScreenDoorController へ委譲)。 */
@@ -795,10 +867,17 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
     @Override
     public void onLoad() {
         super.onLoad();
+        // NeoForge runs onLoad a tick late, for a block entity removed in between too: a listener registered or a
+        // host opened then would have nobody to undo it (setRemoved has come and gone), and the next block entity
+        // here would find the channel taken.
+        if (isRemoved()) return;
         // NBT 読み込み後の初期化: detection listener 登録 (server-side のみ)
         if (level != null && !level.isClientSide()) {
             refreshDetectionListener();
             refreshScreenDoorDetectionListener();
+        }
+        if (level instanceof net.minecraft.server.level.ServerLevel sl && dataHost == null) {
+            dataHost = com.trainsystemutilities.network.RailwayManagementData.open(this, sl);
         }
     }
 
@@ -960,7 +1039,6 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
         setChanged();
         if (level != null) level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
     }
-    public void clearLineSymbol() { setLineSymbol("", 0, ""); }
 
     // --- Color settings ---
     public String getColor(String key) { return display.getColor(key); }
@@ -972,6 +1050,10 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
     /** Get color or default if empty */
     public String getColorOrDefault(String key, String defaultColor) {
         return display.getColorOrDefault(key, defaultColor);
+    }
+    /** {@link MonitorDisplaySettings#getMonitorColor}. */
+    public String getMonitorColor(String key, boolean back) {
+        return display.getMonitorColor(key, back);
     }
 
     public void setClockVisibleForGroup(int groupIndex, int val) {
@@ -1289,6 +1371,7 @@ public class RailwayManagementBlockEntity extends BlockEntity implements Contain
             }
         }
         announcement.readNbt(tag);
+        publishAnnouncementConfig();
         // Phase 21: ホームドア群
         screenDoorCard = tag.contains("ScreenDoorCard")
                 ? ItemStack.parse(registries, tag.getCompound("ScreenDoorCard")).orElse(ItemStack.EMPTY)

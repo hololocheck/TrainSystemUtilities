@@ -88,6 +88,9 @@ public class SubstationBlockEntity extends BlockEntity implements IEnergyStorage
     @Override
     public void onLoad() {
         super.onLoad();
+        // Not for an entity already removed: NeoForge runs onLoad a tick late, for one removed in between too - a
+        // registration then would outlive the block in the SavedData.
+        if (isRemoved()) return;
         // 初回ロード時: SavedData にまだ登録されていなければ、BE の NBT に保存されていた
         // energy 値で登録する (= 旧版からの移行対応)。
         // 既に登録されていれば SavedData 側を真と見なして BE.energy を上書きする。

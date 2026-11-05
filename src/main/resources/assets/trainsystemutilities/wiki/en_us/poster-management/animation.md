@@ -6,48 +6,23 @@ tags: [poster, animation]
 
 # Poster Animation Settings
 
-![](bws:trainsystemutilities:wiki/screens/poster-management-anim__ja_jp.png)
+![](bws:trainsystemutilities:wiki/screens/poster-management-anim__en_us.png)
 
-A popup that controls the slide transitions of the Poster Management Block.
+Set how posters switch. Open it from "Animation" on the [Poster Management Block](../poster-management.md). Press the same button again or Esc to close it.
 
 [[TOC]]
 
-## Opening
+Choose an effect from the list and change the "Interval" and "Speed" values with the mouse wheel. Interval is how long each image is shown, and speed is how long the switching motion takes.
 
-1. **Right-click** the [Poster Management Block](../poster-management.md) to open its GUI.
-2. **Click the "♫ Animation" button** to make this animation settings popup appear on the right side of the dialog.
-3. Pressing the "♫ Animation" button again closes it (Esc also closes it).
-
-## Operation (where to click / scroll)
-
-- **Animation type**: **Click the type you want to use** (such as "Slide Left" or "Fade") from the list to select it (the selection is highlighted).
-- **Interval / speed values**: **Hover the cursor over the value and use the mouse wheel** to increase or decrease it (the screen also shows an "↑↓ wheel" hint). There are no + / − buttons.
-
-## Animation types
-
-| Type | Behavior |
+| Effect | Motion |
 |---|---|
-| **None** | Instant switch (no animation) |
-| **Slide Left/Right** | Horizontal slide-in |
-| **Slide Up/Down** | Vertical slide-in |
-| **Fade** | Fade transition |
-| **Zoom** | Zoom in/out |
-| **Push Left/Right** | Push transition |
+| None | Switches with no effect |
+| Slide Left / Slide Right | Slides in from the side |
+| Slide Up / Slide Down | Slides in from above or below |
+| Fade | Switches gradually |
+| Flip | Switches as if turning over, squeezing sideways |
+| Zoom In | Appears while growing |
+| Zoom + Fade | Appears while shrinking |
+| Slide Left + Fade / Slide Up + Fade | Switches with a short slide and a fade |
 
-## Settings
-
-| Item (display name) | Operation | Use |
-|---|---|---|
-| Animation type | **Click** the list | Transition effect (select from the list above) |
-| Interval | Cursor over value → **wheel** | Display time per slide |
-| Duration | Cursor over value → **wheel** | The transition animation's own duration |
-
-## Preview
-
-You can check in real time in the preview area within the popup.  
-If no images are registered, a default test pattern is shown.
-
-## Related
-
-- [Poster Management Block](../poster-management.md)
-- [Monitor Link Card](../tools/monitor-link-card.md)
+Check the motion in the preview on the screen. The preview uses a two-color sample, not the registered images.

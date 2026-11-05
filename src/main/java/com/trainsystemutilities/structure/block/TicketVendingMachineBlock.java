@@ -131,19 +131,19 @@ public class TicketVendingMachineBlock extends BaseEntityBlock {
             var ng = sgData.findContaining(dim, sp);
             if (ng != null) network.add(ng.id());
         }
-        java.util.List<com.trainsystemutilities.network.OpenTicketVendingPayload.Dest> dests =
+        java.util.List<com.trainsystemutilities.network.VendingDest> dests =
                 new java.util.ArrayList<>();
         for (com.trainsystemutilities.station.StationGroup g : sgData.all()) {
             if (originId != null && g.id().equals(originId)) continue;
             if (!network.contains(g.id())) continue;               // 同一物理ネットワークのみ
             if (!sellable.isEmpty() && !sellable.contains(g.id())) continue;
-            dests.add(new com.trainsystemutilities.network.OpenTicketVendingPayload.Dest(g.id(), g.name()));
+            dests.add(new com.trainsystemutilities.network.VendingDest(g.id(), g.name()));
         }
         dests.sort(java.util.Comparator.comparing(
-                com.trainsystemutilities.network.OpenTicketVendingPayload.Dest::name));
+                com.trainsystemutilities.network.VendingDest::name));
 
-        net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(serverPlayer,
-                new com.trainsystemutilities.network.OpenTicketVendingPayload(pos, originName, dests));
+        // The machine opens on the player's stations host: its destinations, and a counter the client opens on.
+        com.trainsystemutilities.network.StationsData.openVending(serverPlayer, pos, originName, dests);
         return InteractionResult.CONSUME;
     }
 }

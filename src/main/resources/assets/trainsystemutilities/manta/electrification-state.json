@@ -1,0 +1,106 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "elec-trains": {
+        "type": "list",
+        "maxLength": 64,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "elec-train-id": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "elec-train-name": {
+            "type": "string",
+            "maxLen": 128
+          }
+        }
+      },
+      "elec-cars": {
+        "type": "list",
+        "maxLength": 512,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "elec-car-train": {
+            "type": "int",
+            "min": 0,
+            "max": 63
+          },
+          "elec-car-index": {
+            "type": "int",
+            "min": 0,
+            "max": 1024
+          },
+          "elec-car-has-inverter": {
+            "type": "boolean"
+          },
+          "elec-car-inverters": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "elec-car-dummies": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "elec-car-stored": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "elec-car-capacity": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "elec-car-contact": {
+            "type": "boolean"
+          }
+        }
+      },
+      "elec-pantos": {
+        "type": "list",
+        "maxLength": 1024,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "elec-panto-car": {
+            "type": "int",
+            "min": 0,
+            "max": 511
+          },
+          "elec-panto-x": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "elec-panto-y": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "elec-panto-z": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "elec-panto-deployed": {
+            "type": "boolean"
+          },
+          "elec-panto-contact": {
+            "type": "boolean"
+          },
+          "elec-panto-bar": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        }
+      }
+    }
+  }
+}

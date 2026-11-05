@@ -94,8 +94,11 @@ public class ManagementComputerMenu extends AbstractContainerMenu {
 
     @Override
     public boolean clickMenuButton(Player player, int id) {
-        // 9000: プライベートモード切替
-        if (id == 9000) { blockEntity.togglePrivateMode(); return true; }
+        // 9000: プライベートモード切替 (持ち主か OP だけ - PermissionHelper.mayTogglePrivate)
+        if (id == 9000) {
+            if (com.trainsystemutilities.util.PermissionHelper.mayTogglePrivate(player, blockEntity.getOwnerUUID(), blockEntity.getOwnerName())) blockEntity.togglePrivateMode();
+            return true;
+        }
         // 9001: 選択列車を緊急停止
         if (id == 9001) {
             for (UUID tid : blockEntity.getSelectedTrains()) {

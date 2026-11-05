@@ -160,13 +160,8 @@ public class StationRangeToolItem extends Item {
 
     /** プレイヤーの視線先のブロックを最大 {@link #MAX_RANGE} 距離まで ray cast。 */
     private static BlockPos getLookTargetBlock(Player player, Level level) {
-        Vec3 eye = player.getEyePosition(1.0f);
-        Vec3 look = player.getLookAngle();
-        Vec3 end = eye.add(look.scale(MAX_RANGE));
-        BlockHitResult hit = level.clip(new ClipContext(
-                eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-        return hit.getType() == HitResult.Type.BLOCK ? hit.getBlockPos() : null;
-    }
+    return com.manta.api.hud.LookTarget.blockPos(player, level, MAX_RANGE);
+}
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext ctx,
@@ -210,42 +205,25 @@ public class StationRangeToolItem extends Item {
 
     /** editMode に応じて該当 pos のみ (or 両方) をクリア。 */
     private static void clearByEditMode(ItemStack stack, Player player) {
-        int editMode = getEditMode(stack);
-        if (editMode == 1) {
-            stack.remove(ModDataComponents.RANGE_POS1.get());
-            player.displayClientMessage(Component.translatable("tsu.station_tool.pos1_cleared")
-                    .withStyle(ChatFormatting.YELLOW), true);
-        } else if (editMode == 2) {
-            stack.remove(ModDataComponents.RANGE_POS2.get());
-            player.displayClientMessage(Component.translatable("tsu.station_tool.pos2_cleared")
-                    .withStyle(ChatFormatting.YELLOW), true);
-        } else {
-            stack.remove(ModDataComponents.RANGE_POS1.get());
-            stack.remove(ModDataComponents.RANGE_POS2.get());
-            player.displayClientMessage(Component.translatable("tsu.station_tool.range_cleared")
-                    .withStyle(ChatFormatting.YELLOW), true);
-        }
+        com.manta.api.tool.RangeSelection.Edit edit = com.manta.api.tool.RangeSelection.Edit.of(getEditMode(stack));
+        boolean p1 = com.manta.api.tool.RangeSelection.clears(edit, com.manta.api.tool.RangeSelection.Slot.POS1);
+        boolean p2 = com.manta.api.tool.RangeSelection.clears(edit, com.manta.api.tool.RangeSelection.Slot.POS2);
+        if (p1) stack.remove(ModDataComponents.RANGE_POS1.get());
+        if (p2) stack.remove(ModDataComponents.RANGE_POS2.get());
+        String key = (p1 && p2) ? "tsu.station_tool.range_cleared"
+                : p1 ? "tsu.station_tool.pos1_cleared" : "tsu.station_tool.pos2_cleared";
+        player.displayClientMessage(Component.translatable(key)
+                .withStyle(ChatFormatting.YELLOW), true);
     }
 
     /** editMode に従って pos1/pos2 を設定。editMode 0 なら未設定の方に詰める。 */
     private static void setPosition(ItemStack stack, Player player, BlockPos pos) {
-        int editMode = getEditMode(stack);
-        if (editMode == 1) {
-            stack.set(ModDataComponents.RANGE_POS1.get(), pos.immutable());
-            notifyPos(player, "tsu.station_tool.pos1_set_fmt", pos);
-        } else if (editMode == 2) {
-            stack.set(ModDataComponents.RANGE_POS2.get(), pos.immutable());
-            notifyPos(player, "tsu.station_tool.pos2_set_fmt", pos);
-        } else {
-            BlockPos pos1 = getPos1(stack);
-            if (pos1 == null) {
-                stack.set(ModDataComponents.RANGE_POS1.get(), pos.immutable());
-                notifyPos(player, "tsu.station_tool.pos1_set_fmt", pos);
-            } else {
-                stack.set(ModDataComponents.RANGE_POS2.get(), pos.immutable());
-                notifyPos(player, "tsu.station_tool.pos2_set_fmt", pos);
-            }
-        }
+        boolean toPos1 = com.manta.api.tool.RangeSelection.slotForClick(
+                com.manta.api.tool.RangeSelection.Edit.of(getEditMode(stack)), getPos1(stack) != null)
+                == com.manta.api.tool.RangeSelection.Slot.POS1;
+        stack.set(toPos1 ? ModDataComponents.RANGE_POS1.get() : ModDataComponents.RANGE_POS2.get(),
+                pos.immutable());
+        notifyPos(player, toPos1 ? "tsu.station_tool.pos1_set_fmt" : "tsu.station_tool.pos2_set_fmt", pos);
     }
 
     private static void notifyPos(Player player, String key, BlockPos pos) {

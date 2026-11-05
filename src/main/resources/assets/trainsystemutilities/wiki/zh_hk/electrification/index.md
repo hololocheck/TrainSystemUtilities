@@ -9,78 +9,32 @@ tags: [electrification, overview]
 ```embed:items size=48 cols=7 label=true ids=trainsystemutilities:wire_connector,trainsystemutilities:pantograph,trainsystemutilities:fe_inverter,trainsystemutilities:fe_inverter_dummy,trainsystemutilities:substation,trainsystemutilities:insulator,trainsystemutilities:power_checker links=electrification/wire-connector,electrification/pantograph,electrification/fe-inverter,electrification/dummy-inverter,electrification/substation,electrification/insulator,electrification/power-checker
 ```
 
-> [!TIP]
-> 圖標右下角帶有**藍色標記**的可以點擊打開其詳情頁面。
-
-TrainSystem Utilities 的電氣化系統通過**接觸網 + 受電弓 + 箱式變電所**為 Create 列車提供外部 FE 電力。
-它可以讓來自 Mekanism / AE2 / Industrial Foregoing 等的 FE 發電機作為 Create 列車的電源或輔助供電。
+這套系統把地面 FE 電源的電力，經由變電所、接觸網和受電弓送到列車上。列車把收到的電力儲存在車上搭載的 FE 逆變器中。
 
 [[TOC]]
 
-## 總體流程
+## 視頻演示
 
-```
-[FE generator (Mek/AE2/IF)] ──FE──▶ [Substation cubicle]
-                                       │
-                                  (steps up to the wire via insulator)
-                                       │
-                                       ▼
-[Roof-mounted Pantograph] ◀──runs under wire──▶ [Overhead Wire]
-        │
-        ▼
-[FE Inverter] ──FE──▶ [Onboard Create / Mek / ... machines]
+觀看從放置箱式變電站到列車靠受電弓取電行駛的完整流程（Manta 的內嵌視頻功能）。
+
+```embed:youtube url=https://youtu.be/p5o8KkhweF8 title="Create Train Electrification"
 ```
 
-1. **準備 FE 電源**：Mekanism 反應堆、AE2 能量接收器，任何 FE 源都可以。
-2. 搭建[箱式變電所](substation.md)：手持主體並**右鍵**即可自動完成 3×4×2 = 24 方塊的結構。將電力線纜接到 FE 輸入面。
-3. 右鍵在軌道旁升起[接觸網支柱](overhead-pole.md)或[接觸網桁架](overhead-truss.md)，然後右鍵在它們頂部以及變電所旁放置[接觸網絕緣子](insulator.md)。
-4. 手持[連接工具](wire-connector.md)，按順序右鍵**絕緣子 → 絕緣子**，在軌道上方架設[接觸網](wire-connector.md)（電力從變電所旁的絕緣子流出）。
-5. 右鍵在列車車頂安裝[受電弓](pantograph.md)，在車廂內安裝[FE 逆變器](fe-inverter.md)。
-6. 運行時，受電弓在經過接觸網下方時會自動集流 → 逆變器為車載 FE 機器供電。
+## 導入流程
 
-> [!TIP]
-> 沿軌道逐一放置支柱和絕緣子非常繁瑣，因此可以使用[接觸網支柱自動工具](../tools/overhead-pole-auto-tool.md)按你設定的高度和數量批量放置支柱、桁架和絕緣子。
+1. 準備一個輸出 FE 的電源。
+2. 放置[箱式變電站](substation.md)，並接上電源。
+3. 在變電所旁邊和沿線路的支撐點放置[接觸網絕緣子](insulator.md)。
+4. 用[接觸網連接工具](wire-connector.md)把絕緣子互相連接。
+5. 在列車車頂放置[受電弓](pantograph.md)，在車廂上放置 [FE 逆變器](fe-inverter.md)，然後組裝列車。
+6. 升起受電弓，在已通電的接觸網下確認集電和蓄電。
 
-## 部件方塊 / 物品
+[接觸網支柱](overhead-pole.md)和[接觸網桁架](overhead-truss.md)是支撐絕緣子的底座。接觸網不直接連接到它們，而是連接到絕緣子上。你還可以使用幫助佈置的[接觸網支柱佈置輔助工具](../tools/overhead-pole-auto-tool.md)、裝飾用的[逆變器佔位方塊](dummy-inverter.md)，以及檢查狀態的[電力檢查器](power-checker.md)。
 
-| 物品 | 作用 | 詳情 |
-|---|---|---|
-| [連接工具](wire-connector.md) | 在兩個絕緣子之間架設接觸網 | 手持並右鍵絕緣子。5 種樣式 + [自定義](custom-wire.md) |
-| [接觸網絕緣子](insulator.md) | 接觸網兩端的懸掛點 | 右鍵此方塊以架設接觸網。變電所與接觸網之間的中繼 |
-| [接觸網支柱](overhead-pole.md) | 單軌道支撐柱 | 承載絕緣子的底座。右鍵放置在軌道旁 |
-| [接觸網桁架](overhead-truss.md) | 跨越多條軌道的龍門支撐 | 承載絕緣子的底座。跨越軌道組 |
-| [接觸網支柱自動工具](../tools/overhead-pole-auto-tool.md) | 自動放置支柱 / 桁架 / 絕緣子 | 按設定的高度和數量沿軌道批量放置 |
-| [受電弓](pantograph.md) | 車頂集電器 | 右鍵在車頂放置。在接觸網下運行時自動連接 |
-| [FE 逆變器](fe-inverter.md) | 車載 FE 緩衝 | 3 格寬設備。將受電弓的電力提供給車載機器 |
-| [模擬逆變器](dummy-inverter.md) | 僅裝飾（無功能） | 外觀同 FE 逆變器，僅 UI 受電弓展開有效 |
-| [箱式變電所](substation.md) | 外部 FE 接入 + 接觸網供電 | 3×4×2 多方塊結構 |
-| [電力檢測器](power-checker.md) | 調試工具 | 右鍵絕緣子 / 變電所 / 逆變器 / 受電弓以顯示剩餘 FE 等 |
+電氣化是附加功能。沒有搭載電氣化設備的列車，可以繼續按 Create 的標準方式運行。同時搭載受電弓和 FE 逆變器的列車被視為電氣化列車，行駛時整列車消耗 1,500 FE/tick。儲存的 FE 降到 0 時列車會停下，在補充 FE 之前無法再次起步。
 
-## 常見問題
+搭載 FE 逆變器的車廂，每節最多儲存 50,000 FE。升起的受電弓接觸已通電的接觸網期間，每台受電弓集電 2,000 FE/tick。
 
-> [!NOTE]
-> **問：未電氣化的列車還能像以前一樣運行嗎？**
-> 答：可以。電氣化系統完全是附加功能，因此 Create 的標準時刻表運行不受影響。
+即使區塊未加載，變電所也會繼續向接觸網供電。位於未加載區塊中的列車既不集電，也不消耗 FE。
 
-> [!NOTE]
-> **問：我想了解每個部件的詳細信息。**
-> 答：從上表中的鏈接跳轉即可。如需故障排查，請參閲[電力檢測器](power-checker.md)頁面中的"故障排查使用"章節。
-
-> [!IMPORTANT]
-> **問：我的列車可以僅靠 Create 能量運行，不使用電氣化嗎？**
-> 答：可以。電氣化系統被設計為"超越 Create 能量的輔助電力"。
-> 例如，你可以使用 Mek 反應堆作為電源，以便在長途運行中節省 Create 桶裝能量儲備。
-
-## 相關頁面
-
-- [接觸網 / 連接工具](wire-connector.md)
-- [自定義接觸網設計](custom-wire.md)
-- [接觸網絕緣子](insulator.md)
-- [接觸網支柱](overhead-pole.md)
-- [接觸網桁架](overhead-truss.md)
-- [接觸網支柱自動工具](../tools/overhead-pole-auto-tool.md)
-- [受電弓](pantograph.md)
-- [FE 逆變器](fe-inverter.md)
-- [模擬逆變器](dummy-inverter.md)
-- [箱式變電所](substation.md)
-- [電力檢測器](power-checker.md)
+進入已通電接觸網兩端絕緣子之間的直線 1 方塊以內的玩家和生物，每 0.5 秒會受到 1 點（半顆心）觸電傷害。創造模式和旁觀模式下不會受到傷害。

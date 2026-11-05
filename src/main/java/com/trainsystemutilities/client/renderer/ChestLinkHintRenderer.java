@@ -80,24 +80,20 @@ public class ChestLinkHintRenderer {
         int bgRgb = lastAlreadyLinked ? 0x143020 : 0x1a1a2e;
         int borderRgb = lastAlreadyLinked ? 0x66bb6a : 0x4fc3f7;
         int fgRgb = lastAlreadyLinked ? 0x66bb6a : 0x80deea;
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
         int fgA = (int) (0xFF * fade);
         // 「常にサイズ2相当」: 中央アンカーを pivot に counter-scale (G=2 で無変更)。
         com.manta.api.hud.HudChrome.pushUiScale(g, sw / 2f, y + HINT_H / 2f);
-        com.manta.api.hud.HudChrome.drawRoundedRect(g, x, y, HINT_W, HINT_H,
-                (bgA << 24) | bgRgb, (borderA << 24) | borderRgb);
+        com.manta.api.hud.HudChrome.panel(g, x, y, HINT_W, HINT_H, fade, bgRgb, borderRgb);
         // icon がある状態では「icon + gap + text」を 1 グループとして中央寄せする
         // (text だけを中央に置くと icon 幅ぶん左右非対称になる)。
         int iconW = lastIconId.isEmpty() ? 0 : ICON_PX + ICON_GAP;
-        int lw = mc.font.width(lastLabel);
+        int lw = com.manta.api.text.MantaText.uiWidth(mc.font, lastLabel);
         int gx = x + (HINT_W - (iconW + lw)) / 2;
         if (!lastIconId.isEmpty()) {
             com.manta.api.render.Icons.draw(g, lastIconId, gx,
                     y + (HINT_H - ICON_PX) / 2f, ICON_PX, ICON_PX, (fgA << 24) | fgRgb);
         }
-        g.drawString(mc.font, lastLabel, gx + iconW, y + (HINT_H - 9) / 2,
-                (fgA << 24) | fgRgb, false);
+        com.manta.api.text.MantaText.draw(g, mc.font, lastLabel, gx + iconW, y + (HINT_H - 9) / 2, (fgA << 24) | fgRgb);
         com.manta.api.hud.HudChrome.popUiScale(g);
     }
 

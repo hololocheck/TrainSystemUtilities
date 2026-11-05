@@ -1,0 +1,164 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "upload-plus-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.ppu.image",
+      "holdMs": 1100
+    },
+    {
+      "target": {
+        "classes": [
+          "upload-plus-btn"
+        ]
+      },
+      "do": "click",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "md-tool",
+          "md-tool-h"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.ppu.heading",
+      "holdMs": 500
+    },
+    {
+      "target": {
+        "classes": [
+          "upload-desc-canvas"
+        ],
+        "at": [
+          0.5,
+          0.9
+        ]
+      },
+      "do": "type",
+      "text": "E235系 4両編成",
+      "charMs": 110,
+      "say": "trainsystemutilities.wiki.play.ppu.type",
+      "holdMs": 300
+    },
+    {
+      "do": "key",
+      "key": "enter",
+      "holdMs": 200
+    },
+    {
+      "target": {
+        "classes": [
+          "upload-desc-canvas"
+        ],
+        "at": [
+          0.5,
+          0.9
+        ]
+      },
+      "do": "type",
+      "text": "山手線の通勤電車です。",
+      "charMs": 100,
+      "holdMs": 300
+    },
+    {
+      "do": "key",
+      "key": "enter",
+      "holdMs": 200
+    },
+    {
+      "target": {
+        "classes": [
+          "md-tool",
+          "md-tool-list"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.ppu.list",
+      "holdMs": 500
+    },
+    {
+      "target": {
+        "classes": [
+          "upload-desc-canvas"
+        ],
+        "at": [
+          0.5,
+          0.9
+        ]
+      },
+      "do": "type",
+      "text": "4両 / 全長 39 ブロック",
+      "charMs": 100,
+      "holdMs": 200
+    },
+    {
+      "do": "key",
+      "key": "enter",
+      "holdMs": 200
+    },
+    {
+      "target": {
+        "classes": [
+          "md-tool",
+          "md-tool-list"
+        ]
+      },
+      "do": "click",
+      "holdMs": 400
+    },
+    {
+      "target": {
+        "classes": [
+          "upload-desc-canvas"
+        ],
+        "at": [
+          0.5,
+          0.9
+        ]
+      },
+      "do": "type",
+      "text": "接着剤 312",
+      "charMs": 100,
+      "holdMs": 600
+    },
+    {
+      "target": {
+        "classes": [
+          "upload-preview-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.ppu.preview",
+      "holdMs": 2600
+    },
+    {
+      "target": {
+        "classes": [
+          "upload-publish-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.ppu.publish",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "confirm-ok-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.ppu.done",
+      "holdMs": 2600
+    }
+  ]
+}

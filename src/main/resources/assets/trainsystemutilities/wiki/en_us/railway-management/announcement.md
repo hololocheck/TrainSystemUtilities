@@ -1,91 +1,35 @@
 ---
-title: Announcement Settings (SAS integration)
+title: Announcement Settings (SAS Integration)
 id: railway-management/announcement
 tags: [station, announcement, sas, audio]
 ---
 
-# Announcement Settings (SAS integration)
+# Announcement Settings (SAS Integration)
 
-![](bws:trainsystemutilities:wiki/screens/railway-management-announcement__ja_jp.png)
+![](bws:trainsystemutilities:wiki/screens/railway-management-announcement__en_us.png)
 
-A popup shown when [StationSoundSystem (SAS)](https://github.com/hololocheck/SpatialAudioSystem) is integrated.  
-Manages departure melodies, announcements, and jingles tied to train events such as arrival / departure / pass-through.
+Plays sound as trains pass or stop. Requires [Spatial Audio System (SAS)](https://github.com/hololocheck/SpatialAudioSystem). Choose "Announce" from "Function" on the [Railway Management Block](../railway-management.md).
 
 [[TOC]]
 
-> [!IMPORTANT]
-> This page only works when the **SpatialAudioSystem (SAS) MOD is installed alongside it**.  
-> Without SAS, "Announcement" does not appear in the "Function ▼" list, and the popup itself cannot be opened.
+## Overall settings
 
-## How to open
+"Detection" turns all announcements on or off. "Show range frame" shows the Range Board's range, and in attenuation mode the attenuation range, on your own screen. "Attenuation mode" sets whether the sound weakens with distance.
 
-1. **Right-click** the [Railway Management Block](../railway-management.md) to open its GUI.
-2. **Click the "Function ▼" button** on the monitor row.
-3. From the list that appears, **click "Announcement"** to open this announcement settings popup ("Announcement" only appears when SAS is installed).
+## Registering when to play
 
-## Top-level settings
+Create an entry with "Add Entry" and set its condition and the sound to play. Up to 16 entries can be registered. Click the condition field and choose "None", "On Pass" or "On Stop". With "None", nothing plays. Right-click to clear the condition.
 
-Each toggle switches ON / OFF when **clicked**.
+![](bws:trainsystemutilities:wiki/screens/railway-management-announcement__en_us.png)
 
-| Item (display name) | Operation | Use |
-|---|---|---|
-| "Detection Enabled" toggle | Click | Overall announcement ON / OFF (master switch) |
-| "Range Frame Display" toggle (client-side) | Click | Visualize the detection range with a border (your screen only; for alignment) |
-| "Attenuation Mode" toggle | Click | ON = distance attenuation, OFF = uniform near the station |
+Specify the sound by putting an SAS recording medium in each entry's medium slot. Adjust the delay and the play count by pointing the cursor at the value and turning the mouse wheel. The delay is in seconds and applies only to the entry's first play. A negative value is treated as 0. The play count is 1 to 10. "Test Play" plays the first entry once so you can check it.
 
-## Entry management
+Deleting an entry with its delete button gives back the recording medium that was in it.
 
-An entry = a (condition) → (audio to play) pair.  
-A station holds multiple entries in order and plays the entry whose condition matches. Audio is assigned by **putting an SAS storage-medium item** into each entry's slot.
+## Detection point and playback range
 
-### Adding, deleting, and testing entries
+Set the point where trains are detected on the [Detection Card](../tools/train-detection-card.md), and the range the sound reaches on the Range Board. Put each in its own slot. Their roles differ from that of the sound medium.
 
-- **Click the "+ Add Entry" button**: adds a new entry.
-- **Click the "Test Play" button**: plays for a functional check.
-- When there are many entries, **scroll** over the list with the **mouse wheel**.
+## Sharing with other stations
 
-### Choosing a condition (dropdown)
-
-![](bws:trainsystemutilities:wiki/screens/railway-management-announcement__ja_jp.png)
-
-**Clicking an entry's condition display (with ▾)** opens a list, and you can **click** to pick from the following 3. **Right-clicking** the condition display resets it to "None".
-
-| Condition (display name) | Trigger |
-|---|---|
-| None | Does nothing (a disabled entry) |
-| On pass | The moment a train **passes through** the detection range |
-| On stop | The moment a train **stops** within the detection range |
-
-### Timing and repeat count
-
-The following values on each entry are increased/decreased by **hovering the cursor over the value and using the mouse wheel**.
-
-| Item (display) | Operation | Content |
-|---|---|---|
-| Delay (`↕ +Ns`) | Hover value → **wheel** | Delay in seconds from when the condition is met until playback (negatives allowed) |
-| Repeat count (`↕xN`) | Hover value → **wheel** | How many times that entry repeats |
-
-### Assigning audio (storage-medium slots)
-
-At the bottom of the popup are 2 item slots: **"Detection Card"** and **"Range Board"**. Put an item holding SAS audio into them with **normal inventory operations (pick up with a click and place)**, and it becomes that entry's playback audio.
-
-## Announcement sharing (Share)
-
-**Clicking the "Share" button** in the popup opens the "Share with other stations" list, where you can share this station's announcement settings with other stations (= stations registered in the [management computer](../management-computer/overview.md)).
-
-**Click** the 2 toggles to the right of each station in the list to turn sharing ON / OFF individually per station.
-
-| Toggle (display name) | What is shared |
-|---|---|
-| "Detection" | Shares the Detection Card (detection range) setting |
-| "Range" | Shares the Range Board (operating range) setting |
-
-- When there are many stations, **scroll** over the list with the **mouse wheel**.
-- Conversely, when this station is **receiving** a share from another station, "Shared from ○○" is shown at the top of the popup.
-
-## Related
-
-- [Railway Management Block](../railway-management.md)
-- [Monitor Settings](settings.md)
-- [Color Settings](color.md)
-- StationSoundSystem official repository (external)
+Open "Share" and choose the stations to share with and each detection and range item. When this station receives sharing from another station, the source is shown at the bottom of the screen.

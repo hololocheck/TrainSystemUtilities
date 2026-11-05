@@ -1,0 +1,148 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "icon-load-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pie.load",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-scale-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "say": "trainsystemutilities.wiki.play.pie.scale",
+      "holdMs": 300
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-scale-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 300
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-scale-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-ox-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.pie.offset",
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-ox-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-ox-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-oy-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 250
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-oy-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-bg-3"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pie.bg",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-target-toggle"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pie.target",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-target-frame"
+        ]
+      },
+      "do": "click",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-bg-7"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pie.frame",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "icon-save-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pie.save",
+      "holdMs": 1800
+    }
+  ]
+}

@@ -8,6 +8,7 @@
   "dynamicH": "ph",
   "children": [
     {
+      "textKey": "train-list-title",
       "tag": "span",
       "classes": [
         "panel-title",
@@ -42,6 +43,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train0_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -54,6 +56,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train0_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -75,6 +78,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train0_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -86,6 +90,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train0_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -98,6 +103,7 @@
                   "visibleKey": "train0_dest_visible"
                 },
                 {
+                  "textKey": "train0_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -138,6 +144,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train1_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -150,6 +157,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train1_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -171,6 +179,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train1_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -182,6 +191,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train1_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -194,6 +204,7 @@
                   "visibleKey": "train1_dest_visible"
                 },
                 {
+                  "textKey": "train1_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -234,6 +245,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train2_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -246,6 +258,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train2_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -267,6 +280,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train2_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -278,6 +292,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train2_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -290,6 +305,7 @@
                   "visibleKey": "train2_dest_visible"
                 },
                 {
+                  "textKey": "train2_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -330,6 +346,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train3_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -342,6 +359,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train3_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -363,6 +381,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train3_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -374,6 +393,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train3_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -386,6 +406,7 @@
                   "visibleKey": "train3_dest_visible"
                 },
                 {
+                  "textKey": "train3_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -426,6 +447,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train4_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -438,6 +460,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train4_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -459,6 +482,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train4_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -470,6 +494,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train4_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -482,6 +507,7 @@
                   "visibleKey": "train4_dest_visible"
                 },
                 {
+                  "textKey": "train4_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -522,6 +548,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train5_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -534,6 +561,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train5_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -555,6 +583,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train5_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -566,6 +595,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train5_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -578,6 +608,7 @@
                   "visibleKey": "train5_dest_visible"
                 },
                 {
+                  "textKey": "train5_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -618,6 +649,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train6_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -630,6 +662,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train6_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -651,6 +684,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train6_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -662,6 +696,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train6_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -674,6 +709,7 @@
                   "visibleKey": "train6_dest_visible"
                 },
                 {
+                  "textKey": "train6_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -714,6 +750,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train7_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -726,6 +763,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train7_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -747,6 +785,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train7_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -758,6 +797,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train7_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -770,6 +810,7 @@
                   "visibleKey": "train7_dest_visible"
                 },
                 {
+                  "textKey": "train7_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -810,6 +851,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train8_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -822,6 +864,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train8_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -843,6 +886,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train8_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -854,6 +898,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train8_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -866,6 +911,7 @@
                   "visibleKey": "train8_dest_visible"
                 },
                 {
+                  "textKey": "train8_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -906,6 +952,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train9_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -918,6 +965,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train9_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -939,6 +987,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train9_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -950,6 +999,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train9_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -962,6 +1012,7 @@
                   "visibleKey": "train9_dest_visible"
                 },
                 {
+                  "textKey": "train9_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -1002,6 +1053,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train10_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -1014,6 +1066,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train10_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -1035,6 +1088,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train10_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -1046,6 +1100,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train10_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -1058,6 +1113,7 @@
                   "visibleKey": "train10_dest_visible"
                 },
                 {
+                  "textKey": "train10_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -1098,6 +1154,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train11_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -1110,6 +1167,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train11_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -1131,6 +1189,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train11_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -1142,6 +1201,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train11_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -1154,6 +1214,7 @@
                   "visibleKey": "train11_dest_visible"
                 },
                 {
+                  "textKey": "train11_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -1194,6 +1255,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train12_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -1206,6 +1268,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train12_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -1227,6 +1290,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train12_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -1238,6 +1302,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train12_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -1250,6 +1315,7 @@
                   "visibleKey": "train12_dest_visible"
                 },
                 {
+                  "textKey": "train12_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -1290,6 +1356,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train13_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -1302,6 +1369,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train13_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -1323,6 +1391,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train13_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -1334,6 +1403,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train13_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -1346,6 +1416,7 @@
                   "visibleKey": "train13_dest_visible"
                 },
                 {
+                  "textKey": "train13_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -1386,6 +1457,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train14_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -1398,6 +1470,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train14_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -1419,6 +1492,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train14_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -1430,6 +1504,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train14_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -1442,6 +1517,7 @@
                   "visibleKey": "train14_dest_visible"
                 },
                 {
+                  "textKey": "train14_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -1482,6 +1558,7 @@
           "padding": 4,
           "children": [
             {
+              "textKey": "train15_name",
               "tag": "span",
               "classes": [
                 "train-name",
@@ -1494,6 +1571,7 @@
               "fontWeight": "bold"
             },
             {
+              "textKey": "train15_status",
               "tag": "span",
               "classes": [
                 "train-status",
@@ -1515,6 +1593,7 @@
               "align": "center",
               "children": [
                 {
+                  "textKey": "train15_cars",
                   "tag": "span",
                   "classes": [
                     "train-info-text",
@@ -1526,6 +1605,7 @@
                   "fontScaleKey": "fsScale"
                 },
                 {
+                  "textKey": "train15_dest",
                   "tag": "span",
                   "classes": [
                     "train-dest",
@@ -1538,6 +1618,7 @@
                   "visibleKey": "train15_dest_visible"
                 },
                 {
+                  "textKey": "train15_paused",
                   "tag": "span",
                   "classes": [
                     "signal-red",
@@ -1556,6 +1637,7 @@
       ]
     },
     {
+      "textKey": "train-list-page",
       "tag": "span",
       "classes": [
         "train-info-text",

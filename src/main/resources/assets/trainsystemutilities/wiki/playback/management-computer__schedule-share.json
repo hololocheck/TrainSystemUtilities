@@ -1,0 +1,27 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "sched-share-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.share.toggle",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-share-toggle-track"
+        ],
+        "index": 1
+      },
+      "do": "click",
+      "holdMs": 1200
+    }
+  ]
+}

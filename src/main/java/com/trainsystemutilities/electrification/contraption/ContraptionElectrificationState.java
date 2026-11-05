@@ -20,8 +20,8 @@ import java.util.concurrent.ConcurrentMap;
  * 各 contraption (= からくり列車) の電化状態を保持するレジストリ。
  *
  * <p>D2: 組立時に Create の {@code MovementBehaviour.startMoving} 経由で
- * インバータ / パンタグラフブロックが自分自身を登録。両方が揃った contraption が
- * 「電化列車」として扱われる。
+ * インバータ / パンタグラフブロックが自分自身を登録。両方が (同じ車両でなくても) 揃った列車が
+ * 「電化列車」として扱われる ({@link ContraptionElectrificationTicker#trainElectricStatus})。
  *
  * <p>{@link WeakHashMap} を使うことで Create 側の Contraption 解放時に自動で entry が GC される。
  */
@@ -115,10 +115,6 @@ public final class ContraptionElectrificationState {
          *  これを防ぐため (trainId, carriageIndex) ペアの永続キーで PERSISTENT_ENERGY map と
          *  紐付ける。 */
         private volatile long persistentKey = 0L;
-
-        public boolean isElectrified() {
-            return !inverters.isEmpty() && !pantographs.isEmpty();
-        }
 
         /** UI ゲート判定: 機能版 / 装飾版いずれかのインバータがあるか。 */
         public boolean hasAnyInverterType() {
@@ -279,11 +275,6 @@ public final class ContraptionElectrificationState {
         info.contactingPantographs.remove(localPos);
         info.pantographBarOffsetY.remove(localPos);
         cleanupIfEmpty(c, info);
-    }
-
-    public static boolean isElectrified(Contraption c) {
-        Info info = getOrComputeInfo(c);
-        return info != null && info.isElectrified();
     }
 
     public static Info getInfo(Contraption c) {

@@ -9,89 +9,34 @@ tags: [tool, block, terminal]
 ```embed:item id=trainsystemutilities:transit_terminal size=48 label=true
 ```
 
-一種**手持物品**，用於檢索並顯示車站之間的換乘路線。
-藉助管理用計算機的路線數據，它會像"智能手機乘車 App"一樣，在屏幕上顯示出發站 → 到達站的路線、所需時間與各時刻。
+手持使用的查詢終端。右鍵後，會在畫面右下角打開查詢界面。打開期間用鼠標操作，按 Esc 關閉。
 
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__top__ja_jp.png)
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__top__zh_hk.png)
 
 [[TOC]]
 
-## 打開 / 持有
+## 查詢路線
 
-1. **將換乘查詢終端放入快捷欄並手持**（它是手持物品，而非可放置的方塊）。
-2. 在任意位置**右鍵**（即物品使用鍵；默認為**鼠標右鍵**）。
-3. 一塊高大的智能手機風格面板會從屏幕右下方向上滑出，這就是換乘導引界面。
-4. 要關閉它，請按 **Esc 鍵**（面板會向下滑動並消失）。
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__top__zh_hk.png)
 
-> [!NOTE]
-> 面板打開期間，鼠標光標可自由移動，能點擊按鈕和輸入框。
-> 此時按下 `W / A / S / D` **不會移動玩家**（你可以在原地輸入車站名而不必走動）。
+在「首頁」輸入出發站和到達站，並從候選中選擇車站。用交換按鈕可以相換兩站。兩站都選擇後即可執行查詢。
 
-## 界面操作（基礎）
+選擇結果後，可以查看各站的發到時刻、站台、列車名等。有多個候選時，用候選標籤頁切換。可以從詳情中啓用導航和路線詳情 HUD。查詢記錄可以逐條刪除，也可以一併刪除。
 
-- **切換標籤頁**：在面板**底部**排列的 4 個圖標中（🔍 檢索 / 🕒 時刻表 / 🗺 地圖 / ⚙ 設置）**左鍵**其中一個即可切換。
-- **選擇輸入框**：**左鍵**出發 / 到達車站輸入框使其成為輸入目標，然後用鍵盤輸入車站名。輸入時會自動在下方顯示候選（自動補全），**左鍵候選**即可確認。
-- **數值 / 開關**：在設置標籤頁中，對開關行**左鍵**即可在 開 / 關 之間切換。
+## 其他界面
 
-## 四標籤頁佈局
+- 時刻表：按列車名篩選，查看列車的時刻表。
 
-### 檢索（TOP）🔍
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__schedule__zh_hk.png)
 
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__top__ja_jp.png)
+- 地圖：顯示線路圖。拖動移動，滾輪縮放。
 
-主標籤頁，在此輸入出發車站（●）和到達車站（■）來檢索路線。
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__map__zh_hk.png)
 
-1. **左鍵頂部的出發車站輸入框**，用鍵盤輸入車站名（出現候選時**左鍵**確認）。
-2. 以同樣方式在下方輸入**到達車站**。
-3. **左鍵右側的交換按鈕（⇅）**，可交換出發站與到達站。
-4. 兩個車站都設置好後，**"檢索"按鈕**會變綠，**左鍵**即可在下方顯示路線。
-5. 當檢索到多條路線時，頂部會出現 **1 / 2 / 3**（即 快捷 / 輕鬆 / 便宜）的**候選標籤**，**左鍵**即可選中某個候選。
-6. **左鍵**某個路線卡片，可切換到列出每站到發時刻、股道和列車名的**詳情（時間軸）**視圖。在詳情視圖中，左上角的 **"←" 返回**，右上角的 **🧭（開始導航）**會顯示路線導引 HUD，**🪟** 用於開 / 關詳情 HUD。
-7. 檢索前會列出**歷史檢索記錄**，左鍵每行末尾的 **✕** 可刪除單條記錄，也可用右上角的批量刪除清除全部。
+- 設置：切換 12・24 小時制、調整面板位置，以及切換詳情 HUD 的顯示。
 
-### 時刻表（SCHEDULE）🕒
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__settings__zh_hk.png)
 
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__schedule__ja_jp.png)
+啓用佈局調整後，可以拖動標題部分移動面板。用「重置位置」恢復初始位置。
 
-所有列車時刻表的列表。**左鍵頂部的搜索框**並輸入車站名，即可按與該車站相關的列車進行篩選。
-
-### 地圖（MAP）🗺
-
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__map__ja_jp.png)
-
-整個鐵路網絡的 2D 地圖。可**拖動移動（平移）**，並用**鼠標滾輪縮放**。
-
-### 設置（SETTINGS）⚙
-
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__settings__ja_jp.png)
-
-對每一行**左鍵**，即可切換右側開關的 開 / 關。
-
-| 設置項 | 説明 |
-|---|---|
-| 24 小時制 | 在 24 小時制 / 12 小時制之間切換時刻顯示 |
-| 步行可達 | 是否在路線中包含前往鄰近車站的步行區段 |
-| 佈局調整模式 | 開啓時，可**拖動**面板標題欄來移動其顯示位置 |
-| 詳情 HUD 顯示 | 是否在屏幕上顯示路線詳情 HUD |
-
-**左鍵最下方的"重置佈局"按鈕**，可將已移動的面板和 HUD 位置恢復到初始狀態。
-
-## 功能
-
-| 功能 | 概要 |
-|---|---|
-| 路線檢索 | 給定出發站 + 到達站，給出路線建議 |
-| 時刻表顯示 | 列出下一班列車的到 / 發時刻 |
-| 線路符號顯示 | 顯示路線上各站的線路符號 |
-
-## 與管理用計算機的聯動
-
-終端會與管理用計算機（= 同一車站組內的那些）自動聯動。
-管理用計算機上的時刻表 / 車站信息更新會立即反映。
-
-## 相關
-
-- [管理用計算機概述](../management-computer/overview.md)
-- [時刻表標籤頁](../management-computer/schedule.md)
-- [車站標籤頁](../management-computer/stations.md)
-- [鐵路管理方塊](../railway-management.md)
+查詢使用[車站組](station-range-tool.md)和 Create 的列車時刻表，線路編號從[管理用計算機](../management-computer/overview.md)獲取。找不到車站時，請確認車站組的登記。

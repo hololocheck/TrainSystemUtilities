@@ -1,7 +1,6 @@
 package com.trainsystemutilities.item;
 
 import com.trainsystemutilities.compat.ae2.TrainPresetAe2Integration;
-import com.trainsystemutilities.network.TrainPresetPlaceResultPayload;
 import com.trainsystemutilities.preset.PresetPlacer;
 import com.trainsystemutilities.preset.TrainPreset;
 import com.trainsystemutilities.preset.TrainPresetMaterials;
@@ -259,10 +258,8 @@ public class TrainPresetToolItem extends Item {
                 "tsu.tool.place_summary_fmt",
                 result.blocksPlaced(), result.entitiesSpawned(),
                 result.glueClusters(), result.gluedBlocks(), glueConsumed).getString();
-        PacketDistributor.sendToPlayer(sp,
-                new TrainPresetPlaceResultPayload(
-                        Component.translatable("tsu.tool.place_done").getString(),
-                        placeDetail));
+        com.manta.api.net.Notify.success(sp,
+                Component.translatable("tsu.tool.place_done").getString(), placeDetail);
 
         // 設置完了後は PLACE モードを自動解除 (GUI モードへ戻る)。
         setToolMode(stack, TOOL_MODE_GUI);
@@ -497,41 +494,24 @@ public class TrainPresetToolItem extends Item {
     }
 
     private static void clearByEditMode(ItemStack stack, Player player) {
-        int editMode = getEditMode(stack);
-        if (editMode == 1) {
-            stack.remove(ModDataComponents.RANGE_POS1.get());
-            player.displayClientMessage(Component.translatable("tsu.tool.pos1_clear")
-                    .withStyle(ChatFormatting.YELLOW), true);
-        } else if (editMode == 2) {
-            stack.remove(ModDataComponents.RANGE_POS2.get());
-            player.displayClientMessage(Component.translatable("tsu.tool.pos2_clear")
-                    .withStyle(ChatFormatting.YELLOW), true);
-        } else {
-            stack.remove(ModDataComponents.RANGE_POS1.get());
-            stack.remove(ModDataComponents.RANGE_POS2.get());
-            player.displayClientMessage(Component.translatable("tsu.tool.range_clear")
-                    .withStyle(ChatFormatting.YELLOW), true);
-        }
+        com.manta.api.tool.RangeSelection.Edit edit = com.manta.api.tool.RangeSelection.Edit.of(getEditMode(stack));
+        boolean p1 = com.manta.api.tool.RangeSelection.clears(edit, com.manta.api.tool.RangeSelection.Slot.POS1);
+        boolean p2 = com.manta.api.tool.RangeSelection.clears(edit, com.manta.api.tool.RangeSelection.Slot.POS2);
+        if (p1) stack.remove(ModDataComponents.RANGE_POS1.get());
+        if (p2) stack.remove(ModDataComponents.RANGE_POS2.get());
+        String key = (p1 && p2) ? "tsu.tool.range_clear"
+                : p1 ? "tsu.tool.pos1_clear" : "tsu.tool.pos2_clear";
+        player.displayClientMessage(Component.translatable(key)
+                .withStyle(ChatFormatting.YELLOW), true);
     }
 
     private static void setPosition(ItemStack stack, Player player, BlockPos pos) {
-        int editMode = getEditMode(stack);
-        if (editMode == 1) {
-            stack.set(ModDataComponents.RANGE_POS1.get(), pos);
-            notifyPosSet(player, "Pos1", pos);
-        } else if (editMode == 2) {
-            stack.set(ModDataComponents.RANGE_POS2.get(), pos);
-            notifyPosSet(player, "Pos2", pos);
-        } else {
-            BlockPos pos1 = stack.get(ModDataComponents.RANGE_POS1.get());
-            if (pos1 == null) {
-                stack.set(ModDataComponents.RANGE_POS1.get(), pos);
-                notifyPosSet(player, "Pos1", pos);
-            } else {
-                stack.set(ModDataComponents.RANGE_POS2.get(), pos);
-                notifyPosSet(player, "Pos2", pos);
-            }
-        }
+        boolean toPos1 = com.manta.api.tool.RangeSelection.slotForClick(
+                com.manta.api.tool.RangeSelection.Edit.of(getEditMode(stack)),
+                stack.get(ModDataComponents.RANGE_POS1.get()) != null)
+                == com.manta.api.tool.RangeSelection.Slot.POS1;
+        stack.set(toPos1 ? ModDataComponents.RANGE_POS1.get() : ModDataComponents.RANGE_POS2.get(), pos);
+        notifyPosSet(player, toPos1 ? "Pos1" : "Pos2", pos);
     }
 
     private static void notifyPosSet(Player player, String label, BlockPos pos) {
@@ -541,16 +521,8 @@ public class TrainPresetToolItem extends Item {
     }
 
     private static BlockPos getLookTargetBlock(Player player, Level level) {
-        Vec3 eye = player.getEyePosition(1.0f);
-        Vec3 look = player.getLookAngle();
-        Vec3 end = eye.add(look.scale(MAX_RANGE));
-        BlockHitResult hitResult = level.clip(new ClipContext(
-                eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
-        if (hitResult.getType() == HitResult.Type.BLOCK) {
-            return hitResult.getBlockPos();
-        }
-        return null;
-    }
+    return com.manta.api.hud.LookTarget.blockPos(player, level, MAX_RANGE);
+}
 
     public static int getToolMode(ItemStack stack) {
         Integer m = stack.get(ModDataComponents.TOOL_MODE.get());

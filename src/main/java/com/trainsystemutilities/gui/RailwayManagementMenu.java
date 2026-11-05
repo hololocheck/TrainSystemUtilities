@@ -320,8 +320,11 @@ public class RailwayManagementMenu extends AbstractContainerMenu {
             blockEntity.setBackClockFontSizeForGroup(groupIndex, fontSize);
             return true;
         }
-        // 9000: プライベートモード切替
-        if (id == 9000) { blockEntity.togglePrivateMode(); return true; }
+        // 9000: プライベートモード切替 (持ち主か OP だけ - PermissionHelper.mayTogglePrivate)
+        if (id == 9000) {
+            if (com.trainsystemutilities.util.PermissionHelper.mayTogglePrivate(player, blockEntity.getOwnerUUID(), blockEntity.getOwnerName())) blockEntity.togglePrivateMode();
+            return true;
+        }
         // 10000-10999: 表面色設定, 20000-20999: 裏面色設定
         // (colorIndex * 100 + presetIndex), presetIndex 99 = reset
         String[] colorKeys = {"arrTime", "depTime", "stopInfo", "routeType", "stopSec", "trainName", "nextName", "sectionTitle", "countdown", "trackNumber"};

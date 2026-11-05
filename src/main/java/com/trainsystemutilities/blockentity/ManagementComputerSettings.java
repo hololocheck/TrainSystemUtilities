@@ -39,14 +39,12 @@ public final class ManagementComputerSettings {
             "TrackNetPos",
             // モニター (MonW / MonH は自動検出値なので載せない → RUNTIME_KEYS)
             "MonitorLayout", "MonEnabled",
-            // 路線記号
-            "LineSymbols", "StationSymbolMap",
+            // 路線記号 (割り当てた player も — 守られた駅で持ち主か確かめるため、 ⑲)
+            "LineSymbols", "StationSymbolMap", "StationSymbolActors",
             // 時刻表まわり
             "TimetableShares",
             // 書き出し
-            "ExportAll",
-            // アクセス制御 (所有者そのものは載せない。 下の RUNTIME_KEYS を参照)
-            "PrivateMode"
+            "ExportAll"
     );
 
     /** {@link #applySettings 適用時}に、 カードが値を持っていなければ既定へ戻す必要があるキー。
@@ -82,11 +80,16 @@ public final class ManagementComputerSettings {
      *   <li>{@code TrainSchedViews} — 毎スキャン再構築される表示 cache。</li>
      * </ul>
      * これらはコンピューターを壊しても失われない (world / global 側に残る) ので、
-     * カードに載せなくても「壊しても消えない」は満たす。 */
+     * カードに載せなくても「壊しても消えない」は満たす。
+     *
+     * <p>{@code PrivateMode} (非公開の切替) も載せない。 理由は権威の置き場ではなく<b>誰が変えてよいか</b>:
+     * 切替は持ち主か OP だけ ({@code PermissionHelper.mayTogglePrivate}) なのに、 カードは開けられる誰でも
+     * 差せる。 2026-10-02 まで載せていたので、 非公開にしたコンピューターのカードを公開のコンピューターへ
+     * 差せば、 持ち主でなくても非公開にできた。 壊して置き直したら非公開は持ち主が切り替え直す。 */
     public static final List<String> RUNTIME_KEYS = List.of(
             "MemoryCard", "MonitorLinkCard",
             "ExportIn", "ExportOut", "ExportTrain", "ExportProgress",
-            "OwnerUUID", "OwnerName",
+            "OwnerUUID", "OwnerName", "PrivateMode",
             "PendingStop", "PendingResume",
             "CachedSignals", "CachedStations", "CachedTrains",
             "TrainTimetableFlags", "StationManagerPosMap",
@@ -119,6 +122,21 @@ public final class ManagementComputerSettings {
             if (isSetting(key)) out.put(key, full.get(key).copy());
         }
         return out;
+    }
+
+    /**
+     * カード上の設定を {@code merged} (= 現在の save 出力) へ重ねる。 <b>設定キーだけ</b>。
+     *
+     * <p>カードは設定の権威で、 それ以外の権威ではない。 2026-10-02 まで適用はカードの<b>全キー</b>を重ねていたので、
+     * {@code PrivateMode} を載せていた頃のカードを差せば今も非公開に切り替わり、 所有者やスロットの中身を持つカードを
+     * 作れば、 それも重なった ({@link #extract} は設定キーしか書かないが、 読む側はそれを確かめていなかった)。
+     */
+    public static void overlay(CompoundTag merged, CompoundTag card) {
+        for (String key : card.getAllKeys()) {
+            if (!isSetting(key)) continue;
+            Tag t = card.get(key);
+            if (t != null) merged.put(key, t.copy());
+        }
     }
 
     /**

@@ -18,6 +18,9 @@ public class ClientSetup {
                 com.trainsystemutilities.client.wiki.TSUWikiEmbeds.registerAll());
         com.trainsystemutilities.compat.McssBridge.safeRun("TsuScreenHints.registerAll", () ->
                 com.trainsystemutilities.client.gui.TsuScreenHints.registerAll());
+        // The wiki draws the pages' screen pictures live from the capture table (Manta 7 Phase 7).
+        com.trainsystemutilities.compat.McssBridge.safeRun("WikiLiveCapture.registerLive", () ->
+                com.trainsystemutilities.client.wiki.WikiLiveCapture.registerLive());
 
         // FBO deferred update: メイン描画パス外で FBO 更新を実行することで Iris と共存。
         // AFTER_LEVEL は world rendering 完了後に発火するため、ここで FBO 更新しても

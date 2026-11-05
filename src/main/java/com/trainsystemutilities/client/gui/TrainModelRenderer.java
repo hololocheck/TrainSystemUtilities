@@ -224,31 +224,35 @@ public final class TrainModelRenderer {
             int minY = Integer.MAX_VALUE, maxY = Integer.MIN_VALUE;
             int minZ = Integer.MAX_VALUE, maxZ = Integer.MIN_VALUE;
             for (var pos : allBlocks.keySet()) {
-                minX = Math.min(minX, pos.getX()); maxX = Math.max(maxX, pos.getX());
-                minY = Math.min(minY, pos.getY()); maxY = Math.max(maxY, pos.getY());
-                minZ = Math.min(minZ, pos.getZ()); maxZ = Math.max(maxZ, pos.getZ());
+                // +1 because a block at p occupies [p, p+1): without it the pivot below
+                // sits half a block low on every axis (user decision, 2026-09-13).
+                minX = Math.min(minX, pos.getX()); maxX = Math.max(maxX, pos.getX() + 1);
+                minY = Math.min(minY, pos.getY()); maxY = Math.max(maxY, pos.getY() + 1);
+                minZ = Math.min(minZ, pos.getZ()); maxZ = Math.max(maxZ, pos.getZ() + 1);
             }
             float bcx = (minX + maxX) / 2f;
             float bcy = (minY + maxY) / 2f;
             float bcz = (minZ + maxZ) / 2f;
-            float range = Math.max(maxX - minX + 1, Math.max(maxY - minY + 1, maxZ - minZ + 1));
+            float range = Math.max(maxX - minX, Math.max(maxY - minY, maxZ - minZ));
 
             // pose は既に overlay 原点に translate 済み → translate は popup-local 座標を使う。
             // 一方 scissor は SCREEN 座標を要求するので overlayX/Y を加算する。
             // pan: ユーザーが shift+ドラッグで modelPanX/Y を更新 → 中心からのオフセットに加算。
             float poseCenterX = cx + cw / 2f + modelPanX;
             float poseCenterY = cy + ch / 2f + modelPanY;
-            // scissor は pose 行列 (overlayScale 含む) から実 screen rect を算出する。
-            // overlayX+cx の手動加算は dialogScale 非乗算で高 GUI スケール時に切れる。
-            var pm = g.pose().last().pose();
-            int screenSx = Math.round(cx * pm.m00() + pm.m30());
-            int screenSy = Math.round(cy * pm.m11() + pm.m31());
-            float baseScale = Math.min(cw * 0.45f, ch * 0.7f) / range;
+            // 最長辺 fit は回転後の投影を見ないので、 収容 fit と小さい方を採る。 ここは
+            // ユーザーが自由に回せる面なので、 どの角度でも枠を超えないことが要る
+            // (0.45 / 0.7 の framing は意図的なので、 既に収まっている角度では動かさない)。
+            float baseScale = Math.min(
+                    Math.min(cw * 0.45f, ch * 0.7f) / range,
+                    com.manta.api.preview.GuiPreviewCamera.containScale(
+                            cw, ch, maxX - minX, maxY - minY, maxZ - minZ,
+                            modelRotX, modelRotY, 0.95f));
             float scale = baseScale * modelZoom;  // ホイールズームを反映
 
-            g.enableScissor(screenSx, screenSy,
-                    Math.round((cx + cw) * pm.m00() + pm.m30()),
-                    Math.round((cy + ch) * pm.m11() + pm.m31()));
+            int[] clip = com.manta.api.preview.GuiPreviewCamera.scissorRect(
+                    g.pose().last().pose(), cx, cy, cw, ch);
+            g.enableScissor(clip[0], clip[1], clip[2], clip[3]);
             com.mojang.blaze3d.platform.Lighting.setupForEntityInInventory();
 
             g.pose().pushPose();
@@ -281,7 +285,7 @@ public final class TrainModelRenderer {
                 }
                 g.pose().pushPose();
                 g.pose().translate(pos.getX(), pos.getY(), pos.getZ());
-                com.trainsystemutilities.client.renderer.PreviewBlockRenderer.renderBlock(
+                com.manta.api.preview.PreviewBlockRenderer.renderBlock(
                         state, beNbt, pos, g.pose(), bufferSource, light, overlay);
                 g.pose().popPose();
             }
@@ -327,10 +331,10 @@ public final class TrainModelRenderer {
     /** プレビューデータを server から取得中 / 失敗時のプレースホルダー表示。 */
     private void drawPreviewLoadingPlaceholder(GuiGraphics g, int cx, int cy, int cw, int ch, Font font) {
         String text = net.minecraft.network.chat.Component.translatable("tsu.mc.train_preview_loading").getString();
-        int tw = font.width(text);
+        int tw = com.manta.api.text.MantaText.uiWidth(font, text);
         int tx = cx + (cw - tw) / 2;
         int ty = cy + ch / 2 - 4;
-        g.drawString(font, text, tx, ty, 0xFFAAAAAA, true);
+        com.manta.api.text.MantaText.draw(g, font, text, tx, ty, 0xFFAAAAAA, true);
     }
 
     private static float readBogeyWheelAngle(Object bogey) {

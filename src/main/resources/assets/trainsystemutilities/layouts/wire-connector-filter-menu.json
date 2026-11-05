@@ -26,6 +26,6 @@
 	],
 	"tag": "div",
 	"classes": ["filter-dropdown-menu"],
-	"animationKey": "filter-menu-open",
+	"animationKey": "dropdown",
 	"x": 0, "y": 0, "w": 96, "h": 46
 }

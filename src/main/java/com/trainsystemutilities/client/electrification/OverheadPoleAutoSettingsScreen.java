@@ -1,21 +1,22 @@
 package com.trainsystemutilities.client.electrification;
 
 import com.manta.api.controller.ToggleSwitchController;
-import com.manta.api.anim.Animation;
 import com.manta.api.draw.SmoothRenderer;
 import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.PageLayer;
+import com.manta.api.state.MantaState;
 import com.trainsystemutilities.client.gui.TsuLayouts;
 import com.trainsystemutilities.electrification.autoplace.AutoPlaceConfig;
-import com.trainsystemutilities.network.OverheadPoleAutoSettingsPayload;
+import com.trainsystemutilities.network.OverheadPoleAutoSettingsAction;
 import com.trainsystemutilities.registry.ModDataComponents;
 import com.trainsystemutilities.registry.ModItems;
+import com.trainsystemutilities.client.ToolsClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * 架線柱自動配置ツールの詳細設定 GUI (MCSS JsonLayoutPlainScreen ベース)。
@@ -24,6 +25,12 @@ import net.neoforged.neoforge.network.PacketDistributor;
  */
 @OnlyIn(Dist.CLIENT)
 public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
+
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
 
     /** 片持ち toggle スイッチ。 */
     private final ToggleSwitchController cantToggle = new ToggleSwitchController(
@@ -35,8 +42,8 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
             v -> {
                 ItemStack s = heldTool();
                 if (s.isEmpty()) return;
-                PacketDistributor.sendToServer(new OverheadPoleAutoSettingsPayload(
-                        OverheadPoleAutoSettingsPayload.FIELD_CANTILEVER, v ? 1 : 0));
+                ToolsClient.poleSettings(
+                        OverheadPoleAutoSettingsAction.FIELD_CANTILEVER, v ? 1 : 0);
                 AutoPlaceConfig.setCantilever(s, v);
             });
 
@@ -49,8 +56,8 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
             v -> {
                 ItemStack s = heldTool();
                 if (s.isEmpty()) return;
-                PacketDistributor.sendToServer(new OverheadPoleAutoSettingsPayload(
-                        OverheadPoleAutoSettingsPayload.FIELD_PLACE_TRUSS, v ? 1 : 0));
+                ToolsClient.poleSettings(
+                        OverheadPoleAutoSettingsAction.FIELD_PLACE_TRUSS, v ? 1 : 0);
                 AutoPlaceConfig.setPlaceTruss(s, v);
             });
 
@@ -63,8 +70,8 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
             v -> {
                 ItemStack s = heldTool();
                 if (s.isEmpty()) return;
-                PacketDistributor.sendToServer(new OverheadPoleAutoSettingsPayload(
-                        OverheadPoleAutoSettingsPayload.FIELD_PLACE_INSULATOR, v ? 1 : 0));
+                ToolsClient.poleSettings(
+                        OverheadPoleAutoSettingsAction.FIELD_PLACE_INSULATOR, v ? 1 : 0);
                 AutoPlaceConfig.setPlaceInsulator(s, v);
             });
 
@@ -90,6 +97,16 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
         super(Component.translatable("tsu.opas.screen_title"));
     }
 
+    /** The wiki's stand-in's tool: a demo one, whose settings the page changes (改善1, 2026-10-07). Null: the held one. */
+    private ItemStack wikiTool = null;
+
+    /** The wiki's stand-in (WikiLiveCapture), on a demo tool with its default settings. */
+    public static OverheadPoleAutoSettingsScreen wikiCreate() {
+        OverheadPoleAutoSettingsScreen s = new OverheadPoleAutoSettingsScreen();
+        s.wikiTool = new ItemStack(ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
+        return s;
+    }
+
     @Override
     protected String wikiPageId() { return "tools/overhead-pole-auto-tool"; }
 
@@ -102,102 +119,161 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
         return null;
     }
 
+    // ===== Manta 7 push (Phase 4, TSU batch 2, 2026-09-23) =====
+    // The page's values are WRITTEN here each frame before the engine draws, and once when a page
+    // opens: the screen overrides no getDynamic*. The hint toggle and the entrances are the base's.
+    // Both entrances (dialog-open, opas-conf-popup-open) are the base's defaults - the override that
+    // answered popIn(220) for the second said what the base already says. The screen opens from the
+    // tool in hand (OverheadPoleAutoToolItem); with none held the value texts are cleared, where the
+    // pull left the layout's placeholders ('3', '1', a dash) - a keyed node has none.
+    private MantaState pushed, confirmPage;
+    private com.manta.api.state.TextSlot tHeight, tClearance, tMulti, tChest, tMe;
+    private com.manta.api.state.ColorSlot cCantTrack, cCantKnob, cTrussTrack, cTrussKnob, cInsTrack, cInsKnob;
+    private com.manta.api.state.NumberSlot nCantKnobX, nTrussKnobX, nInsKnobX;
+    private com.manta.api.state.TextSlot tItem1, tItem2, tItem3;
+    private com.manta.api.state.IconSlot iCant, iTruss, iIns;
+    private com.manta.api.state.ColorSlot cCantMark, cTrussMark, cInsMark;
+
     @Override
-    public Animation getDynamicAnimation(String[] classes, String key) {
-        Animation base = super.getDynamicAnimation(classes, key);
-        if (base != null) return base;
-        if ("opas-conf-popup-open".equals(key)) return Animation.popIn(220);
-        return null;
+    protected void pageOpened(Object page, PageLayer layer) {
+        if (layer == PageLayer.OVERLAY) {
+            // The one overlay is the placement confirmation (overlayJson).
+            confirmPage = MantaState.of(page);
+            tItem1 = confirmPage.text("opas-conf-item-1");
+            tItem2 = confirmPage.text("opas-conf-item-2");
+            tItem3 = confirmPage.text("opas-conf-item-3");
+            iCant = confirmPage.icon("opas-conf-cant-check");
+            iTruss = confirmPage.icon("opas-conf-truss-check");
+            iIns = confirmPage.icon("opas-conf-ins-check");
+            cCantMark = confirmPage.color("opas-conf-cant-color");
+            cTrussMark = confirmPage.color("opas-conf-truss-color");
+            cInsMark = confirmPage.color("opas-conf-ins-color");
+            confirmPage.textByKeyOnly();
+            pushConfirm();
+            return;
+        }
+        if (layer != PageLayer.PRIMARY) return;
+        pushed = MantaState.of(page);
+        tHeight = pushed.text("opas-h-value");
+        tClearance = pushed.text("opas-c-value");
+        tMulti = pushed.text("opas-m-value");
+        tChest = pushed.text("opas-storage-chest");
+        tMe = pushed.text("opas-storage-me");
+        cCantTrack = pushed.color("opas-cant-track-bg");
+        cCantKnob = pushed.color("opas-cant-knob-bg");
+        cTrussTrack = pushed.color("opas-truss-track-bg");
+        cTrussKnob = pushed.color("opas-truss-knob-bg");
+        cInsTrack = pushed.color("opas-ins-track-bg");
+        cInsKnob = pushed.color("opas-ins-knob-bg");
+        nCantKnobX = pushed.number("opas-cant-knob-x");
+        nTrussKnobX = pushed.number("opas-truss-knob-x");
+        nInsKnobX = pushed.number("opas-ins-knob-x");
+        pushed.textByKeyOnly();
+        pushAll();
     }
 
-    private static String truncate(String s, int max) {
-        return s.length() > max ? s.substring(0, max - 1) + "…" : s;
+    private void pushAll() {
+        pushConfirm();
+        if (pushed == null || !pushed.isOpen()) return;
+        pushed.set(cCantTrack, cantToggle.trackBg());
+        pushed.set(cCantKnob, cantToggle.knobBg());
+        pushed.set(cTrussTrack, trussToggle.trackBg());
+        pushed.set(cTrussKnob, trussToggle.knobBg());
+        pushed.set(cInsTrack, insToggle.trackBg());
+        pushed.set(cInsKnob, insToggle.knobBg());
+        // Offsets: knobX is default + delta, so its delta is its answer for 0.
+        pushed.setOffset(nCantKnobX, cantToggle.knobX(0));
+        pushed.setOffset(nTrussKnobX, trussToggle.knobX(0));
+        pushed.setOffset(nInsKnobX, insToggle.knobX(0));
+        ItemStack stack = heldTool();
+        if (stack.isEmpty()) {
+            pushed.clear(tHeight);
+            pushed.clear(tClearance);
+            pushed.clear(tMulti);
+            pushed.clear(tChest);
+            pushed.clear(tMe);
+            return;
+        }
+        // Values only: the trailing up/down glyph became the value box's child icon (W7-1, R4.23.1).
+        pushed.set(tHeight, String.valueOf(AutoPlaceConfig.getHeight(stack)));
+        pushed.set(tClearance, String.valueOf(AutoPlaceConfig.getClearance(stack)));
+        pushed.set(tMulti, String.valueOf(AutoPlaceConfig.getMultiTrackCount(stack)));
+        pushed.set(tChest, storageChest(stack));
+        pushed.set(tMe, storageMe(stack));
+    }
+
+    /** The confirmation's values: the numbers always shown with their mark, each boolean as its icon (circle-check / x) in green or red. */
+    private void pushConfirm() {
+        if (confirmPage == null || !confirmPage.isOpen()) return;
+        confirmPage.set(cCantMark, cantToggle.isOn() ? 0xFF66BB6A : 0xFFEF5350);
+        confirmPage.set(cTrussMark, trussToggle.isOn() ? 0xFF66BB6A : 0xFFEF5350);
+        confirmPage.set(cInsMark, insToggle.isOn() ? 0xFF66BB6A : 0xFFEF5350);
+        ItemStack stack = heldTool();
+        if (stack.isEmpty()) {
+            confirmPage.clear(tItem1);
+            confirmPage.clear(tItem2);
+            confirmPage.clear(tItem3);
+            confirmPage.clear(iCant);
+            confirmPage.clear(iTruss);
+            confirmPage.clear(iIns);
+            return;
+        }
+        confirmPage.set(tItem1, Component.translatable("tsu.opas.conf_height_fmt", AutoPlaceConfig.getHeight(stack)).getString());
+        confirmPage.set(tItem2, Component.translatable("tsu.opas.conf_clearance_fmt", AutoPlaceConfig.getClearance(stack)).getString());
+        confirmPage.set(tItem3, Component.translatable("tsu.opas.conf_multi_fmt", AutoPlaceConfig.getMultiTrackCount(stack)).getString());
+        confirmPage.set(iCant, AutoPlaceConfig.getCantilever(stack) ? "manta:circle-check" : "manta:x");
+        confirmPage.set(iTruss, AutoPlaceConfig.getPlaceTruss(stack) ? "manta:circle-check" : "manta:x");
+        confirmPage.set(iIns, AutoPlaceConfig.getPlaceInsulator(stack) ? "manta:circle-check" : "manta:x");
+    }
+
+    private String storageChest(ItemStack stack) {
+        String l = stack.get(ModDataComponents.PLACE_LINKED_CHEST_LABEL.get());
+        String v = (l == null || l.isBlank())
+                ? Component.translatable("tsu.opas.storage_none").getString()
+                : fitStorageValue("tsu.opas.storage_chest_fmt", l);
+        return Component.translatable("tsu.opas.storage_chest_fmt", v).getString();
+    }
+
+    private String storageMe(ItemStack stack) {
+        String v;
+        if (!net.neoforged.fml.ModList.get().isLoaded("ae2")) {
+            v = Component.translatable("tsu.opas.storage_ae2_missing").getString();
+        } else {
+            String l = stack.get(ModDataComponents.PLACE_LINKED_WAP_LABEL.get());
+            v = (l == null || l.isBlank())
+                    ? Component.translatable("tsu.opas.storage_none").getString()
+                    : fitStorageValue("tsu.opas.storage_me_fmt", l);
+        }
+        return Component.translatable("tsu.opas.storage_me_fmt", v).getString();
+    }
+
+    @Override
+    public void render(net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        pushAll();
+        super.render(g, mouseX, mouseY, partialTick);
+    }
+
+    /** レイアウト上の storage 行の幅 (`opas-storage-*` の `w`)。 */
+    private static final int STORAGE_LABEL_W = 186;
+
+    /**
+     * 書式文字列の接頭辞を除いた残りの幅に値を収める。
+     *
+     * <p>文字数で切ってはいけない — 旧実装は 24 文字固定で、日本語は半角の約 2 倍幅なので
+     * 本語の UI では箱を常に超えていた。 接頭辞幅は空値で書式化して実測するので言語に依らない。
+     */
+    private String fitStorageValue(String fmtKey, String value) {
+        int prefix = com.manta.api.text.MantaText.uiWidth(
+                this.font, Component.translatable(fmtKey, "").getString());
+        return com.manta.api.hud.HudText.ellipsize(
+                this.font, value, Math.max(16, STORAGE_LABEL_W - prefix));
     }
 
     private ItemStack heldTool() {
-        if (minecraft == null || minecraft.player == null) return ItemStack.EMPTY;
-        ItemStack main = minecraft.player.getMainHandItem();
-        if (main.is(ModItems.OVERHEAD_POLE_AUTO_TOOL.get())) return main;
-        ItemStack off = minecraft.player.getOffhandItem();
-        if (off.is(ModItems.OVERHEAD_POLE_AUTO_TOOL.get())) return off;
-        return ItemStack.EMPTY;
-    }
-
-    @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        ItemStack stack = heldTool();
-        if (stack.isEmpty()) return defaultText;
-        for (String c : classes) {
-            switch (c) {
-                case "opas-storage-chest" -> {
-                    String l = stack.get(ModDataComponents.PLACE_LINKED_CHEST_LABEL.get());
-                    String v = (l == null || l.isBlank())
-                            ? Component.translatable("tsu.opas.storage_none").getString() : truncate(l, 24);
-                    return Component.translatable("tsu.opas.storage_chest_fmt", v).getString();
-                }
-                case "opas-storage-me" -> {
-                    String v;
-                    if (!net.neoforged.fml.ModList.get().isLoaded("ae2")) {
-                        v = Component.translatable("tsu.opas.storage_ae2_missing").getString();
-                    } else {
-                        String l = stack.get(ModDataComponents.PLACE_LINKED_WAP_LABEL.get());
-                        v = (l == null || l.isBlank())
-                                ? Component.translatable("tsu.opas.storage_none").getString() : truncate(l, 24);
-                    }
-                    return Component.translatable("tsu.opas.storage_me_fmt", v).getString();
-                }
-                // MANTA_5 Wave 7 / W7-1 (R4.23.1): 末尾の ⇅ は「ホイールで変更できる」control
-                // affordance なので、値ボックスの子 icon (manta:arrow-up-down) へ移した。
-                // ここは値だけを返す。opas-s-value は layout に対応ノードが無い (既存の死んだ case)。
-                case "opas-h-value" -> { return String.valueOf(AutoPlaceConfig.getHeight(stack)); }
-                case "opas-c-value" -> { return String.valueOf(AutoPlaceConfig.getClearance(stack)); }
-                case "opas-s-value" -> { return String.valueOf(AutoPlaceConfig.getSpan(stack)); }
-                case "opas-m-value" -> { return String.valueOf(AutoPlaceConfig.getMultiTrackCount(stack)); }
-                // confirm popup: 数値項目 (= 常時 ✓ 付き表示)
-                case "opas-conf-item-1" -> {
-                    return Component.translatable("tsu.opas.conf_height_fmt", AutoPlaceConfig.getHeight(stack)).getString();
-                }
-                case "opas-conf-item-2" -> {
-                    return Component.translatable("tsu.opas.conf_clearance_fmt", AutoPlaceConfig.getClearance(stack)).getString();
-                }
-                case "opas-conf-item-3" -> {
-                    return Component.translatable("tsu.opas.conf_multi_fmt", AutoPlaceConfig.getMultiTrackCount(stack)).getString();
-                }
-                // confirm popup: boolean 項目 (= ON で ○ / OFF で ×、 U+25CB / U+00D7)
-                // class 名と dynamicText key 両方の case を用意 (= MCSS layout 仕様の差異吸収)
-                // W7-1: layout 側を tag=icon + iconKey にしたので、ここは **registry ID** を返す
-                // (getDynamicText は iconKey の解決にも使われる契約 — SvgRenderNode の iconIdBinding)。
-                case "opas-conf-cant-check", "opas-conf-cant-mark"   -> { return AutoPlaceConfig.getCantilever(stack)      ? "manta:circle-check" : "manta:x"; }
-                case "opas-conf-truss-check", "opas-conf-truss-mark" -> { return AutoPlaceConfig.getPlaceTruss(stack)      ? "manta:circle-check" : "manta:x"; }
-                case "opas-conf-ins-check", "opas-conf-ins-mark"     -> { return AutoPlaceConfig.getPlaceInsulator(stack)  ? "manta:circle-check" : "manta:x"; }
-            }
-        }
-        return defaultText;
-    }
-
-    @Override
-    public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-        // toggle track/knob 色
-        if ("opas-cant-track-bg".equals(key))  return cantToggle.trackBg();
-        if ("opas-cant-knob-bg".equals(key))   return cantToggle.knobBg();
-        if ("opas-truss-track-bg".equals(key)) return trussToggle.trackBg();
-        if ("opas-truss-knob-bg".equals(key))  return trussToggle.knobBg();
-        if ("opas-ins-track-bg".equals(key))   return insToggle.trackBg();
-        if ("opas-ins-knob-bg".equals(key))    return insToggle.knobBg();
-        // confirm checkbox ✓ 文字色: ON で緑、 OFF で灰
-        // 〇: 緑、 ×: 赤
-        if ("opas-conf-cant-color".equals(key))  return cantToggle.isOn()  ? 0xFF66BB6A : 0xFFEF5350;
-        if ("opas-conf-truss-color".equals(key)) return trussToggle.isOn() ? 0xFF66BB6A : 0xFFEF5350;
-        if ("opas-conf-ins-color".equals(key))   return insToggle.isOn()   ? 0xFF66BB6A : 0xFFEF5350;
-        return null;
-    }
-
-    @Override
-    public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
-        if ("opas-cant-knob-x".equals(key))  return cantToggle.knobX(defaultValue);
-        if ("opas-truss-knob-x".equals(key)) return trussToggle.knobX(defaultValue);
-        if ("opas-ins-knob-x".equals(key))   return insToggle.knobX(defaultValue);
-        return null;
+        if (wikiTool != null) return wikiTool;
+        if (minecraft == null) return ItemStack.EMPTY;
+        return com.manta.api.hud.HeldTools.find(
+                minecraft.player, ModItems.OVERHEAD_POLE_AUTO_TOOL.get());
     }
 
     @Override
@@ -206,10 +282,9 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
         int delta = scrollY > 0 ? 1 : -1;
         if (key == null) return false;
         switch (key) {
-            case "opas-h-wheel" -> { adjust(OverheadPoleAutoSettingsPayload.FIELD_HEIGHT, delta);            return true; }
-            case "opas-c-wheel" -> { adjust(OverheadPoleAutoSettingsPayload.FIELD_CLEARANCE, delta);         return true; }
-            case "opas-s-wheel" -> { adjust(OverheadPoleAutoSettingsPayload.FIELD_SPAN, delta);              return true; }
-            case "opas-m-wheel" -> { adjust(OverheadPoleAutoSettingsPayload.FIELD_MULTI_TRACK_COUNT, delta); return true; }
+            case "opas-h-wheel" -> { adjust(OverheadPoleAutoSettingsAction.FIELD_HEIGHT, delta);            return true; }
+            case "opas-c-wheel" -> { adjust(OverheadPoleAutoSettingsAction.FIELD_CLEARANCE, delta);         return true; }
+            case "opas-m-wheel" -> { adjust(OverheadPoleAutoSettingsAction.FIELD_MULTI_TRACK_COUNT, delta); return true; }
             case "opas-preview-zoom" -> {
                 prevZoom = Math.max(0.2f, Math.min(8f, prevZoom * (scrollY > 0 ? 1.15f : 0.87f)));
                 return true;
@@ -224,7 +299,7 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
                                   int mouseX, int mouseY,
                                   int elX, int elY, int elW, int elH, boolean pressed) {
         if (!"opas-preview-rotate".equals(key)) return false;
-        boolean shift = net.minecraft.client.gui.screens.Screen.hasShiftDown();
+        boolean shift = com.manta.api.hud.ModifierKeys.shift(net.minecraft.client.Minecraft.getInstance().getWindow().getWindow());
         if (pressed) {
             dragStartX = mouseX;
             dragStartY = mouseY;
@@ -270,13 +345,16 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
         }
     }
 
-    /** 確認 popup の「設置モードへ」 → server に APPLY action 送信 → GUI 閉じる。 */
+    /** 確認 popup の「設置モードへ」 → server に APPLY action 送信 (= 選択モードの「配置する」へ) → GUI 閉じる。 */
     private void applyAndEnterPlacement() {
-        PacketDistributor.sendToServer(new OverheadPoleAutoSettingsPayload(
-                OverheadPoleAutoSettingsPayload.FIELD_APPLY_AND_ENTER_PLACEMENT, 1));
+        // The stand-in enters no placement: the page's confirmation ends there.
+        if (wikiTool != null) return;
+        ToolsClient.poleSettings(
+                OverheadPoleAutoSettingsAction.FIELD_APPLY_AND_ENTER_PLACEMENT, 1);
         ItemStack s = heldTool();
         if (!s.isEmpty()) {
             AutoPlaceConfig.setToolMode(s, AutoPlaceConfig.TOOL_MODE_SELECTION);
+            AutoPlaceConfig.setSubMode(s, AutoPlaceConfig.SUB_MODE_PLACE);
         }
         onClose();
     }
@@ -427,8 +505,8 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
         var mc = Minecraft.getInstance();
         if (mc.font != null) {
             String label = String.format("H=%d C=%d 複線=%d", height, clearance, multiTrack);
-            int lw = mc.font.width(label);
-            g.drawString(mc.font, label, cx + (cw - lw) / 2, cy + ch - 10, 0xFF888888, false);
+            int lw = com.manta.api.text.MantaText.uiWidth(mc.font, label);
+            com.manta.api.text.MantaText.draw(g, mc.font, label, cx + (cw - lw) / 2, cy + ch - 10, 0xFF888888);
         }
     }
 
@@ -436,19 +514,17 @@ public class OverheadPoleAutoSettingsScreen extends JsonLayoutPlainScreen {
         ItemStack stack = heldTool();
         if (stack.isEmpty()) return;
         int current = switch (field) {
-            case OverheadPoleAutoSettingsPayload.FIELD_HEIGHT            -> AutoPlaceConfig.getHeight(stack);
-            case OverheadPoleAutoSettingsPayload.FIELD_CLEARANCE         -> AutoPlaceConfig.getClearance(stack);
-            case OverheadPoleAutoSettingsPayload.FIELD_SPAN              -> AutoPlaceConfig.getSpan(stack);
-            case OverheadPoleAutoSettingsPayload.FIELD_MULTI_TRACK_COUNT -> AutoPlaceConfig.getMultiTrackCount(stack);
+            case OverheadPoleAutoSettingsAction.FIELD_HEIGHT            -> AutoPlaceConfig.getHeight(stack);
+            case OverheadPoleAutoSettingsAction.FIELD_CLEARANCE         -> AutoPlaceConfig.getClearance(stack);
+            case OverheadPoleAutoSettingsAction.FIELD_MULTI_TRACK_COUNT -> AutoPlaceConfig.getMultiTrackCount(stack);
             default -> 0;
         };
         int next = current + delta;
-        PacketDistributor.sendToServer(new OverheadPoleAutoSettingsPayload(field, next));
+        ToolsClient.poleSettings(field, next);
         switch (field) {
-            case OverheadPoleAutoSettingsPayload.FIELD_HEIGHT            -> AutoPlaceConfig.setHeight(stack, next);
-            case OverheadPoleAutoSettingsPayload.FIELD_CLEARANCE         -> AutoPlaceConfig.setClearance(stack, next);
-            case OverheadPoleAutoSettingsPayload.FIELD_SPAN              -> AutoPlaceConfig.setSpan(stack, next);
-            case OverheadPoleAutoSettingsPayload.FIELD_MULTI_TRACK_COUNT -> AutoPlaceConfig.setMultiTrackCount(stack, next);
+            case OverheadPoleAutoSettingsAction.FIELD_HEIGHT            -> AutoPlaceConfig.setHeight(stack, next);
+            case OverheadPoleAutoSettingsAction.FIELD_CLEARANCE         -> AutoPlaceConfig.setClearance(stack, next);
+            case OverheadPoleAutoSettingsAction.FIELD_MULTI_TRACK_COUNT -> AutoPlaceConfig.setMultiTrackCount(stack, next);
         }
     }
 

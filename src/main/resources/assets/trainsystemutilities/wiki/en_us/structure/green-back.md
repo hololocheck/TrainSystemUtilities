@@ -9,21 +9,8 @@ tags: [structure, block, video]
 ```embed:item id=trainsystemutilities:green_back size=48 label=true
 ```
 
-A pure-green (#00FF00) chroma-key block. It always emits light level 15, so no shadows fall on it and the green stays uniform.
+A green (#00FF00) block to use as the background of videos and screenshots. It glows at light level 15. After filming, use it for chroma keying, where video editing software removes the green.
 
-## Placement {#place}
+Place and remove it like an ordinary block (use a pickaxe to collect it). It has no screen of its own. Cover the area behind vehicles or buildings so that it fills the range you are filming. It is also useful for making showcase images for [Preset Place](../preset-place/upload.md).
 
-- Place it like any normal block: hold it and **right-click**. There is no GUI to open and no special interaction.
-- To remove it, just break it like any other block. Use it by **tiling it** across a large surface as a backdrop.
-
-## Uses
-
-- Tile it behind trains and builds for showcase videos / screenshots, then key out the background later in your video editor.
-- Also handy as a screenshot backdrop for [preset uploads](../preset-place/upload.md).
-
-> [!TIP]
-> Tiling it directly under the subject makes keying easier, though green spill on the bottom faces increases. Use it or not depending on your needs.
-
-## Related pages
-
-- [Uploading presets](../preset-place/upload.md)
+Laying it under the subject as well makes cutting out easier, but the green may reflect onto the subject. Adjust the layout to suit how you film and edit.

@@ -5,14 +5,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * Auto-place tool の設定値 (= 高さ / クリアランス / スパン)。 ItemStack の
- * DataComponents に永続化される。
+ * Auto-place tool の設定値 (= 高さ / クリアランス / 複線数 / 片持ち / トラス / 碍子) とツールのモード。
+ * ItemStack の DataComponents に永続化される。
  */
 public final class AutoPlaceConfig {
 
     public static final int DEFAULT_HEIGHT = 3;
     public static final int DEFAULT_CLEARANCE = 1;
-    public static final int DEFAULT_SPAN = 4;
     public static final int DEFAULT_SCAN_RANGE = 8;
     public static final boolean DEFAULT_SKIP_STATION = true;
     public static final int DEFAULT_MULTI_TRACK_COUNT = 1;
@@ -26,8 +25,6 @@ public final class AutoPlaceConfig {
     public static final int MAX_HEIGHT = 16;
     public static final int MIN_CLEARANCE = 0;
     public static final int MAX_CLEARANCE = 8;
-    public static final int MIN_SPAN = 1;
-    public static final int MAX_SPAN = 32;
     public static final int MIN_SCAN_RANGE = 1;
     public static final int MAX_SCAN_RANGE = 32;
 
@@ -56,11 +53,6 @@ public final class AutoPlaceConfig {
         return v == null ? DEFAULT_CLEARANCE : Math.max(MIN_CLEARANCE, Math.min(MAX_CLEARANCE, v));
     }
 
-    public static int getSpan(ItemStack stack) {
-        Integer v = stack.get(ModDataComponents.AUTO_POLE_SPAN.get());
-        return v == null ? DEFAULT_SPAN : Math.max(MIN_SPAN, Math.min(MAX_SPAN, v));
-    }
-
     public static void setHeight(ItemStack stack, int height) {
         stack.set(ModDataComponents.AUTO_POLE_HEIGHT.get(),
                 Math.max(MIN_HEIGHT, Math.min(MAX_HEIGHT, height)));
@@ -69,48 +61,6 @@ public final class AutoPlaceConfig {
     public static void setClearance(ItemStack stack, int clearance) {
         stack.set(ModDataComponents.AUTO_POLE_CLEARANCE.get(),
                 Math.max(MIN_CLEARANCE, Math.min(MAX_CLEARANCE, clearance)));
-    }
-
-    public static void setSpan(ItemStack stack, int span) {
-        stack.set(ModDataComponents.AUTO_POLE_SPAN.get(),
-                Math.max(MIN_SPAN, Math.min(MAX_SPAN, span)));
-    }
-
-    // ===== Edit mode (= ctrl+wheel で切替、 alt+wheel でその mode の値を増減) =====
-
-    public static final int MODE_HEIGHT = 0;
-    public static final int MODE_CLEARANCE = 1;
-    public static final int MODE_SPAN = 2;
-    public static final int MODE_COUNT = 3;
-
-    public static int getEditMode(ItemStack stack) {
-        Integer v = stack.get(ModDataComponents.AUTO_POLE_EDIT_MODE.get());
-        return v == null ? MODE_HEIGHT : ((v % MODE_COUNT) + MODE_COUNT) % MODE_COUNT;
-    }
-
-    public static void setEditMode(ItemStack stack, int mode) {
-        stack.set(ModDataComponents.AUTO_POLE_EDIT_MODE.get(),
-                ((mode % MODE_COUNT) + MODE_COUNT) % MODE_COUNT);
-    }
-
-    /** mode 名 (HUD 表示用)。 */
-    public static String modeName(int mode) {
-        return switch (mode) {
-            case MODE_HEIGHT -> "高さ";
-            case MODE_CLEARANCE -> "クリアランス";
-            case MODE_SPAN -> "スパン";
-            default -> "?";
-        };
-    }
-
-    /** 現在 edit mode の値を delta だけ増減 (= 範囲 clamp 付き)。 */
-    public static void adjustCurrentMode(ItemStack stack, int delta) {
-        int mode = getEditMode(stack);
-        switch (mode) {
-            case MODE_HEIGHT -> setHeight(stack, getHeight(stack) + delta);
-            case MODE_CLEARANCE -> setClearance(stack, getClearance(stack) + delta);
-            case MODE_SPAN -> setSpan(stack, getSpan(stack) + delta);
-        }
     }
 
     // ===== Tool mode (GUI / SELECTION) =====

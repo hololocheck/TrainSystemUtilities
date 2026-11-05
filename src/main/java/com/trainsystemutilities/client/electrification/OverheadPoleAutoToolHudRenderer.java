@@ -30,8 +30,9 @@ import net.neoforged.neoforge.client.event.RenderGuiEvent;
  * <p>表示行 (= tool mode により可変):
  * <ol>
  *   <li>モード badge (GUI / 選択) — alt+wheel で循環</li>
- *   <li>選択 mode のみ: 編集対象タブ (高さ / クリアランス / スパン)</li>
- *   <li>選択 mode のみ: 起点 status / GUI mode: 操作ヒント</li>
+ *   <li>選択 mode のみ: サブモードタブ (GUIへ戻る / 配置する) — ctrl+wheel で循環</li>
+ *   <li>選択 mode: サブモードの status / GUI mode: 操作ヒント</li>
+ *   <li>「配置する」 のみ: 資材の在庫と設置可能ユニット数</li>
  * </ol>
  */
 @EventBusSubscriber(modid = TrainSystemUtilities.MOD_ID, value = Dist.CLIENT)
@@ -192,56 +193,21 @@ public class OverheadPoleAutoToolHudRenderer {
         return units == Integer.MAX_VALUE ? 0 : units;
     }
 
-    /** サブモードタブ bar (GUIへ戻る / 起点を選択 / 配置する)。 駅範囲指定ツールの番線方向タブと同じ補間アニメ。 */
+    /** サブモードタブ bar (GUIへ戻る / 配置する)。 駅範囲指定ツールの番線方向タブと同じ補間アニメ。 */
     private static void renderSubModeTabs(GuiGraphics g, Minecraft mc, int x, int y, int w, int h,
                                             float fade, int subMode) {
         subModeAnim.update(subMode);
 
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
-        int bg = (bgA << 24) | 0x1a1a2e;
-        int border = (borderA << 24) | 0x4FC3F7;
-        HudChrome.drawRoundedRect(g, x, y, w, h, bg, border);
-
-        int n = AutoPlaceConfig.SUB_MODE_COUNT;
-        int tabAreaX = x + 1;
-        int tabAreaY = y + 1;
-        int tabAreaW = w - 2;
-        int tabAreaH = h - 2;
-        int tabW = tabAreaW / n;
-        int lastTabW = tabAreaW - tabW * (n - 1);
-
-        int hlX = subModeAnim.highlightX(tabAreaX, tabW);
-        int hlW = subModeAnim.highlightW(tabW, lastTabW, n);
-
-        int hlBgA = (int) (0xFF * fade);
-        int hlBg = (hlBgA << 24) | 0x4FC3F7;
-        int hlBorderA = (int) (0xFF * fade);
-        int hlBorder = (hlBorderA << 24) | 0x80deea;
-        SmoothRenderer.fillRoundedRect(g, hlX, tabAreaY, hlW, tabAreaH, 5f, hlBorder);
-        SmoothRenderer.fillRoundedRect(g, hlX + 1, tabAreaY + 1, hlW - 2, tabAreaH - 2, 4f, hlBg);
-
-        for (int i = 0; i < n; i++) {
-            int tx = tabAreaX + i * tabW;
-            int tw = (i == n - 1) ? lastTabW : tabW;
-            boolean active = i == subModeAnim.curTab();
-            int fgRgb = active ? 0x000000 : 0x80deea;
-            int fgA = (int) (0xFF * fade);
-            int fg = (fgA << 24) | fgRgb;
-            String label = AutoPlaceConfig.subModeName(i);
-            HudChrome.drawCenteredLabel(g, mc.font, label, tx, tabAreaY, tw, tabAreaH, fg);
-        }
+        com.manta.api.hud.HudTabStrip.draw(g, mc.font, x, y, w, h,
+                AutoPlaceConfig.SUB_MODE_COUNT, subModeAnim.curTab(), subModeAnim, fade,
+                AutoPlaceConfig::subModeName);
     }
 
     /** モード badge (1 行目)。アクセント色は tool mode 別: GUI=紫、選択=水色。 */
     private static void renderToolModeBadge(GuiGraphics g, Minecraft mc, int x, int y, int w, int h,
                                               float fade, int toolMode) {
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
         int borderRgb = toolMode == AutoPlaceConfig.TOOL_MODE_GUI ? 0xBA68C8 : 0x4FC3F7;
-        int bg = (bgA << 24) | 0x1a1a2e;
-        int border = (borderA << 24) | borderRgb;
-        HudChrome.drawRoundedRect(g, x, y, w, h, bg, border);
+        HudChrome.panel(g, x, y, w, h, fade, borderRgb);
 
         String label = Component.translatable("tsu.opa_tool.hud_badge_fmt", AutoPlaceConfig.toolModeName(toolMode)).getString();
         int fgA = (int) (0xFF * fade);

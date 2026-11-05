@@ -2,8 +2,6 @@ package com.trainsystemutilities.client.gui;
 import com.manta.api.controller.DragDropPalette;
 import com.manta.api.render.HoverTilePreview;
 
-import com.manta.api.anim.Animation;
-import com.manta.api.anim.Easing;
 import com.manta.api.screen.JsonLayoutHandler;
 import com.manta.api.screen.JsonLayoutScreen;
 import com.manta.api.controller.ColorPickerController;
@@ -11,7 +9,6 @@ import com.manta.api.controller.ColorTargetController;
 import com.manta.api.controller.ScrollViewport;
 import com.manta.api.controller.OverlayController;
 import com.manta.api.controller.TabController;
-import com.manta.api.anim.Transition;
 import com.manta.api.draw.VectorRenderer;
 import com.trainsystemutilities.blockentity.ManagementComputerBlockEntity;
 import com.trainsystemutilities.gui.ManagementComputerMenu;
@@ -39,6 +36,12 @@ import java.util.UUID;
  * 6-6: 路線記号タブ (グリッド表示、編集 popup は未実装)
  */
 public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementComputerMenu> {
+
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
 
     @Override
     protected String wikiPageId() { return "management-computer/overview"; }
@@ -71,11 +74,12 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                     this::monitorEnabled,
                     v -> {
                         localMonitorEnabled = v;
-                        MonitorClientCache.monitorEnabledCache.put(be().getBlockPos(), v);
+                        // Never the wiki's computer: the cache is process-wide, keyed by its stand-in's position.
+                        if (!this.wikiMode) MonitorClientCache.monitorEnabledCache.put(be().getBlockPos(), v);
                         // MP desync 修正: serverBE() 直 mutate は dedicated server に届かない → payload で server 権威化
                         be().setMonitorEnabled(v);
                         sendMonitorPayload(
-                                com.trainsystemutilities.network.MonitorLayoutPayload.ACTION_SET_ENABLED,
+                                com.trainsystemutilities.network.MonitorLayoutAction.ACTION_SET_ENABLED,
                                 d -> d.putBoolean("E", v));
                     })
                     .aliasClasses("mc-monitor-toggle-track", "mc-monitor-toggle-knob");
@@ -145,7 +149,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                     idx -> {
                         var c = schedShareCandidates();
                         if (idx < 0 || idx >= c.size() || scheduleSelectedTrainId == null) return false;
-                        return scheduleSelectedTrainId.equals(be().getTimetableShareSource(c.get(idx).id()));
+                        return scheduleSelectedTrainId.equals(shareSource(c.get(idx).id()));
                     },
                     this::sendSchedShareToggle);
 
@@ -177,6 +181,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     private boolean ticketDataRequested = false;
     /** 切符タブに表示する駅グループ = 自ネットワーク (= server が解決した networkGroups) のみ。 未確立なら空。 */
     java.util.List<com.trainsystemutilities.station.StationGroup> ticketGroups() {
+        if (wikiMode) return wikiTicketGroups();
         var net = com.trainsystemutilities.station.TicketConfigClientCache.networkGroups();
         java.util.List<com.trainsystemutilities.station.StationGroup> out = new java.util.ArrayList<>();
         for (var g : com.trainsystemutilities.station.StationGroupClientCache.all()) {
@@ -196,24 +201,62 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                     "ticket-toggle-track", "ticket-toggle-knob",
                     idx -> {
                         var g = ticketGroupAt(idx);
-                        return g != null && com.trainsystemutilities.station.TicketConfigClientCache.isSellable(g.id());
+                        return g != null && ticketSellable(g.id());
                     },
                     idx -> {
                         var g = ticketGroupAt(idx);
                         if (g == null) return;
-                        boolean next = !com.trainsystemutilities.station.TicketConfigClientCache.isSellable(g.id());
+                        boolean next = !ticketSellable(g.id());
+                        if (this.wikiMode) {
+                            // The wiki's own list: never the player's ticket cache, nothing sent.
+                            this.wikiSellable.put(g.id(), next);
+                            return;
+                        }
                         com.trainsystemutilities.station.TicketConfigClientCache.setLocal(g.id(), next); // 即時反映 (§4.9)
-                        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                                new com.trainsystemutilities.network.TicketConfigUpdatePayload(be().getBlockPos(), g.id(), next));
+                        sendData(com.trainsystemutilities.network.ManagementComputerData.TICKET_UPDATE,
+                                com.trainsystemutilities.network.ManagementComputerData.uuidParam(g.id()), next);
                     });
+    /** Whether a station group is sold at ticket machines: the player's cache, or the wiki's own list. */
+    boolean ticketSellable(java.util.UUID id) {
+        if (wikiMode) return wikiSellable.getOrDefault(id, Boolean.TRUE);
+        return com.trainsystemutilities.station.TicketConfigClientCache.isSellable(id);
+    }
+
+    // ===== The wiki's demo state (改善1, 2026-10-07): what a playback changes lands here, never in the player's caches =====
+    private java.util.List<com.trainsystemutilities.station.StationGroup> wikiTicketGroups;
+    private final java.util.Map<java.util.UUID, Boolean> wikiSellable = new java.util.HashMap<>();
+    private final java.util.Map<String, com.trainsystemutilities.blockentity.RailwayManagementBlockEntity.DoorSide> wikiDoorSides =
+            new java.util.HashMap<>();
+
+    /** One group per station of the test world's map ("マルチテストA 1番線" -> "マルチテストA"), the last one not sold. */
+    private java.util.List<com.trainsystemutilities.station.StationGroup> wikiTicketGroups() {
+        if (wikiTicketGroups == null) {
+            java.util.LinkedHashMap<String, BlockPos> names = new java.util.LinkedHashMap<>();
+            for (var st : be().getCachedStations()) {
+                String base = st.name().replaceAll("\\s*\\d+番線$", "").replaceAll("\\s*Platform\\s*\\d+$", "");
+                names.putIfAbsent(base, st.position());
+            }
+            java.util.List<com.trainsystemutilities.station.StationGroup> out = new java.util.ArrayList<>();
+            for (var e : names.entrySet()) {
+                java.util.UUID id = java.util.UUID.nameUUIDFromBytes(("tsu-wiki-group-" + e.getKey())
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                out.add(new com.trainsystemutilities.station.StationGroup(id, e.getKey(), "minecraft:overworld",
+                        e.getValue(), e.getValue(), java.util.List.of(), java.util.List.of(e.getValue()), null, null));
+            }
+            if (!out.isEmpty()) wikiSellable.put(out.get(out.size() - 1).id(), Boolean.FALSE);
+            wikiTicketGroups = out;
+        }
+        return wikiTicketGroups;
+    }
+
     /** 券売機タブを開いたとき、駅一覧 + 販売可設定を server から取得 (1 回)。 */
     private void requestTicketDataOnce() {
+        if (wikiMode) return;
         if (ticketDataRequested) return;
         ticketDataRequested = true;
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.StationGroupListRequestPayload());
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.TicketConfigRequestPayload(be().getBlockPos()));
+        sendData(com.trainsystemutilities.network.ManagementComputerData.TICKET_REQUEST);
+        // The lists already on the host are shown at once; the answer, if it differs, follows as a delta.
+        dataRevision = -1;
     }
 
     // === Symbol tab state ===
@@ -228,8 +271,22 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
 
     final SymbolEditorController symEditor = new SymbolEditorController();
 
-    // === Symbol delete confirm popup (SymbolDeleteController に集約) ===
-    final SymbolDeleteController symbolDelete = new SymbolDeleteController();
+    // === Symbol delete confirm popup (共通の ConfirmDialog、R4.27.1) ===
+    final com.manta.api.screen.ConfirmDialog<Integer> symbolDelete = com.manta.api.screen.ConfirmDialog.<Integer>danger()
+            .title("tsu.mc.sym_delete_confirm_title")
+            .yes("tsu.mc.sym_delete_action")
+            .warning("tsu.mc.sym_delete_confirm_sub")
+            .body(this::symbolLabelAt);
+
+    /** 確認ダイアログの本文: 削除対象の路線記号。 */
+    private String symbolLabelAt(Integer idx) {
+        if (idx == null || idx < 0) return "?";
+        var syms = be().getLineSymbols();
+        if (idx >= syms.size()) return "?";
+        var s = syms.get(idx);
+        return s.getLetters() + " " + s.getNumberStr()
+                + (s.getName().isEmpty() ? "" : " " + s.getName());
+    }
 
     // === HSV color picker popup state ===
     boolean showColorPicker = false;
@@ -286,7 +343,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
                         }
                         @Override
                         public String currentColor(String key, String defaultHex) {
-                            return serverBE().getColorOrDefault(key, defaultHex);
+                            return be().getColorOrDefault(key, defaultHex);
                         }
                     });
 
@@ -323,6 +380,10 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     // クリックされた + ボタンの screen 座標 (overlayDefaultPosition で参照)
     int assignBtnScreenX = 0;
     int assignBtnScreenY = 0;
+    // 下に入らず + ボタン / 条件追加ボタンの上へ反転して置いたか (ManagementComputerRender が置く時に記録 — Manta 2.88.0 の
+    // overlayOpensUpward / overlay2OpensUpward がこれを読み、ボタン側から上へ開く。ユーザー判断 2026-10-16)
+    boolean assignOpensUpward;
+    boolean addCondOpensUpward;
 
     // === Station detail door direction buttons (Phase 9-F: rendered by repeat) ===
     static final String[][] DOOR_OPTS = {
@@ -336,6 +397,14 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
 
     public ManagementComputerScreenV2(ManagementComputerMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
+        // A press outside the monitor colour popup's open target list folds it and does nothing else (2026-10-07).
+        // The overlay drop-downs (tab menu, station assignment, the schedule editor's pickers) fold through
+        // closeTransientOverlays, which the base calls for a press outside an overlay.
+        // The popup's close button closes it in one press (ColorTargetController's rule; second reading, 2026-10-07).
+        foldOnOutsidePress(() -> showMonitorColorSettings && monitorColorPopup.isDropdownOpen(),
+                monitorColorPopup::closeDropdown,
+                "mcol-target-dropdown", "mcol-target-item", "mcol-target-caret", "mcol-target-list-bg",
+                "mcol-popup-close");
     }
 
     // ===== Wiki live-capture support =====
@@ -388,7 +457,57 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         screen.wikiMode = true;
         screen.initWikiSamples();
         be.wikiSeed(screen.wikiTrainMeta);
+        // The route map: the test world's own map (改善1, 2026-10-07 - the user asked for the real one, panned and zoomed).
+        try {
+            String demo = TsuLayouts.load("wiki/demo/route-map.json");
+            if (!demo.isEmpty()) be.wikiSeedMap(com.google.gson.JsonParser.parseString(demo).getAsJsonObject());
+        } catch (RuntimeException e) {
+            com.trainsystemutilities.TrainSystemUtilities.LOGGER.warn("[TSU Wiki] the route map demo did not read: {}", e.toString());
+        }
+        screen.edDetail.viewsFrom(screen::wikiElectrification);
+        screen.edCarList.viewsFrom(screen::wikiElectrification);
         return screen;
+    }
+
+    /**
+     * wiki 電化詳細キャプチャ用: サンプル列車 (山手線 E235系) の電化状態 — M 車にインバータ、3 両目と 8 両目のパンタが展開して
+     * 架線に接触。他の id は無し (同期済みの cache は読まない・書かない)。
+     */
+    private com.trainsystemutilities.electrification.contraption.TrainElectrificationView wikiElectrification(UUID id) {
+        if (wikiTrains == null || wikiTrains.isEmpty() || !wikiTrains.get(0).id().equals(id)) return null;
+        var t = wikiTrains.get(0);
+        List<com.trainsystemutilities.electrification.contraption.TrainElectrificationView.Car> cars = new ArrayList<>();
+        for (int i = 0; i < t.carriageCount(); i++) {
+            boolean motor = i % 2 == 1;
+            boolean up = wikiPantographsUp;
+            List<com.trainsystemutilities.electrification.contraption.TrainElectrificationView.PantoEntry> pantos =
+                    i == 2 || i == 7
+                            ? List.of(new com.trainsystemutilities.electrification.contraption.TrainElectrificationView.PantoEntry(
+                                    new BlockPos(0, 3, i), up, up, 0f))
+                            : List.of();
+            int capacity = com.trainsystemutilities.electrification.blockentity.FEInverterBlockEntity.CAPACITY;
+            cars.add(new com.trainsystemutilities.electrification.contraption.TrainElectrificationView.Car(
+                    i, motor, motor ? 1 : 0, 0, motor ? capacity * (6 + i % 4) / 10 : 0, motor ? capacity : 0,
+                    !pantos.isEmpty(), pantos));
+        }
+        return new com.trainsystemutilities.electrification.contraption.TrainElectrificationView(t.id(), t.name(), cars);
+    }
+
+    /** The sample train's two pantographs: raised until the stand-in's "fold all" (改善1, 2026-10-07). */
+    private boolean wikiPantographsUp = true;
+
+    /**
+     * The stand-in's "deploy all" / "fold all" (改善1, second reading): on its own sample train's view instead of
+     * {@code TrainClient.pantograph} - a payload, contained, which would leave the picture as it was. True when taken.
+     */
+    boolean wikiPantographButtons(String[] classes) {
+        for (String c : classes) {
+            if ("ed-deploy-all-btn".equals(c) || "ed-fold-all-btn".equals(c)) {
+                wikiPantographsUp = "ed-deploy-all-btn".equals(c);
+                return true;
+            }
+        }
+        return false;
     }
 
     /** wiki キャプチャ用に tab / overlay state を強制設定。 */
@@ -402,29 +521,66 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         layoutSettingsIdx = -1;
         showMonitorColorSettings = false;
         symbolDelete.close();
+        edDetail.close();
         selectedTrainId = null;
         scheduleSelectedTrainId = null;
         showScheduleShare = false;
         switch (state) {
             case "map", "trains", "schedule", "stations", "symbol" -> tabs.setCurrent(state);
+            // The same tabs under the names the wiki's pages play their own scripts on (改善1, 2026-10-07): the route
+            // map page pans and zooms the map, the tickets page works the ticket list, the symbol editor page creates
+            // a symbol from the tab.
+            case "route-map" -> tabs.setCurrent("map");
+            case "tickets" -> tabs.setCurrent("tickets");
+            case "symbol-create" -> tabs.setCurrent("symbol");
             // 時刻表 詳細 / 共有: サンプル電子式列車を選択した状態で撮る
             case "schedule-detail" -> { tabs.setCurrent("schedule"); applyWikiSchedDetail(); }
             case "schedule-share"  -> { tabs.setCurrent("schedule"); applyWikiSchedDetail(); showScheduleShare = true; }
-            case "schedule-editor" -> { tabs.setCurrent("schedule"); applyWikiSchedDetail(); schedEditor.open(wikiEditorEntries(), true); }
+            // "sched-editor" はページが編集 popup の layout 名 (management-computer-sched-editor) で指す同じ画面
+            case "schedule-editor", "sched-editor" -> { tabs.setCurrent("schedule"); applyWikiSchedDetail(); schedEditor.open(wikiEditorEntries(), true); }
+            // 列車詳細 / 電化詳細 (列車詳細の上に重なる): 同じサンプル列車を列車タブで選んだ状態
+            case "train-detail" -> { tabs.setCurrent("trains"); selectedTrainId = wikiSampleTrain(); }
+            case "electrification-detail" -> { tabs.setCurrent("trains"); selectedTrainId = wikiSampleTrain(); edDetail.open(); }
+            // 駅の路線記号の割り当て: 一覧 1 行目の + を押したときと同じ位置に開く
+            case "station-assign" -> { tabs.setCurrent("stations"); stationAssign.open("東京", BlockPos.ZERO); anchorStationAssign(0); }
             // color-picker は overlayJson で単体表示 (symEditor は開かない)
             case "color-picker"   -> { tabs.setCurrent("symbol"); showColorPicker = true; }
             case "symbol-editor"  -> { tabs.setCurrent("symbol"); symEditor.open(); }
             case "layout-edit"    -> { tabs.setCurrent("stations"); openLayoutEditor(); }
             case "monitor-color"  -> { tabs.setCurrent("stations"); showMonitorColorSettings = true; }
+            // BelugaAOS's UI sweep alone (WikiLiveCapture's sweep-only states, 2026-10-21): each list holding more rows
+            // than it shows, so its scrollbar thumb is up to be dragged - the train list, the share list, the station pick.
+            case "trains-long" -> { wikiLongTrains(); tabs.setCurrent("trains"); }
+            case "schedule-share-long" -> {
+                wikiLongTrains(); tabs.setCurrent("schedule"); applyWikiSchedDetail(); showScheduleShare = true;
+            }
+            case "sched-station-long" -> {
+                tabs.setCurrent("schedule"); applyWikiSchedDetail(); schedEditor.open(wikiEditorEntries(), true);
+                schedEditor.openStationPickLong(this::schedStationNames);
+            }
             default -> tabs.setCurrent("map");
         }
     }
 
-    /** wiki 詳細キャプチャ用: サンプル電子式列車を選択し snapshot を事前設定 (refresh は wikiMode で抑止)。 */
+    /** The sample trains and stand-ins after them: twice what the share list shows, so every train list overflows. */
+    private void wikiLongTrains() {
+        List<TrackNetworkScanner.TrainInfo> trains = new ArrayList<>(wikiTrains);
+        for (int i = trains.size(); i < 2 * SCHED_SHARE_VISIBLE; i++) {
+            UUID id = UUID.nameUUIDFromBytes(("tsu-wiki-long-" + i).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            trains.add(new TrackNetworkScanner.TrainInfo(id, "回送列車 " + (i + 1), 4, 0.0, false, "", 0, 0));
+        }
+        wikiTrains = trains;
+    }
+
+    /** wiki 詳細キャプチャ用: サンプル電子式列車を時刻表タブで選択した状態 (snapshot は {@link #wikiSampleTrain})。 */
     private void applyWikiSchedDetail() {
-        if (wikiTrains == null || wikiTrains.isEmpty()) return;
+        scheduleSelectedTrainId = wikiSampleTrain();
+    }
+
+    /** サンプル電子式列車の snapshot を事前設定し、その id を返す (refresh は wikiMode で抑止)。サンプルが無ければ null。 */
+    private UUID wikiSampleTrain() {
+        if (wikiTrains == null || wikiTrains.isEmpty()) return null;
         var t = wikiTrains.get(0); // 山手線 E235系 (電子式・6件)
-        scheduleSelectedTrainId = t.id();
         selectedTrainName = t.name();
         selectedTrainCars = t.carriageCount();
         selectedTrainSpeed = 0.0;
@@ -437,6 +593,21 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         selectedSchedEntries.add("池袋");
         selectedSchedEntries.add("上野");
         selectedSchedCurrent = 0;
+        return t.id();
+    }
+
+    /**
+     * 駅の路線記号 assign dropdown の位置 (overlayDefaultPosition が読む) を、駅一覧の表示行 {@code row} の + ボタンの下に記録する。
+     * findElementByClass は repeat の template も走査して row-0 の rect を返すので、row 行は y に stride
+     * (= STATION_ROW_H + 1 = 23) を加算する。dialog は viewport 中心 pivot で scale するため、論理→screen は leftPos 加算
+     * ではなく manta の変換を通す (scale != 1 でずれる)。ボタンが layout に無ければ false (何も記録しない)。
+     */
+    boolean anchorStationAssign(int row) {
+        int[] r = findElementByClassAccess("station-row-assign");
+        if (r == null) return false;
+        assignBtnScreenX = dialogLocalToScreenXAccess(r[0]);
+        assignBtnScreenY = dialogLocalToScreenYAccess(r[1] + row * (22 + 1) + r[3]);
+        return true;
     }
 
     /** wiki エディタキャプチャ用のサンプルエントリ (駅指定 + 待機条件)。 */
@@ -461,7 +632,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     @Override
     protected String overlayJson() {
         if (tabDropdown.isOpen()) return loadResourceJson("layouts/management-computer-tab-menu.json");
-        if (symbolDelete.isOpen()) return loadResourceJson("layouts/management-computer-symbol-delete.json");
+        if (symbolDelete.isOpen()) return com.manta.api.screen.MantaLayouts.load(com.manta.api.screen.ConfirmDialog.LAYOUT);
         // 路線記号エディタを optimal: editor は overlay1、color picker は overlay2 で重ねる
         // (color picker 単体で開いた場合は overlay1 を使う)。
         if (symEditor.isOpen()) return loadResourceJson("layouts/management-computer-symbol-editor.json");
@@ -518,22 +689,26 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         return ManagementComputerRender.overlayDefaultPosition2(this, overlayW, overlayH);
     }
 
+    /**
+     * 駅の路線記号 assign dropdown が + ボタンの上へ反転して置かれた時 (画面の下に入らない時) は、ボタン側 = 下端から上へ開く
+     * (Manta 2.88.0、ユーザー判断 2026-10-16: 「ボタンに対して上部に展開されるので、展開方向が下から上に展開される必要があります」)。
+     * 基底は overlayDefaultPosition の直後に 1 回だけ問う。
+     */
+    @Override
+    protected boolean overlayOpensUpward() {
+        return stationAssign.isOpen() && assignOpensUpward;
+    }
+
+    /** 条件追加 dropdown がボタンの上へ反転して置かれた時は、同じくボタン側から上へ開く (Manta 2.88.0)。 */
+    @Override
+    protected boolean overlay2OpensUpward() {
+        return schedEditor.isOpen() && schedEditor.addCondForEntry() >= 0 && addCondOpensUpward;
+    }
+
     /** MCSS 基底の loadModResourceJson に委譲 (TsuLayouts.load 経由)。 */
     private static String loadResourceJson(String path) { return TsuLayouts.load(path); }
 
     ManagementComputerBlockEntity be() { return getMenu().getBlockEntity(); }
-
-    ManagementComputerBlockEntity serverBE() {
-        var be = be();
-        if (this.minecraft != null && this.minecraft.getSingleplayerServer() != null) {
-            var sl = this.minecraft.getSingleplayerServer().getLevel(be.getLevel().dimension());
-            if (sl != null) {
-                var sbe = sl.getBlockEntity(be.getBlockPos());
-                if (sbe instanceof ManagementComputerBlockEntity sc) return sc;
-            }
-        }
-        return be;
-    }
 
     // === god-class 分割: ManagementComputerDispatch 用 package-private bridge ===
     // (vanilla Screen / manta 基底の protected メンバーは同 package の companion から直接参照できないため)
@@ -542,6 +717,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     int[] findElementByClassAccess(String className) { return findElementByClass(className); }
     int dialogLocalToScreenXAccess(int localX) { return dialogLocalToScreenX(localX); }
     int dialogLocalToScreenYAccess(int localY) { return dialogLocalToScreenY(localY); }
+    double toLocalMxAccess(double mouseX) { return toLocalMx(mouseX); }
+    double toLocalMyAccess(double mouseY) { return toLocalMy(mouseY); }
     int leftPosAccess() { return this.leftPos; }
     int topPosAccess() { return this.topPos; }
     int imageWidthAccess() { return this.imageWidth; }
@@ -551,11 +728,9 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     /** B2 (MP desync 修正): 全列車停止。 client 直 mutate でなく server BE の
      *  startAllTrainsStop (1 台ずつ順次停止方式) を payload で呼ぶ。 */
     void startAllStop() {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ManagementComputerControlPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ManagementComputerControlPayload.ACTION_STOP_ALL,
-                        new java.util.UUID(0, 0)));
+        sendData(com.trainsystemutilities.network.ManagementComputerData.CONTROL,
+                com.trainsystemutilities.network.ManagementComputerControlAction.ACTION_STOP_ALL,
+                com.trainsystemutilities.network.ManagementComputerData.uuidParam(null));
     }
 
     /** Symbol タブのタイル hover preview (HoverTilePreview に集約)。 */
@@ -570,6 +745,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     @Override
     protected void containerTick() {
         super.containerTick();
+        pollData();
     }
 
     /** カラーピッカーのテキストフィールドにフォーカスを移し、現在値を編集バッファに読み込む。 */
@@ -683,11 +859,9 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
 
     /** B2 (MP desync 修正): 全列車再開。 server BE の resumeAllTrains を payload で呼ぶ。 */
     void resumeAllStop() {
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ManagementComputerControlPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ManagementComputerControlPayload.ACTION_RESUME_ALL,
-                        new java.util.UUID(0, 0)));
+        sendData(com.trainsystemutilities.network.ManagementComputerData.CONTROL,
+                com.trainsystemutilities.network.ManagementComputerControlAction.ACTION_RESUME_ALL,
+                com.trainsystemutilities.network.ManagementComputerData.uuidParam(null));
     }
 
     /** server 同期される runtime.paused を見て、停止中の列車数を数える (MP-safe)。 */
@@ -751,16 +925,6 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         return tr(TABS[0][1]);
     }
 
-    @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        return ManagementComputerDispatch.getDynamicText(this, classes, defaultText);
-    }
-
-    @Override
-    public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
-        return ManagementComputerDispatch.getDynamicNumber(this, classes, key, defaultValue);
-    }
-
     static final int TRAIN_LIST_TRACK_H = (28 + 2) * 4;  // (TRAINS_ROW_H+2) * TRAINS_MAX
     static final int TRAIN_LIST_THUMB_H = 20;
     static final int SCHED_ENTRIES_TRACK_H = 70;  // sched-entries repeat h (= SCHED_VIEW_MAX(5) * stride 14)
@@ -779,10 +943,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         if (wikiMode && wikiTrains != null) return wikiTrains;
         LinkedHashMap<UUID, TrackNetworkScanner.TrainInfo> merged = new LinkedHashMap<>();
         addTrainsById(merged, mapTrains);
-        var client = be();
-        var server = serverBE();
-        addTrainsById(merged, client.getCachedTrains());
-        if (server != client) addTrainsById(merged, server.getCachedTrains());
+        addTrainsById(merged, be().getCachedTrains());
         var list = new ArrayList<>(merged.values());
         // Prefetch: 全列車の preview snapshot をバックグラウンドで先読み (1秒間隔)。
         // requestIfNeeded 内で per-train rate limit + 既キャッシュ skip があるため安全。
@@ -819,11 +980,6 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         for (var s : mapStations) nameSet.add(s.name());
         if (nameSet.isEmpty()) for (var s : be().getCachedStations()) nameSet.add(s.name());
         return new ArrayList<>(nameSet);
-    }
-
-    @Override
-    public Boolean getDynamicBool(String[] classes, String key, boolean defaultValue) {
-        return ManagementComputerDispatch.getDynamicBool(this, classes, key, defaultValue);
     }
 
     boolean isSelectedSchedTrainPaused() {
@@ -882,7 +1038,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     int schedShareThumbH() {
         int total = schedShareCandidates().size();
         if (total <= SCHED_SHARE_VISIBLE) return SCHED_SHARE_AREA_H;
-        return Math.max(8, SCHED_SHARE_AREA_H * SCHED_SHARE_VISIBLE / total);
+        return schedShareScroll.thumbH(SCHED_SHARE_AREA_H, 8);
     }
 
     /** UUID から列車表示名を解決 (= 共有元バナー / タイル表示用)。 */
@@ -892,15 +1048,29 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         return "?";
     }
 
+    /** The wiki's shares: a follower train -> the train whose timetable it shares (改善1, second reading). */
+    private final java.util.Map<UUID, UUID> wikiShareSources = new java.util.HashMap<>();
+
+    /** The train whose timetable {@code id} follows: the server-synced one, or the stand-in's own (nothing synced). */
+    UUID shareSource(UUID id) {
+        return wikiMode ? wikiShareSources.get(id) : be().getTimetableShareSource(id);
+    }
+
     /** 共有トグル → server へ ON/OFF payload。 */
     private void sendSchedShareToggle(int idx) {
         var c = schedShareCandidates();
         if (idx < 0 || idx >= c.size() || scheduleSelectedTrainId == null) return;
         UUID target = c.get(idx).id();
         if (target == null) return;
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ShareTimetablePayload(
-                        be().getBlockPos(), scheduleSelectedTrainId, target));
+        if (wikiMode) {
+            // The stand-in's own share, as the server toggles one: on when it follows another or none, off when it
+            // follows the selected train.
+            if (scheduleSelectedTrainId.equals(wikiShareSources.get(target))) wikiShareSources.remove(target);
+            else wikiShareSources.put(target, scheduleSelectedTrainId);
+            return;
+        }
+        sendData(com.trainsystemutilities.network.ManagementComputerData.SHARE_TIMETABLE,
+                com.trainsystemutilities.network.ManagementComputerData.uuidParam(scheduleSelectedTrainId), com.trainsystemutilities.network.ManagementComputerData.uuidParam(target));
     }
 
     // 種別ホイールの client 即時反映 (R4.9.1)。 server 同期は tick 単位なので、
@@ -930,9 +1100,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         String next = TrainTypes.cycle(selectedTrainTypeCode(), dir);
         pendingTypeTrainId = scheduleSelectedTrainId;
         pendingTypeCode = next;
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.SetTrainTypePayload(
-                        be().getBlockPos(), scheduleSelectedTrainId, TrainTypes.indexOf(next)));
+        sendData(com.trainsystemutilities.network.ManagementComputerData.SET_TRAIN_TYPE,
+                com.trainsystemutilities.network.ManagementComputerData.uuidParam(scheduleSelectedTrainId), TrainTypes.indexOf(next));
     }
 
     TrackNetworkScanner.StationInfo selectedStation() {
@@ -948,12 +1117,9 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     boolean selectedStationHasRMBE() {
         var s = selectedStation();
         if (s == null) return false;
+        // The wiki's stations have no block behind them; its doors are its own (wikiDoorSides).
+        if (wikiMode) return true;
         return be().getManagerPosForStation(s.name(), s.position()) != null;
-    }
-
-    @Override
-    public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-        return ManagementComputerDispatch.getDynamicColor(this, classes, key, defaultArgb);
     }
 
     static int parseHexColor(String hex) {
@@ -961,44 +1127,6 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             String h = hex.startsWith("#") ? hex.substring(1) : hex;
             return 0xFF000000 | Integer.parseInt(h, 16);
         } catch (NumberFormatException e) { return 0xFF555555; }
-    }
-
-    @Override
-    public Animation getDynamicAnimation(String[] classes, String key) {
-        // 基底が dialog-open / *-popup-open を default 解決
-        Animation base = super.getDynamicAnimation(classes, key);
-        if (base != null) return base;
-        return switch (key) {
-            // Modal-style popups (centered): playful overshoot
-            case "popup-pop" -> Animation.popIn(180);
-            // Dropdowns / menus: railway-management と同じ EASE_OUT_BACK バウンス展開。
-            // tab-menu の高さは ITEM_H(16)*5 + 4 = 84 → 半分 42 を translate に。
-            case "popup-slide" -> Animation.dropdownDown(220, 84);
-            // 時刻表詳細ビューが list から detail に遷移するときの右からスライドイン。
-            case "sched-detail-slide" -> Animation.slideInFromRight(280, 60f);
-            // 駅タブで駅タイルを選択したときの詳細パネル右からスライドイン。
-            case "station-detail-slide" -> Animation.slideInFromRight(280, 60f);
-            // モニター色設定 popup の対象 dropdown (高さ 11*12+4=136 → 半分 68)
-            case "mcol-target-open" -> Animation.dropdownDown(280, 136);
-            // + エントリ追加 inline dropdown を上方向に展開 (高さ 74 → 半分 37)。
-            // dropdownUp は下端固定で scaleY 0→1。EASE_OUT_BACK で末端 bounce。
-            case "sched-add-entry-open" -> Animation.dropdownUp(220, 74);
-            default -> null;
-        };
-    }
-
-    @Override
-    public Transition getDynamicTransition(String[] classes, String key) {
-        // 共通 toggle-bg / toggle-knob は MCSS 基底が解決 (railway-management 等と同じ動き)
-        Transition base = super.getDynamicTransition(classes, key);
-        if (base != null) return base;
-        // Door direction button bg/border/text: 150ms ease-out fade on selection change
-        if ("door-transition".equals(key)) return Transition.of(150);
-        // Schedule pause/resume button: brief color crossfade
-        if ("sched-pause-transition".equals(key)) return Transition.of(120);
-        // 旧名 (互換): "knob-transition" は今は toggle-knob で良いが残しておく
-        if ("knob-transition".equals(key)) return Transition.of(150, Easing.EASE_OUT);
-        return null;
     }
 
     /** Returns [station(String), speed(Double), cars(Integer), dest(String)]. */
@@ -1025,9 +1153,25 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         return new Object[]{station, speed, cars, dest};
     }
 
+    /** The stand-in's timetable loops until its editor applies otherwise (改善1, second reading). */
+    private boolean wikiSchedCyclic = true;
+
+    /**
+     * The stand-in's "apply": the edited entries become its own detail, as the server's synced view would show them
+     * (a destination by its station, another instruction by its text) - there is no train to send them to.
+     */
+    void wikiApplyScheduleEdit() {
+        selectedSchedEntries.clear();
+        for (var e : schedEditor.getEntries()) {
+            selectedSchedEntries.add(e.text != null && !e.text.isEmpty() ? e.text
+                    : "throttle".equals(e.type) ? e.value + "%" : e.type);
+        }
+        wikiSchedCyclic = schedEditor.isCyclic();
+    }
+
     Boolean selectedSchedCyclic() {
         if (scheduleSelectedTrainId == null) return null;
-        if (wikiMode) return Boolean.TRUE;
+        if (wikiMode) return wikiSchedCyclic;
         var sv = be().getSyncedSchedView(scheduleSelectedTrainId);   // server 同期 (MP-safe)
         return sv != null ? sv.cyclic() : null;
     }
@@ -1035,6 +1179,8 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     com.trainsystemutilities.blockentity.RailwayManagementBlockEntity.DoorSide currentDoorSide() {
         var s = selectedStation();
         if (s == null) return null;
+        if (wikiMode) return wikiDoorSides.getOrDefault(s.name() + "|" + s.position(),
+                com.trainsystemutilities.blockentity.RailwayManagementBlockEntity.DoorSide.AUTO);
         BlockPos rmPos = be().getManagerPosForStation(s.name(), s.position());
         if (rmPos == null || be().getLevel() == null) return null;
         try {
@@ -1065,8 +1211,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             String draggedType = palette.payload();
             int mx = palette.mouseX(), my = palette.mouseY();
             if (layoutPrevW > 0 && layoutPrevH > 0
-                    && mx >= layoutPrevX && mx < layoutPrevX + layoutPrevW
-                    && my >= layoutPrevY && my < layoutPrevY + layoutPrevH) {
+                    && com.manta.api.hud.Rects.contains(mx, my, layoutPrevX, layoutPrevY, layoutPrevW, layoutPrevH)) {
                 float defW = "ROUTE_MAP".equals(draggedType) ? 0.45f : 0.25f;
                 float defH = "ROUTE_MAP".equals(draggedType) ? 0.45f : 0.18f;
                 // ドロップ位置を中心に配置 (画面端でクランプ)
@@ -1107,11 +1252,9 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     void togglePauseSelected() {
         if (scheduleSelectedTrainId == null) return;
         // B2 (MP desync 修正): client で直接 mutate せず server 権威の payload を送る。
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ManagementComputerControlPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ManagementComputerControlPayload.ACTION_TOGGLE_ONE,
-                        scheduleSelectedTrainId));
+        sendData(com.trainsystemutilities.network.ManagementComputerData.CONTROL,
+                com.trainsystemutilities.network.ManagementComputerControlAction.ACTION_TOGGLE_ONE,
+                com.trainsystemutilities.network.ManagementComputerData.uuidParam(scheduleSelectedTrainId));
     }
 
     // === Symbol editor helpers ===
@@ -1120,7 +1263,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     }
 
     void openSymbolEditorExisting(int idx) {
-        var syms = serverBE().getLineSymbols();
+        var syms = be().getLineSymbols();
         if (idx < 0 || idx >= syms.size()) return;
         symEditor.openExisting(idx, syms.get(idx));
     }
@@ -1129,37 +1272,37 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         // サーバー権威化 (MP desync 修正): client BE 直 mutate でなく payload で server BE を編集。
         // server 側 saveLineSymbol が sendBlockUpdated で client へ同期し直すため記号が消えない。
         var sym = symEditor.buildSymbol();
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ManagementSymbolPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ManagementSymbolPayload.ACTION_SAVE,
+        sendSymbol(com.trainsystemutilities.network.ManagementSymbolAction.ACTION_SAVE,
                         symEditor.getIndex(),
                         sym.getLetters(), sym.getNumber(), sym.getBorderColor(), sym.getName(), sym.getBorderRadius(),
-                        "", net.minecraft.core.BlockPos.ZERO, new java.util.UUID(0, 0)));
+                        "", net.minecraft.core.BlockPos.ZERO, new java.util.UUID(0, 0));
+        // The wiki's computer has no server behind it (the send above is contained): the symbol lands on its own list,
+        // so the playback shows it added (改善1, 2026-10-07).
+        if (wikiMode) be().wikiSaveLineSymbol(symEditor.getIndex(), sym);
     }
 
     void confirmDeleteSymbol(int delIdx) {
         if (delIdx < 0) return;
         // サーバー権威化 (MP desync 修正): server BE を payload で削除 → sendBlockUpdated で client 同期。
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ManagementSymbolPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ManagementSymbolPayload.ACTION_DELETE,
+        sendSymbol(com.trainsystemutilities.network.ManagementSymbolAction.ACTION_DELETE,
                         delIdx,
                         "", 0, "", "", 12,
-                        "", net.minecraft.core.BlockPos.ZERO, new java.util.UUID(0, 0)));
+                        "", net.minecraft.core.BlockPos.ZERO, new java.util.UUID(0, 0));
     }
 
     void assignSymbolOnServer(String stationName, BlockPos stationPos, java.util.UUID symId) {
         if (stationName == null || stationPos == null) return;
+        if (wikiMode) {
+            // The wiki's computer has no server behind it: the assignment lands on its own map, so the station's row
+            // shows the symbol chosen (改善1, second reading).
+            be().wikiAssignSymbol(stationName, stationPos, symId);
+            return;
+        }
         // サーバー権威化 (MP desync 修正): 駅↔記号 割当も server BE を payload で更新。
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.ManagementSymbolPayload(
-                        be().getBlockPos(),
-                        com.trainsystemutilities.network.ManagementSymbolPayload.ACTION_ASSIGN,
+        sendSymbol(com.trainsystemutilities.network.ManagementSymbolAction.ACTION_ASSIGN,
                         -1,
                         "", 0, "", "", 12,
-                        stationName, stationPos, symId == null ? new java.util.UUID(0, 0) : symId));
+                        stationName, stationPos, symId == null ? new java.util.UUID(0, 0) : symId);
     }
 
     // === HSV color picker helpers ===
@@ -1177,7 +1320,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
      *  client BE にも反映して renderer が NBT 同期前から正しい色を出せるようにする。 */
     private void applyMonitorColor(String key, String value) {
         sendMonitorPayload(
-                com.trainsystemutilities.network.MonitorLayoutPayload.ACTION_SET_COLOR,
+                com.trainsystemutilities.network.MonitorLayoutAction.ACTION_SET_COLOR,
                 d -> { d.putString("K", key); d.putString("V", value); });
         // client BE にも反映 (NBT 同期遅延対策、layout 保存と同じ手法)
         be().setColor(key, value);
@@ -1188,14 +1331,18 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             java.util.function.Consumer<net.minecraft.nbt.CompoundTag> fill) {
         var data = new net.minecraft.nbt.CompoundTag();
         fill.accept(data);
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.MonitorLayoutPayload(be().getBlockPos(), action, data));
+        String snbt = com.trainsystemutilities.network.ManagementComputerData.snbtParam(data);
+        if (snbt == null) { // 32 panels are far below it; say so rather than throw out of the click
+            dataTooLarge();
+            return;
+        }
+        sendData(com.trainsystemutilities.network.ManagementComputerData.MONITOR_LAYOUT, action, snbt);
     }
 
     // === Layout editor helpers ===
     void openLayoutEditor() {
         layoutEditor.getLayout().clear();
-        for (var p : serverBE().getMonitorLayout()) layoutEditor.getLayout().add(p.copy());
+        for (var p : be().getMonitorLayout()) layoutEditor.getLayout().add(p.copy());
         layoutEditor.clearSelection();
         layoutSettingsIdx = -1;
         layoutEditor.open();
@@ -1212,7 +1359,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
             int py = (int)(p.getY() * layoutPrevH);
             int pw = Math.max(8, (int)(p.getWidth() * layoutPrevW));
             int ph = Math.max(8, (int)(p.getHeight() * layoutPrevH));
-            if (cx >= px && cx < px + pw && cy >= py && cy < py + ph) return i;
+            if (com.manta.api.hud.Rects.contains(cx, cy, px, py, pw, ph)) return i;
         }
         return -1;
     }
@@ -1237,10 +1384,17 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     }
 
     void saveLayoutToServer() {
+        if (wikiMode) {
+            // The wiki's computer keeps the layout on its own dummy BE: no payload, and never MonitorClientCache, which
+            // the player's real monitors read by block position (改善1, 2026-10-07).
+            be().getMonitorLayout().clear();
+            for (var p : layoutEditor.getLayout()) be().getMonitorLayout().add(p.copy());
+            return;
+        }
         // 1) サーバーへ payload (MP desync 修正: serverBE() 直 mutate は dedicated server に届かず、
         //    毎秒の NBT 同期で空に上書きされて「保存しても次に開くと 0 パネル」になっていた)
         sendMonitorPayload(
-                com.trainsystemutilities.network.MonitorLayoutPayload.ACTION_SAVE_LAYOUT,
+                com.trainsystemutilities.network.MonitorLayoutAction.ACTION_SAVE_LAYOUT,
                 d -> d.put("L", com.trainsystemutilities.blockentity.MonitorLayoutPanel
                         .saveList(layoutEditor.getLayout())));
         // 2) クライアント BE (renderer は client BE を見るので、NBT 同期到着前から表示)
@@ -1289,6 +1443,11 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     // === Schedule editor helpers ===
     void openScheduleEditor() {
         if (scheduleSelectedTrainId == null) return;
+        if (wikiMode) {
+            // No server to ask, and never the player's HUD: the wiki's sample timetable opens at once (改善1, 2026-10-07).
+            schedEditor.open(wikiEditorEntries(), true);
+            return;
+        }
         if (!selectedSchedEditable()) {
             if (minecraft != null && minecraft.player != null) {
                 String msg = (selectedSchedTrainHasSchedule() && !selectedSchedTrainIsElectronic())
@@ -1299,13 +1458,99 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         }
         // schedule は server 権威。client の Train.runtime.getSchedule() は Create が全 client に
         // 確実には同期せず、運行停止直後などに null/空になる (= 編集で全エントリ空欄バグ)。
-        // server に現在の schedule を要求し、応答 (ScheduleEditDataPayload) で editor を開く。
-        net.neoforged.neoforge.network.PacketDistributor.sendToServer(
-                new com.trainsystemutilities.network.RequestScheduleEditPayload(
-                        be().getBlockPos(), scheduleSelectedTrainId));
+        // server に現在の schedule を要求し、応答 (自分の tools host の sched-edit-*、 client.ToolsClient) で editor を開く。
+        sendData(com.trainsystemutilities.network.ManagementComputerData.SCHEDULE_REQUEST, com.trainsystemutilities.network.ManagementComputerData.uuidParam(scheduleSelectedTrainId));
     }
 
-    /** {@link com.trainsystemutilities.network.ScheduleEditDataPayload} 応答で editor を開く (server 権威の schedule)。 */
+    // ===== manta:data (MANTA_7_CONCEPT C4, network.ManagementComputerData) =====
+
+    /**
+     * The computer's host: opened at the first tick for the block entity the client's level holds (never for the
+     * wiki capture's stand-in) and closed with the screen. Its
+     * fields are the ticket lists (TicketConfigSyncPayload's), which go into TicketConfigClientCache once this screen
+     * has asked for them, as the sync's answer did.
+     */
+    private com.manta.api.data.Mirror data;
+    private int dataRevision = -1;
+
+    /** An action of the computer's host, its params in management-computer-state.json's order. */
+    void sendData(String action, Object... args) {
+        com.manta.api.data.Mirror m = dataMirror();
+        if (m != null) m.send(action, args);
+    }
+
+    private com.manta.api.data.Mirror dataMirror() {
+        if (data == null) {
+            var be = be();
+            // Not for the wiki capture's stand-in: it has the client's level (setLevel), but it is not the block
+            // entity that level holds at its position - and its position is the player's, not a block's.
+            if (be.getLevel() == null || be.getLevel().getBlockEntity(be.getBlockPos()) != be
+                    || minecraft == null || minecraft.getConnection() == null) return null;
+            data = com.manta.api.data.Mirror.open(
+                    com.trainsystemutilities.network.ManagementComputerData.channel(be.getLevel(), be.getBlockPos()),
+                    com.trainsystemutilities.network.ManagementComputerData.schema());
+        }
+        return data;
+    }
+
+    /** Every container tick: the ticket lists the host sent since the last one, once this screen asked for them. */
+    private void pollData() {
+        com.manta.api.data.Mirror m = dataMirror();
+        if (m == null) return;
+        m.poll();
+        int revision = m.revision();
+        if (revision < 0 || revision == dataRevision) return;
+        dataRevision = revision;
+        if (ticketDataRequested) {
+            com.trainsystemutilities.station.TicketConfigClientCache.replaceAll(
+                    com.trainsystemutilities.network.ManagementComputerData.uuidsOf((java.util.List<?>) m.get("ticket-sellable")),
+                    com.trainsystemutilities.network.ManagementComputerData.uuidsOf((java.util.List<?>) m.get("ticket-network-groups")));
+        }
+    }
+
+    @Override
+    public void removed() {
+        super.removed();
+        if (data != null) {
+            data.close();
+            data = null;
+        }
+    }
+
+    /**
+     * The symbol action, its params in management-computer-state.json's order: each string cut to its declaration
+     * (the payload's writer threw past its char caps - the editor loads a symbol an older world can have written
+     * with anything), the ints floored at 0 as that writer did.
+     */
+    void sendSymbol(int action, int index, String letters, int number, String borderColor, String name,
+                    int borderRadius, String stationName, BlockPos stationPos, java.util.UUID symbolId) {
+        sendData(com.trainsystemutilities.network.ManagementComputerData.SYMBOL, action, index,
+                com.trainsystemutilities.network.ManagementComputerData.fitParam(letters, com.trainsystemutilities.network.ManagementComputerData.LETTERS_BYTES), Math.max(0, number),
+                com.trainsystemutilities.network.ManagementComputerData.fitParam(borderColor, com.trainsystemutilities.network.ManagementComputerData.BORDER_COLOR_BYTES),
+                com.trainsystemutilities.network.ManagementComputerData.fitParam(name, com.trainsystemutilities.network.ManagementComputerData.NAME_BYTES), Math.max(0, borderRadius),
+                // The station is a key into the world's stations: byte for byte (an exact param), not NFC.
+                com.trainsystemutilities.network.ExactText.cut(
+                        stationName == null ? "" : stationName, com.trainsystemutilities.network.ManagementComputerData.STATION_BYTES),
+                stationPos.getX(), stationPos.getY(), stationPos.getZ(), com.trainsystemutilities.network.ManagementComputerData.uuidParam(symbolId));
+    }
+
+    /** Data past what manta:data carries (a schedule's or a layout's SNBT): not sent, and the player is told. */
+    void dataTooLarge() {
+        if (minecraft != null && minecraft.player != null) {
+            minecraft.player.displayClientMessage(Component.translatable("tsu.data.too_large"), true);
+        }
+    }
+
+    /**
+     * The schedule the editor asked for is past what manta:data carries (network.ToolsData.answerScheduleEdit): the
+     * editor does not open - an empty one would replace the schedule on apply.
+     */
+    public void onScheduleEditTooLarge(UUID trainId) {
+        if (scheduleSelectedTrainId == null || !scheduleSelectedTrainId.equals(trainId)) return;
+        dataTooLarge();
+    }
+
+    /** schedule-request の応答 (network.ToolsData.answerScheduleEdit)で editor を開く (server 権威の schedule)。 */
     public void onScheduleEditData(UUID trainId, boolean hasData, net.minecraft.nbt.CompoundTag scheduleNbt) {
         // 応答到達までに選択列車が変わっていたら無視
         if (scheduleSelectedTrainId == null || !scheduleSelectedTrainId.equals(trainId)) return;
@@ -1338,22 +1583,17 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
 
     void setDoorSideOnServer(String stationName, BlockPos stationPos,
                                       com.trainsystemutilities.blockentity.RailwayManagementBlockEntity.DoorSide side) {
-        if (this.minecraft == null || this.minecraft.getSingleplayerServer() == null) return;
-        var clientBE = be();
-        BlockPos bePos = clientBE.getBlockPos();
-        var dim = clientBE.getLevel().dimension();
-        this.minecraft.getSingleplayerServer().execute(() -> {
-            var sl = this.minecraft.getSingleplayerServer().getLevel(dim);
-            if (sl == null) return;
-            var sbe = sl.getBlockEntity(bePos);
-            if (!(sbe instanceof ManagementComputerBlockEntity sBe)) return;
-            BlockPos rmPos = sBe.getManagerPosForStation(stationName, stationPos);
-            if (rmPos == null) return;
-            var rbe = sl.getBlockEntity(rmPos);
-            if (rbe instanceof com.trainsystemutilities.blockentity.RailwayManagementBlockEntity rm) {
-                rm.setDoorOpenSide(side);
-            }
-        });
+        if (stationName == null || stationPos == null || side == null) return;
+        if (wikiMode) {
+            // The wiki's own doors: shown at once, nothing sent (改善1, 2026-10-07).
+            wikiDoorSides.put(stationName + "|" + stationPos, side);
+            return;
+        }
+        // Through the computer's host, as every other change on this screen. This wrote the integrated server's block
+        // entity directly until 2026-09-30: a dedicated server has none, so the press did nothing there (§5.1). The
+        // button shows the side the server sends back with the block's update.
+        sendData(com.trainsystemutilities.network.ManagementComputerData.DOOR_SIDE,
+                com.trainsystemutilities.network.ManagementComputerData.doorSideParams(stationName, stationPos, side));
     }
 
     // mouseDragged / mouseReleased — MCSS now handles all drag sessions via
@@ -1401,11 +1641,27 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         return false;
     }
 
+    // ===== Manta 7 push (Phase 4, 2026-09-24) =====
+    // The pages' values are WRITTEN by ManagementComputerPush each frame before the engine draws, and
+    // once when a page opens: the screen overrides no getDynamic*.
+    final ManagementComputerPush pushState = new ManagementComputerPush(this);
+
+    @Override
+    protected void pageOpened(Object page, com.manta.api.screen.PageLayer layer) {
+        pushState.pageOpened(page, layer);
+    }
+
+    @Override
+    public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        pushState.pushAll();
+        super.render(g, mouseX, mouseY, partialTick);
+    }
+
     // === afterDialogRender: per-frame data refresh only ===
     // All visual elements are JSON-driven (frames as <div>, lists as <repeat>,
-    // freely-painted regions as <canvas>). This hook now only feeds the data
-    // hooks (getDynamic*) and canvas painters by refreshing snapshots once a
-    // frame, never draws pixels itself.
+    // freely-painted regions as <canvas>). This hook now only feeds the pushed
+    // values (ManagementComputerPush) and canvas painters by refreshing snapshots
+    // once a frame, never draws pixels itself.
 
     @Override
     protected void afterDialogRender(GuiGraphics g, int mouseX, int mouseY, float partial) {
@@ -1436,6 +1692,19 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
     }
 
     void refreshNetworkData() {
+        if (wikiMode) {
+            // The wiki's computer has no card in its slot and no server behind it: its map is the test world's, seeded
+            // once into the dummy BE (wikiSeedMap) and shown as it is (改善1, 2026-10-07).
+            if (mapNodes.isEmpty() && !be().getCachedNodes().isEmpty()) {
+                mapNodes = new ArrayList<>(be().getCachedNodes());
+                mapEdges = new ArrayList<>(be().getCachedEdges());
+                mapStations = new ArrayList<>(be().getCachedStations());
+                mapSignals = new ArrayList<>(be().getCachedSignals());
+                mapTrains = new ArrayList<>(be().getCachedTrains());
+                mapRenderer.resetInit();
+            }
+            return;
+        }
         ManagementComputerRender.refreshNetworkData(this);
     }
 
@@ -1456,7 +1725,7 @@ public class ManagementComputerScreenV2 extends JsonLayoutScreen<ManagementCompu
         selectedTrainName = info.name() == null ? "" : info.name();
         selectedTrainCars = info.carriageCount();
         selectedTrainSpeed = Math.abs(info.speed()) * 20 * 3.6;
-        // 速度は高頻度 broadcast (TrainPositionPayload, 5Hz) があればそちらを優先 (= 滑らかな更新)
+        // 速度は高頻度 broadcast (TrainPositionsData の host, 5Hz) があればそちらを優先 (= 滑らかな更新)
         var livePos = com.trainsystemutilities.client.transit.TransitTerminalClientCache.trainPositions().get(id);
         if (livePos != null) selectedTrainSpeed = Math.abs(livePos.speed()) * 20 * 3.6;
         selectedTrainStation = info.currentStationName() == null ? "" : info.currentStationName();

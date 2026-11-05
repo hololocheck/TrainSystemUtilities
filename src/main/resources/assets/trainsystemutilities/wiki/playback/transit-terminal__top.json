@@ -1,0 +1,115 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "tt-from-box"
+        ]
+      },
+      "do": "type",
+      "text": "東",
+      "charMs": 200,
+      "say": "trainsystemutilities.wiki.play.tt.from",
+      "holdMs": 300
+    },
+    {
+      "do": "key",
+      "key": "down",
+      "holdMs": 400
+    },
+    {
+      "do": "key",
+      "key": "enter",
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-to-box"
+        ]
+      },
+      "do": "type",
+      "text": "新宿",
+      "charMs": 200,
+      "say": "trainsystemutilities.wiki.play.tt.to",
+      "holdMs": 300
+    },
+    {
+      "do": "key",
+      "key": "down",
+      "holdMs": 400
+    },
+    {
+      "do": "key",
+      "key": "enter",
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-search-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tt.search",
+      "holdMs": 2400
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-top-content"
+        ],
+        "at": [
+          0.75,
+          0.086
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tt.other",
+      "holdMs": 1800
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-top-content"
+        ],
+        "at": [
+          0.25,
+          0.086
+        ]
+      },
+      "do": "click",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-top-content"
+        ],
+        "at": [
+          0.5,
+          0.46
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tt.detail",
+      "holdMs": 2600
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-top-content"
+        ],
+        "at": [
+          0.11,
+          0.16
+        ]
+      },
+      "do": "click",
+      "holdMs": 1200
+    }
+  ]
+}

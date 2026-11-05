@@ -1,0 +1,58 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "glue-tank-label"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tpb.tank",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "glue-tank-refill"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tpb.refill",
+      "holdMs": 500
+    },
+    {
+      "do": "screen",
+      "screen": {
+        "id": "train-preset-refill",
+        "state": "main"
+      },
+      "say": "trainsystemutilities.wiki.play.tpb.refill_screen",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "inv-slot"
+        ],
+        "index": 27
+      },
+      "do": "slot",
+      "quick": true,
+      "say": "trainsystemutilities.wiki.play.tpb.put",
+      "holdMs": 2200
+    },
+    {
+      "target": {
+        "classes": [
+          "refill-tank-bar"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tpb.filled",
+      "holdMs": 2000
+    }
+  ]
+}

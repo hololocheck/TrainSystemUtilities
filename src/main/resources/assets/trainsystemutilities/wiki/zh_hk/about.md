@@ -1,106 +1,56 @@
 ---
-title: 什麼是 TrainSystem Utilities
+title: 關於 Train System Utilities
 id: about
 ---
 
-# 什麼是 TrainSystem Utilities
+# 關於 Train System Utilities
 
-列車管理系統（TrainSystem Utilities，簡稱 TSU）是 Minecraft **Create MOD（1.21.1）** 的擴展 MOD，為遊戲添加與鐵路相關的便捷功能。  
-在 Create 現有的「軌道 / 車站 / 時刻表 / 信號」基礎上，TSU 以 **造型逼真、人人易用** 的形式提供車站顯示板、路網總覽管理、顯示器整合、線路編號、**電氣化系統** 等功能。
+Train System Utilities（TSU）是擴展 Create 鐵路的 Mod。它以線路、車站、時刻表和信號為基礎，添加運行管理、車站導向顯示、電氣化，以及列車預設的保存與共享。
 
 [[TOC]]
 
-## 本 MOD 能做哪些事？
+## 功能一覽
 
-| 功能 | 説明 |
+| 功能 | 內容 |
 |---|---|
-| 車站級顯示板 | 在車站月台上放置「鐵路管理方塊」，自動顯示已停靠 / 即將到站的列車 |
-| 路網總覽管理 | 使用「管理用計算機」集中管理全部車站 / 列車 / 時刻表 |
-| 車站顯示器整合 | 在車站附近放置顯示器方塊即可實時顯示信息 |
-| 線路編號 | 創建 JA01 / JB02 等自定義線路編號並分配給車站 |
-| 連掛 / 解編 | 通過時刻表條件動態地讓兩列列車連掛 / 解編 |
-| 海報顯示 | 以輪播方式顯示 PNG/JPG 圖片的廣告板 |
-| **電氣化系統** | **受電弓 + 接觸網 + 箱式變電所 + FE 逆變器，為列車提供 FE / Create 能量** |
-| 列車預設 | 將整列列車以 JSON 格式保存 / 恢復 / 分享 |
-| Preset Place | 在線共享列車預設（基於 BelugaExperience 平台） |
+| 車站列車信息 | 顯示停靠中的列車和下一班到站的列車。 |
+| 線路管理 | 在管理用計算機上查看車站、列車和時刻表。 |
+| 顯示器聯動 | 在顯示器上顯示線路圖、列車信息和海報。 |
+| 線路編號 | 製作編號的顏色和形狀，並分配給車站。 |
+| 連掛・解編 | 用時刻表條件連掛、拆分編組。 |
+| 電氣化 | 經由變電所和接觸網向列車供應 FE。 |
+| 列車預設 | 保存自製的編組，用於重新放置或在線共享。 |
 
-### 新增物品 / 方塊
-
-> [!TIP]
-> **右下角帶有藍色標記** 的圖標可以點擊，跳轉到對應頁面。
-
-#### 車站與顯示 (11)
+### 車站・顯示類（11）
 
 ```embed:items size=32 cols=5 label=true ids=trainsystemutilities:railway_management_block,trainsystemutilities:management_computer,trainsystemutilities:poster_management_block,trainsystemutilities:monitor,trainsystemutilities:double_monitor,trainsystemutilities:monitor_half,trainsystemutilities:double_monitor_half,trainsystemutilities:monitor_slim,trainsystemutilities:double_monitor_slim,trainsystemutilities:station_name_sign,trainsystemutilities:station_name_sign_pole links=railway-management,management-computer/overview,poster-management,-,-,-,-,-,-,structure/station-name-sign,structure/station-name-sign
 ```
 
-#### 工具 (3)
+### 工具（3）
 
 ```embed:items size=32 cols=5 label=true ids=trainsystemutilities:station_range_tool,trainsystemutilities:train_preset_tool,trainsystemutilities:transit_terminal links=tools/station-range-tool,train-preset-tool/save,tools/transit-terminal
 ```
 
-#### 數據卡 (3)
+### 數據卡（3）
 
 ```embed:items size=32 cols=5 label=true ids=trainsystemutilities:memory_card,trainsystemutilities:monitor_link_card,trainsystemutilities:train_detection_card links=tools/memory-card,tools/monitor-link-card,tools/train-detection-card
 ```
 
-#### 電氣化 (6)
+### 電氣化系統（6）
 
 ```embed:items size=32 cols=5 label=true ids=trainsystemutilities:wire_connector,trainsystemutilities:pantograph,trainsystemutilities:fe_inverter,trainsystemutilities:substation,trainsystemutilities:insulator,trainsystemutilities:power_checker links=electrification/wire-connector,electrification/pantograph,electrification/fe-inverter,electrification/substation,electrification/insulator,electrification/power-checker
 ```
 
-→ 詳見 [電氣化系統概述](electrification/index.md)。
+## 搭配使用的 Mod {#recommended-mods}
 
-> [!TIP]
-> **本 MOD 並不會「自動駕駛列車」**。列車運行由 Create 的時刻表負責。
-> TSU 是「讓 Create 列車的查看、管理與供電更加方便」的輔助工具集。
+列車的基本行駛和時刻表由 Create 負責，TSU 在此基礎上擴展運行和設備。Manta 作為操作界面等的公共基礎使用，當前支持的版本已內置 Manta。需要另行安裝的前置 Mod，請查看各自的下載頁面。
 
-## 適合搭配哪些 MOD 使用？ {#recommended-mods}
+同時使用 SAS 時，可以設置配合列車動作的廣播。電氣化需要搭配能夠供應 FE 的設備。附加設備能否連接，請確認各 Mod 提供的 FE 支持情況。
 
-| MOD | 作用 | 是否必需？ |
-|---|---|---|
-| **Create** | 鐵路機制核心 | ✅ 必需 |
-| **Manta** | GUI / 顯示器 / Wiki / BelugaExperience 渲染框架 | ✅ 必需 |
-| **SpatialAudioSystem** | 車站發車旋律與廣播等音效（作者的另一款 MOD） | 推薦 |
-| **Mekanism / Applied Energistics 2** | 為電氣化系統提供 FE 能量源 | 使用電氣化系統時需要 |
-| Create: New Age 等 | 額外的列車機制 | 可選 |
-| BSL Shaders 等 | 視覺增強 | 可選 |
+## 適用場景
 
-> [!NOTE]
-> 搭配 **SpatialAudioSystem** 使用時，發車旋律與車內廣播會與 TSU 車站顯示在同一車站同步播放，大幅提升車站氛圍。
+想管理多個車站和列車、想建造導向顯示和設備齊全的車站、想運營有接觸網的線路時，都可以使用。
 
-## 適合用來做什麼？
+## 開發與更新
 
-適合：
-
-- **大規模路網運營**：希望通過單一列表管理眾多車站 / 列車
-- **氛圍感車站建造**：希望通過顯示器、線路編號和海報導引賦予車站個性
-- **多人聯機鐵路運營**：希望協同編輯時刻表的同時防止誤操作
-- **電氣化線路建設**：希望通過架空接觸網與 FE 供電重現電力列車運行
-- **列車預設分享**：希望將自己的列車保存為 JSON，分享到其他世界或與其他玩家共享
-
-不適合：
-
-- **只跑一列貨運列車**：在這種規模下，管理用計算機有些大材小用
-- **不搭配 Create 使用**：TSU 單獨使用時沒有任何作用
-
-## 架構組件（面向進階用户）
-
-- **BelugaExperience UI 系統**：V3 GUI 部件框架（控制器 + JSON 構建器 + 自動尺寸）。位於 `com.manta.api.controller.*` / `com.manta.api.render.*` 包中。
-- **MCSS Wiki**：遊戲內 markdown wiki + JSON 驅動的 embed（`embed:screen` / `embed:item` / `embed:items`）
-- **GUI 截取管線**：登錄時所有佈局 JSON 通過離屏 FBO 截取 → 作為 DynamicTexture 立即反映到 wiki 中
-- **i18n**：在 ja_jp / en_us 之間切換時，運行 `/tsu-wiki-prebuild` 重新生成各語言的截取內容
-
-## 建議先閲讀的頁面
-
-- [快速開始](getting-started.md) — 最快上手路徑
-- [管理用計算機概述](management-computer/overview.md) — 中樞 GUI 導覽
-- [鐵路管理方塊](railway-management.md) — 車站顯示板
-- [海報管理方塊](poster-management.md) — 圖片顯示板
-- [電氣化系統](electrification/pantograph.md)
-
-## 開發狀態
-
-> [!IMPORTANT]
-> 本 MOD 仍在開發中。設置保存格式與 API 可能會發生變化。
-> 在大型世界正式投入使用前，建議先在測試世界中確認其行為。
+更新可能會改變存檔格式或 API。變更內容請查看更新日誌。初次搭建時，先在測試用的世界中確認運作，會更容易上手。

@@ -1,0 +1,125 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "opas-h-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.opas.height",
+      "holdMs": 350
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-h-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-c-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.opas.clearance",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-m-value"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.opas.multi",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-cant-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.opas.toggles",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-ins-track"
+        ]
+      },
+      "do": "click",
+      "holdMs": 1100
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-preview"
+        ]
+      },
+      "do": "drag",
+      "by": [
+        70,
+        0
+      ],
+      "durationMs": 900,
+      "say": "trainsystemutilities.wiki.play.opas.rotate",
+      "holdMs": 600
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-preview"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.opas.zoom",
+      "holdMs": 400
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-preview"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 1000
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-apply-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.opas.apply",
+      "holdMs": 1800
+    },
+    {
+      "target": {
+        "classes": [
+          "opas-conf-yes"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.opas.enter",
+      "holdMs": 1800
+    }
+  ]
+}

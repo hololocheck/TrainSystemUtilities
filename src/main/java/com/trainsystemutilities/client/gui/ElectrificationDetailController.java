@@ -2,10 +2,9 @@ package com.trainsystemutilities.client.gui;
 
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.client.electrification.ClientTrainElectrificationCache;
-import com.trainsystemutilities.network.PantographTogglePayload;
+import com.trainsystemutilities.network.PantographAction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.UUID;
 
@@ -20,6 +19,15 @@ import java.util.UUID;
 public final class ElectrificationDetailController {
 
     private boolean open = false;
+    /** 列車の電化状態の読み先: 同期済みの client cache (wiki の見本の画面は自分のサンプルを貸す)。 */
+    private java.util.function.Function<UUID, com.trainsystemutilities.electrification.contraption.TrainElectrificationView> views =
+            ClientTrainElectrificationCache::get;
+
+    /** wiki の見本の画面 (ManagementComputerScreenV2.wikiCreate) のサンプル。global な cache には書かない。 */
+    public void viewsFrom(java.util.function.Function<UUID,
+            com.trainsystemutilities.electrification.contraption.TrainElectrificationView> views) {
+        this.views = views;
+    }
 
     public boolean isOpen() { return open; }
 
@@ -31,14 +39,14 @@ public final class ElectrificationDetailController {
     public String resolveText(String[] classes, UUID trainId) {
         for (String c : classes) {
             if ("ed-title".equals(c)) {
-                var v = ClientTrainElectrificationCache.get(trainId);
+                var v = views.apply(trainId);
                 String name = v == null
                         ? Component.translatable("tsu.mc.not_synced").getString()
                         : v.trainName;
                 return Component.translatable("tsu.mc.ed_title", name).getString();
             }
             if ("ed-summary".equals(c)) {
-                var v = ClientTrainElectrificationCache.get(trainId);
+                var v = views.apply(trainId);
                 if (v == null) return Component.translatable("tsu.mc.not_synced").getString();
                 return Component.translatable("tsu.mc.ed_summary",
                         v.cars.size(), v.totalPantographs(), v.totalDeployedPantographs()).getString();
@@ -60,14 +68,14 @@ public final class ElectrificationDetailController {
             }
             if ("ed-deploy-all-btn".equals(c)) {
                 TrainSystemUtilities.LOGGER.debug("[PantoToggle-DEBUG] CLIENT click deploy-all train={}", trainId);
-                PacketDistributor.sendToServer(new PantographTogglePayload(
-                        trainId, PantographTogglePayload.ACTION_DEPLOY_ALL, 0, BlockPos.ZERO));
+                com.trainsystemutilities.client.TrainClient.pantograph(
+                        trainId, PantographAction.ACTION_DEPLOY_ALL, 0, BlockPos.ZERO);
                 return true;
             }
             if ("ed-fold-all-btn".equals(c)) {
                 TrainSystemUtilities.LOGGER.debug("[PantoToggle-DEBUG] CLIENT click fold-all train={}", trainId);
-                PacketDistributor.sendToServer(new PantographTogglePayload(
-                        trainId, PantographTogglePayload.ACTION_FOLD_ALL, 0, BlockPos.ZERO));
+                com.trainsystemutilities.client.TrainClient.pantograph(
+                        trainId, PantographAction.ACTION_FOLD_ALL, 0, BlockPos.ZERO);
                 return true;
             }
         }

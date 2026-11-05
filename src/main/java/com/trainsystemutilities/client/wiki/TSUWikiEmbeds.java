@@ -1,6 +1,4 @@
 package com.trainsystemutilities.client.wiki;
-import com.manta.api.ir.compiler.JsonToIrCompiler;
-import com.manta.api.ir.IrNode;
 import com.manta.api.screen.JsonLayoutHandler;
 import com.manta.api.wiki.WikiEmbedRegistry;
 import com.google.gson.JsonObject;
@@ -15,7 +13,7 @@ import java.util.Map;
  *
  * <p>柱 3 (Schema-driven JSON) 移行後: 各 demo の layout は
  * {@code assets/trainsystemutilities/layouts/wiki/*.json} に格納され、 ここでは
- * JSON ロード + JsonToIrCompiler 経由で IR を取得して embed registry に渡す。
+ * JSON をロードして文書 ({@code Result.document}) のまま embed registry に渡す (engine は Manta が決める)。
  * canvas 描画 (路線記号アイコン / route map) は {@link WikiDemoHandlers} が担当。
  */
 public final class TSUWikiEmbeds {
@@ -25,7 +23,8 @@ public final class TSUWikiEmbeds {
     private static final int RAILWAY_MANAGEMENT_NATIVE_H = 316;
     private static final int POSTER_MANAGEMENT_NATIVE_H = 332;
 
-    private static final Map<String, IrNode> IR_CACHE = new HashMap<>();
+    /** resourcePath -> the layout's TEXT, loaded once; Manta compiles it (or draws it through Manta 6 - Phase 6). */
+    private static final Map<String, String> TEXT_CACHE = new HashMap<>();
 
     private TSUWikiEmbeds() {}
 
@@ -85,7 +84,7 @@ public final class TSUWikiEmbeds {
      *  寸法は WikiCapture が登録した crop 後 dims (= 実 aspect) を使う。 */
     private static WikiEmbedRegistry.EmbedBuilder.Result liveTexture(
             WikiEmbedRegistry.EmbedContext ctx, String baseId, String state) {
-        int[] dims = WikiPrebuildCapture.LAYOUT_DIMS.get(baseId + "__" + state);
+        int[] dims = WikiCapture.LAYOUT_DIMS.get(baseId + "__" + state);
         int nativeW = (dims != null && dims[0] > 0) ? dims[0] : 300;
         int nativeH = (dims != null && dims[1] > 0) ? dims[1] : 200;
         int dispW = Math.min(ctx.renderWidth(), nativeW * 2);
@@ -99,7 +98,7 @@ public final class TSUWikiEmbeds {
                     if (mc.getTextureManager().getTexture(loc, null) == null) {
                         loc = liveLoc(baseId, state, "en_us"); // lang fallback
                         if (mc.getTextureManager().getTexture(loc, null) == null) {
-                            g.drawString(font, "(generating…)", x, y, 0xFF888888, false);
+                            com.manta.api.text.MantaText.draw(g, font, "(generating…)", x, y, 0xFF888888);
                             return;
                         }
                     }
@@ -138,22 +137,19 @@ public final class TSUWikiEmbeds {
 
     private static WikiEmbedRegistry.EmbedBuilder.Result irResult(
             String resourcePath, JsonLayoutHandler handler, int height) {
-        IrNode ir = loadIr(resourcePath);
-        return WikiEmbedRegistry.EmbedBuilder.Result.ir(ir, handler, height);
+        return WikiEmbedRegistry.EmbedBuilder.Result.document(loadText(resourcePath), handler, height);
     }
 
-    /** resourcePath を 1 度だけロード + compile して cache (= 各 embed render で IR 再構築を避ける)。 */
-    private static IrNode loadIr(String resourcePath) {
-        IrNode cached = IR_CACHE.get(resourcePath);
+    /** resourcePath を 1 度だけロードして cache; the embed registry compiles it once per cached embed (Manta 6 Phase 6). */
+    private static String loadText(String resourcePath) {
+        String cached = TEXT_CACHE.get(resourcePath);
         if (cached != null) return cached;
         String json = TsuLayouts.load(resourcePath);
         if (json == null || json.isEmpty()) {
             throw new IllegalStateException("Wiki layout resource not found: " + resourcePath);
         }
-        JsonObject root = JsonParser.parseString(json).getAsJsonObject();
-        IrNode ir = JsonToIrCompiler.compile(root).root();
-        IR_CACHE.put(resourcePath, ir);
-        return ir;
+        TEXT_CACHE.put(resourcePath, json);
+        return json;
     }
 
     private static String normalizeTab(String tab) {

@@ -14,10 +14,6 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.LongArrayTag;
-import net.minecraft.nbt.LongTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -65,10 +61,8 @@ public final class ScreenDoorGroupHighlightRenderer {
 
         for (long packed : members) {
             BlockPos p = BlockPos.of(packed);
-            AABB box = new AABB(
-                    p.getX() - camPos.x, p.getY() - camPos.y, p.getZ() - camPos.z,
-                    p.getX() + 1 - camPos.x, p.getY() + 1 - camPos.y, p.getZ() + 1 - camPos.z);
-            LevelRenderer.renderLineBox(pose, consumer, box, R, G, B, A);
+            AABB box = com.manta.api.render.WorldOutline.blockSpan(p, p, camPos);
+            com.manta.api.render.WorldOutline.box(pose, buffer, box, R, G, B, A, false);
         }
         buffer.endBatch(RenderType.lines());
     }
@@ -79,35 +73,15 @@ public final class ScreenDoorGroupHighlightRenderer {
         if (!held.isEmpty() && held.has(DataComponents.CUSTOM_DATA)) {
             CompoundTag tag = held.get(DataComponents.CUSTOM_DATA).copyTag();
             if (MemoryCardItem.TYPE_SCREEN_DOOR_GROUP.equals(tag.getString("Type"))) {
-                long[] m = readMembers(tag);
+                long[] m = MemoryCardItem.readMembers(tag);
                 if (m.length > 0) return m;
             }
         }
         return guiHighlightMembers;
     }
 
-    /** NBT sync で ListTag<LongTag> → LongArrayTag に自動圧縮されるため両方対応。 */
-    private static long[] readMembers(CompoundTag tag) {
-        Tag raw = tag.get(MemoryCardItem.TAG_MEMBERS);
-        if (raw instanceof LongArrayTag lat) {
-            return lat.getAsLongArray();
-        }
-        if (raw instanceof ListTag lt) {
-            long[] arr = new long[lt.size()];
-            for (int i = 0; i < lt.size(); i++) {
-                if (lt.get(i) instanceof LongTag longTag) arr[i] = longTag.getAsLong();
-            }
-            return arr;
-        }
-        return new long[0];
-    }
-
     /** メイン手 or オフハンドにメモリーカードがあれば返す。 */
     private static ItemStack findHeldCard(LocalPlayer player) {
-        ItemStack main = player.getMainHandItem();
-        if (main.is(ModItems.MEMORY_CARD.get())) return main;
-        ItemStack off = player.getOffhandItem();
-        if (off.is(ModItems.MEMORY_CARD.get())) return off;
-        return ItemStack.EMPTY;
+        return com.manta.api.hud.HeldTools.find(player, ModItems.MEMORY_CARD.get());
     }
 }

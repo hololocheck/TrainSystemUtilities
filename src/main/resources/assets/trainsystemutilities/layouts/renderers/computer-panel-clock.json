@@ -8,6 +8,7 @@
   "dynamicH": "ph",
   "children": [
     {
+      "textKey": "clock-text",
       "tag": "span",
       "classes": [
         "clock-text"

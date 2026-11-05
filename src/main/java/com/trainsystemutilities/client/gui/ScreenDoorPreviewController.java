@@ -22,59 +22,37 @@ final class ScreenDoorPreviewController {
     private static final float DEFAULT_ROT_X = 25f;
     private static final float DEFAULT_ZOOM = 3.0f;
 
-    private float rotY = DEFAULT_ROT_Y;
-    private float rotX = DEFAULT_ROT_X;
-    private float zoom = DEFAULT_ZOOM;
-    private float panX = 0f;
-    private float panY = 0f;
-    private int dragButton = -1; // -1=なし, 0=回転, 1=pan
-    private double lastMouseX = 0;
-    private double lastMouseY = 0;
+    /** 視点の状態は部品が持つ (B9)。数値は移行前と同じ。 */
+    private final com.manta.api.preview.OrbitView view =
+            new com.manta.api.preview.OrbitView(DEFAULT_ROT_Y, DEFAULT_ROT_X, DEFAULT_ZOOM)
+                    .degreesPerPixel(0.6f)
+                    .pitchRange(-89f, 89f)
+                    .zoomRange(0.2f, 30.0f)
+                    .zoomStep(1.2f, 0.85f);
 
     /** popup 再 open 時などに view を初期姿勢へ戻す。 */
     void resetView() {
-        rotY = DEFAULT_ROT_Y;
-        rotX = DEFAULT_ROT_X;
-        zoom = DEFAULT_ZOOM;
-        panX = 0f;
-        panY = 0f;
+        view.reset();
     }
 
     /** preview 上での press (= 0:左=回転, 1:右=pan)。hit 判定は screen 側で済ませて呼ぶ。 */
     void beginDrag(int button, double mouseX, double mouseY) {
-        dragButton = button;
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
+        view.beginDrag(button, mouseX, mouseY);
     }
 
     /** drag 中の回転/pan 更新。消費したら true。 */
     boolean mouseDragged(double mouseX, double mouseY, int button) {
-        if (dragButton != button) return false;
-        double dx = mouseX - lastMouseX;
-        double dy = mouseY - lastMouseY;
-        if (button == 0) {
-            rotY += (float) dx * 0.6f;
-            rotX += (float) dy * 0.6f;
-            rotX = Math.max(-89f, Math.min(89f, rotX));
-        } else if (button == 1) {
-            panX += (float) dx;
-            panY += (float) dy;
-        }
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
-        return true;
+        return view.drag(mouseX, mouseY, button);
     }
 
     /** drag 終了。消費したら true。 */
     boolean mouseReleased(int button) {
-        if (dragButton != button) return false;
-        dragButton = -1;
-        return true;
+        return view.endDrag(button);
     }
 
     /** wheel zoom (preview 上で呼ぶ)。 */
     void zoomBy(double scrollY) {
-        zoom = Math.max(0.2f, Math.min(30.0f, zoom * (scrollY > 0 ? 1.2f : 0.85f)));
+        view.zoomBy(scrollY);
     }
 
     /** ホームドア popup 内の 3D preview。 メモリーカードのメンバー BlockPos からブロックを取得して描画。
@@ -91,7 +69,7 @@ final class ScreenDoorPreviewController {
                     card.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA).copyTag();
             if (com.trainsystemutilities.item.MemoryCardItem.TYPE_SCREEN_DOOR_GROUP
                     .equals(tag.getString("Type"))) {
-                long[] members = readMembers(tag);
+                long[] members = com.trainsystemutilities.item.MemoryCardItem.readMembers(tag);
                 if (level != null) {
                     for (long packed : members) {
                         net.minecraft.core.BlockPos p = net.minecraft.core.BlockPos.of(packed);
@@ -107,13 +85,13 @@ final class ScreenDoorPreviewController {
             // メモリーカード未挿入 or chunk 未ロード等の場合は説明テキストのみ
             String msg = Component.translatable(card.isEmpty()
                     ? "tsu.rm.card_not_inserted" : "tsu.rm.block_loading").getString();
-            int tw = font.width(msg);
-            g.drawString(font, msg, x + (w - tw) / 2, y + h / 2 - 4, 0xFF888888, false);
+            int tw = com.manta.api.text.MantaText.uiWidth(font, msg);
+            com.manta.api.text.MantaText.draw(g, font, msg, x + (w - tw) / 2, y + h / 2 - 4, 0xFF888888);
             return;
         }
         com.manta.api.preview.GuiBlock3DRenderer.render(
                 g, x, y, w, h, entries,
-                rotY, rotX, zoom, panX, panY);
+                view.yaw(), view.pitch(), view.zoom(), view.panX(), view.panY());
     }
 
     /** メモリーカードを slot から、無ければマウス carried から取る (旧 3 箇所重複の一本化)。 */
@@ -128,23 +106,5 @@ final class ScreenDoorPreviewController {
             }
         }
         return card;
-    }
-
-    static long[] readMembers(net.minecraft.nbt.CompoundTag tag) {
-        net.minecraft.nbt.Tag raw = tag.get(
-                com.trainsystemutilities.item.MemoryCardItem.TAG_MEMBERS);
-        if (raw instanceof net.minecraft.nbt.LongArrayTag lat) {
-            return lat.getAsLongArray();
-        }
-        if (raw instanceof net.minecraft.nbt.ListTag lt) {
-            long[] arr = new long[lt.size()];
-            for (int i = 0; i < lt.size(); i++) {
-                if (lt.get(i) instanceof net.minecraft.nbt.LongTag longTag) {
-                    arr[i] = longTag.getAsLong();
-                }
-            }
-            return arr;
-        }
-        return new long[0];
     }
 }

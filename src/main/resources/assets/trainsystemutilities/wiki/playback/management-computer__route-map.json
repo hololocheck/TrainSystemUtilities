@@ -1,0 +1,12 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {"target": {"classes": ["map-canvas"]}, "do": "hover", "say": "trainsystemutilities.wiki.play.map.view", "holdMs": 1500},
+    {"target": {"classes": ["map-canvas"]}, "do": "wheel", "delta": 3, "say": "trainsystemutilities.wiki.play.map.zoom_in", "holdMs": 1100},
+    {"target": {"classes": ["map-canvas"]}, "do": "drag", "by": [-60, -35], "durationMs": 1000, "say": "trainsystemutilities.wiki.play.map.pan", "holdMs": 900},
+    {"target": {"classes": ["map-canvas"]}, "do": "drag", "by": [75, 55], "durationMs": 1100, "holdMs": 900},
+    {"target": {"classes": ["map-canvas"]}, "do": "wheel", "delta": -4, "say": "trainsystemutilities.wiki.play.map.zoom_out", "holdMs": 1600}
+  ]
+}

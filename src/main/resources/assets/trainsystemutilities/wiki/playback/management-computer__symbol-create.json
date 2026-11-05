@@ -1,0 +1,176 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "sym-create-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sym.create",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-letter1"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "say": "trainsystemutilities.wiki.play.sym.letters",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-letter1"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-letter2"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-letter2"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 600
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-number"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.sym.number",
+      "holdMs": 400
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-number"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 400
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-number"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 600
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-chip"
+        ],
+        "index": 4
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sym.color",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-cp-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sym.picker",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "cp-hue-bar"
+        ],
+        "at": [
+          0.15,
+          0.5
+        ]
+      },
+      "do": "drag",
+      "by": [
+        70,
+        0
+      ],
+      "durationMs": 800,
+      "say": "trainsystemutilities.wiki.play.sym.hue",
+      "holdMs": 300
+    },
+    {
+      "target": {
+        "classes": [
+          "cp-sv-panel"
+        ],
+        "at": [
+          0.35,
+          0.3
+        ]
+      },
+      "do": "drag",
+      "by": [
+        40,
+        30
+      ],
+      "durationMs": 800,
+      "holdMs": 500
+    },
+    {
+      "target": {
+        "classes": [
+          "cp-add"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sym.add_color",
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "cp-close-btn"
+        ]
+      },
+      "do": "click",
+      "holdMs": 600
+    },
+    {
+      "target": {
+        "classes": [
+          "sym-edit-save"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sym.save",
+      "holdMs": 2200
+    }
+  ]
+}

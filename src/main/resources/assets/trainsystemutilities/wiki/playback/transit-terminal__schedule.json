@@ -1,0 +1,76 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "tt-sch-list"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "say": "trainsystemutilities.wiki.play.tt.sch_scroll",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-sch-list"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-sch-list"
+        ]
+      },
+      "do": "wheel",
+      "delta": -1,
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-sch-list"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-sch-list"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "tt-sch-box"
+        ]
+      },
+      "do": "type",
+      "text": "中央",
+      "charMs": 220,
+      "say": "trainsystemutilities.wiki.play.tt.sch_search",
+      "holdMs": 2200
+    },
+    {
+      "do": "key",
+      "key": "backspace",
+      "times": 2,
+      "holdMs": 1200
+    }
+  ]
+}

@@ -52,7 +52,7 @@ public final class ElectrificationTickHandler {
         // 電化列車スナップショット配信: 1 秒間隔
         if (--trainSyncCountdown <= 0) {
             trainSyncCountdown = 20;
-            com.trainsystemutilities.network.TrainElectrificationSyncPayload.broadcast(event.getServer());
+            com.trainsystemutilities.network.ElectrificationData.publish(event.getServer());
         }
     }
 }

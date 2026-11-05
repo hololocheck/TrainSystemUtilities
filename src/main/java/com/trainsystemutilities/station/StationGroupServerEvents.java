@@ -1,15 +1,12 @@
 package com.trainsystemutilities.station;
 
 import com.trainsystemutilities.TrainSystemUtilities;
-import com.trainsystemutilities.network.StationGroupListResponsePayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
-import java.util.ArrayList;
 
 /**
  * プレイヤーの世界参加時 + 定期 (1 秒) に駅グループ / 列車スケジュールを更新する hook。
@@ -23,15 +20,6 @@ public class StationGroupServerEvents {
     /** 列車位置 broadcast 間隔: schedule 更新 (1Hz) と分離し高頻度化 = map アイコン/速度表示を滑らかに。 4 tick = 5Hz。 */
     private static final int POSITION_BROADCAST_INTERVAL_TICKS = 4;
     private static int posTickCounter = 0;
-
-    @SubscribeEvent
-    public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
-        var server = player.server;
-        if (server == null) return;
-        var all = new ArrayList<>(StationGroupSavedData.get(server).all());
-        PacketDistributor.sendToPlayer(player, new StationGroupListResponsePayload(all));
-    }
 
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {

@@ -25,7 +25,7 @@ public final class MapRenderer {
     /** draw() 冒頭で set、 body の this.font が参照。 */
     private Font font;
     /** P2.1: fallback 列車描画の lerp 平滑化 state (trainId → world x,z)。
-     *  TrainPositionPayload (server broadcast の実 bogey 位置) を補間し、 dedicated server で
+     *  TrainPositionsData の host (server broadcast の実 bogey 位置) を補間し、 dedicated server で
      *  live train が取れない離れた列車も滑らかに動かす (= 1秒同期の worldX/Z 直描きの jump 解消)。 */
     private final java.util.Map<java.util.UUID, double[]> smoothTrainPos = new java.util.HashMap<>();
 
@@ -98,10 +98,8 @@ public final class MapRenderer {
 
         if (mapNodes.isEmpty()) {
             String msg = net.minecraft.network.chat.Component.translatable("tsu.mc.no_memory_card").getString();
-            int tw = this.font.width(msg);
-            g.drawString(this.font, msg,
-                    mapX + (mapW - tw) / 2, mapY + mapH / 2 - 4,
-                    0xFF666688, false);
+            int tw = com.manta.api.text.MantaText.uiWidth(this.font, msg);
+            com.manta.api.text.MantaText.draw(g, this.font, msg, mapX + (mapW - tw) / 2, mapY + mapH / 2 - 4, 0xFF666688);
             return;
         }
 
@@ -126,12 +124,8 @@ public final class MapRenderer {
         // enableScissor は SCREEN 座標を要求し pose の scale/translate を考慮しない。
         // canvas pose は dialogScale で scale 済なので pose 行列から実 screen rect を算出
         // (leftPos+mapX の手動加算は dialogScale 非乗算で高 GUI スケール時に切れる)。
-        var pm = g.pose().last().pose();
-        int sx0 = Math.round(mapX * pm.m00() + pm.m30());
-        int sy0 = Math.round(mapY * pm.m11() + pm.m31());
-        g.enableScissor(sx0, sy0,
-                Math.round((mapX + mapW) * pm.m00() + pm.m30()),
-                Math.round((mapY + mapH) * pm.m11() + pm.m31()));
+        int[] clip = com.manta.api.preview.GuiPreviewCamera.scissorRect(g.pose().last().pose(), mapX, mapY, mapW, mapH);
+        g.enableScissor(clip[0], clip[1], clip[2], clip[3]);
         double centerSX = mapX + mapW / 2.0;
         double centerSY = mapY + mapH / 2.0;
 
@@ -166,7 +160,7 @@ public final class MapRenderer {
             g.fill(sx - 3, sy - 3, sx + 3, sy + 3, 0xFF4fc3f7);
             g.fill(sx - 2, sy - 2, sx + 2, sy + 2, 0xFF1a1a2e);
             if (mapZoom > 0.5) {
-                g.drawString(this.font, station.name(), sx + 5, sy - 4, 0xFF4fc3f7, true);
+                com.manta.api.text.MantaText.draw(g, this.font, station.name(), sx + 5, sy - 4, 0xFF4fc3f7, true);
             }
         }
         for (var signal : mapSignals) {
@@ -220,7 +214,7 @@ public final class MapRenderer {
 
             if (!rendered) {
                 // Fallback (live train が取れない = dedicated server で離れた列車等):
-                // server broadcast の TrainPositionPayload (= 実 leading bogey 位置) を lerp 平滑化して
+                // server broadcast の TrainPositionsData の host (= 実 leading bogey 位置) を lerp 平滑化して
                 // 滑らかに動かす。 無ければ 1秒同期の worldX/Z を使う。
                 double targetX = train.worldX(), targetZ = train.worldZ();
                 if (train.id() != null) {
@@ -278,7 +272,7 @@ public final class MapRenderer {
                 hitTargets.add(new Target(headSx, headSy, train.id(), null, null));
             }
             if (mapZoom > 0.3) {
-                g.drawString(this.font, train.name(), (int) headSx + 5, (int) headSy - 4, 0xFFffcc02, true);
+                com.manta.api.text.MantaText.draw(g, this.font, train.name(), (int) headSx + 5, (int) headSy - 4, 0xFFffcc02, true);
             }
         }
         g.disableScissor();

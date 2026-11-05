@@ -125,29 +125,8 @@ public record TrainPresetImportPayload(String presetName, String sourcePresetId,
                 var path = TrainPresetStorage.save(player.getServer(), preset, player.getUUID());
                 TrainSystemUtilities.LOGGER.info("[Import] {} bytes → {} (orig author: {})",
                         payload.data.length, path, preset.author);
-                var server = player.getServer();
-                if (server != null) {
-                    var entries = TrainPresetStorage.listAll(server);
-                    java.util.List<TrainPresetListResponsePayload.Item> items = new java.util.ArrayList<>();
-                    for (var e : entries) {
-                        try {
-                            TrainPreset header = TrainPresetStorage.loadHeader(e.file());
-                            items.add(new TrainPresetListResponsePayload.Item(
-                                    header.name == null || header.name.isEmpty() ? e.name() : header.name,
-                                    header.author == null ? "" : header.author,
-                                    header.sizeX, header.sizeY, header.sizeZ,
-                                    header.blocks.size(),
-                                    header.entities.size(),
-                                    header.createdEpochMs,
-                                    e.authorDir(),
-                                    e.file().getFileName().toString(),
-                                    header.importedFromPresetId != null
-                                            && !header.importedFromPresetId.isEmpty()));
-                        } catch (Exception ignored) { TrainSystemUtilities.LOGGER.debug("[Preset] list header load failed during import", ignored); }
-                    }
-                    net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player,
-                            new TrainPresetListResponsePayload(items));
-                }
+                // 一覧を再生成して送り直す (the player's presets host: a new scan, answered as page 0 - MANTA_7_CONCEPT C4)
+                PresetsData.refresh(player);
             } catch (Exception e) {
                 TrainSystemUtilities.LOGGER.warn("[Import] decode/save failed: {}", e.getMessage());
             }

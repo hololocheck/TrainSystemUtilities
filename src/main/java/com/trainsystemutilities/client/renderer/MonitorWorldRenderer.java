@@ -1,8 +1,6 @@
 package com.trainsystemutilities.client.renderer;
 import com.manta.api.anim.Animation;
 import com.manta.api.anim.Easing;
-import com.manta.api.ir.IrNode;
-import com.manta.api.screen.JsonLayoutHandler;
 
 import com.manta.api.world.CSSWorldRenderer;
 import com.manta.api.draw.VectorRenderer;
@@ -73,37 +71,30 @@ public class MonitorWorldRenderer {
     private static final Map<Long, CSSWorldRenderer> cssRenderers = new HashMap<>();
 
     private static final Map<Long, MonitorMainHandler> monitorHandlers = new HashMap<>();
-    /** V3 stable IR: JSON load 1 度のみ、 全 monitor で共有。 */
-    private static volatile IrNode sharedMonitorIr;
+    /** The layout as a DOCUMENT (Manta 6 Phase 6): JSON load 1 度のみ、 全 monitor で共有。 Manta decides the engine per its registry. */
+    private static volatile CSSWorldRenderer.Document sharedMonitorDoc;
 
-    private static IrNode getSharedMonitorIr() {
-        IrNode ir = sharedMonitorIr;
-        if (ir == null) {
+    private static CSSWorldRenderer.Document getSharedMonitorDoc() {
+        CSSWorldRenderer.Document doc = sharedMonitorDoc;
+        if (doc == null) {
             synchronized (MonitorWorldRenderer.class) {
-                ir = sharedMonitorIr;
-                if (ir == null) {
-                    String json = com.trainsystemutilities.client.gui.TsuLayouts.load(
-                            "layouts/renderers/railway-monitor.json");
-                    com.google.gson.JsonObject root =
-                            com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-                    ir = com.manta.api.ir.compiler.JsonToIrCompiler.compile(root).root();
-                    sharedMonitorIr = ir;
+                doc = sharedMonitorDoc;
+                if (doc == null) {
+                    doc = CSSWorldRenderer.Document.parse(com.trainsystemutilities.client.gui.TsuLayouts.load(
+                            "layouts/renderers/railway-monitor.json"));
+                    sharedMonitorDoc = doc;
                 }
             }
         }
-        return ir;
+        return doc;
     }
 
     /**
-     * V3 Stable IR 用 handler。
-     *
-     * <p>IR は構造のみ build され、 per-frame の text/visibility/animation はこの handler が
-     * class-based binding で解決する。 これにより IR の identity が安定化し
-     * AnimationNode の slide-in/slide-out が 1 度だけ trigger されるようになる。
-     *
-     * <p>renderFace から毎フレーム公開フィールドを更新する。
+     * One railway monitor face's values (Manta 7 Phase 5): renderFace updates the fields every frame
+     * and {@link #push} WRITES them into the face's page - no longer a JsonLayoutHandler the engine
+     * asks. Each value is what this class answered the pull; the renderer keys the face's page by it.
      */
-    private static final class MonitorMainHandler implements JsonLayoutHandler {
+    private static final class MonitorMainHandler {
         int slideDistance = 128;
         volatile String clockText = "";
         // Per-frame state snapshot — renderFace が毎フレーム再代入する。
@@ -127,67 +118,103 @@ public class MonitorWorldRenderer {
         boolean isBack;
         RailwayManagementBlockEntity manager;
 
-        @Override
-        public String getDynamicText(String[] classes, String defaultText) {
-            if (classes == null) return null;
-            for (String c : classes) {
-                int us = c.indexOf('_');
-                if (us > 0) {
-                    String slotPart = c.substring(0, us);
-                    String field = c.substring(us + 1);
-                    if (slotPart.startsWith("arr") && isDigits(slotPart, 3)) {
-                        int slot = parseInt(slotPart.substring(3));
-                        if (slot >= 0 && slot < arrived.size()) {
-                            String r = resolveArrivedText(arrived.get(slot), field);
-                            if (r != null) return r;
-                        }
-                        continue;
-                    }
-                    if (slotPart.startsWith("depArr") && isDigits(slotPart, 6)) {
-                        int slot = parseInt(slotPart.substring(6));
-                        if (slot >= 0 && slot < departedArrived.size()) {
-                            String r = resolveDepartedArrivedText(departedArrived.get(slot), field);
-                            if (r != null) return r;
-                        }
-                        continue;
-                    }
-                    if (slotPart.startsWith("next") && isDigits(slotPart, 4)) {
-                        int slot = parseInt(slotPart.substring(4));
-                        if (slot >= 0 && slot < nextVisible.size()) {
-                            String r = resolveNextText(nextVisible.get(slot), field);
-                            if (r != null) return r;
-                        }
-                        continue;
-                    }
-                    if (slotPart.startsWith("depNext") && isDigits(slotPart, 7)) {
-                        int slot = parseInt(slotPart.substring(7));
-                        if (slot >= 0 && slot < departedNext.size()) {
-                            return departedNext.get(slot);
-                        }
-                        continue;
-                    }
+        private Object page;
+        private com.trainsystemutilities.client.gui.PagePush p;
+        private Set<String> texts = Set.of();
+
+        /** The fields of each numbered family the layout keys ({@code arr0_name} ... ), as the resolvers read them. */
+        private static final String[] ARR_FIELDS = {"name", "detail", "dest", "badge", "route", "coupling",
+                "decoupling", "partner", "arrtime", "deptime", "countdown", "stopinfo"};
+        private static final String[] DEP_ARR_FIELDS = {"name", "detail"};
+        private static final String[] NEXT_FIELDS = {"name", "detail", "badge", "route", "stopinfo", "from",
+                "arrtime", "deptime", "stopsec"};
+        private static final String[] DEP_NEXT_FIELDS = {"name"};
+
+        /**
+         * The face's values, WRITTEN into its page ({@link CSSWorldRenderer#page}) after renderFace set
+         * the fields: each text the node's own class resolved to under the pull - a single by its literal
+         * key, a numbered family by its concatenation (the vocabulary gate reads both from here) - where
+         * the page declares it; every other kind by the keys the page declares. {@code stopinfo} of an
+         * arrived train is keyed and resolves to nothing, as the pull answered it.
+         */
+        void push(Object opened) {
+            if (opened == null) return;
+            if (opened != page) {
+                page = opened;
+                p = new com.trainsystemutilities.client.gui.PagePush(opened);
+                p.textByKeyOnly();
+                texts = new HashSet<>(p.state().textKeys());
+            }
+            if (texts.contains("clockText")) p.text("clockText", text("track-clock"));
+            if (texts.contains("trackNumberText")) p.text("trackNumberText", text("track-number"));
+            if (texts.contains("arr-empty-text")) p.text("arr-empty-text", text("arr-empty-text"));
+            if (texts.contains("next-empty-text")) p.text("next-empty-text", text("next-empty-text"));
+            for (int n = 0; n < MonitorLayoutConstants.MAX_ARRIVED; n++) {
+                for (String f : ARR_FIELDS) {
+                    if (texts.contains("arr" + n + "_" + f)) p.text("arr" + n + "_" + f, text("arr" + n + "_" + f));
                 }
             }
-            // Standalone classes
-            for (String c : classes) {
-                if ("track-clock".equals(c)) return clockText;
-                if ("track-number".equals(c)) return trackNumber > 0 ? String.valueOf(trackNumber) : null;
-                if ("arr-empty-text".equals(c)) {
-                    if (!arrEmpty) return null;
-                    return stationNameOrNull != null
-                            ? tr("tsu.monitor.no_train")
-                            : tr("tsu.rm.link_station_hint");
+            for (int n = 0; n < MonitorLayoutConstants.MAX_DEP_ARRIVED; n++) {
+                for (String f : DEP_ARR_FIELDS) {
+                    if (texts.contains("depArr" + n + "_" + f)) p.text("depArr" + n + "_" + f, text("depArr" + n + "_" + f));
                 }
-                if ("next-empty-text".equals(c)) {
-                    if (!nextEmpty) return null;
-                    return tr("tsu.monitor.empty");
+            }
+            for (int n = 0; n < MonitorLayoutConstants.MAX_NEXT; n++) {
+                for (String f : NEXT_FIELDS) {
+                    if (texts.contains("next" + n + "_" + f)) p.text("next" + n + "_" + f, text("next" + n + "_" + f));
                 }
+            }
+            for (int n = 0; n < MonitorLayoutConstants.MAX_DEP_NEXT; n++) {
+                for (String f : DEP_NEXT_FIELDS) {
+                    if (texts.contains("depNext" + n + "_" + f)) p.text("depNext" + n + "_" + f, text("depNext" + n + "_" + f));
+                }
+            }
+            for (String key : p.state().numberKeys()) p.number(key, number(key));
+            for (String key : p.state().colorKeys()) p.color(key, color(key));
+            for (String key : p.state().boolKeys()) p.bool(key, bool(key));
+            for (String key : p.state().animationKeys()) p.animation(key, animation(key));
+        }
+
+        /** What the pull answered for a node whose answering class is {@code c}. */
+        private String text(String c) {
+            int us = c.indexOf('_');
+            if (us > 0) {
+                String slotPart = c.substring(0, us);
+                String field = c.substring(us + 1);
+                if (slotPart.startsWith("arr") && isDigits(slotPart, 3)) {
+                    int slot = parseInt(slotPart.substring(3));
+                    return slot >= 0 && slot < arrived.size() ? resolveArrivedText(arrived.get(slot), field) : null;
+                }
+                if (slotPart.startsWith("depArr") && isDigits(slotPart, 6)) {
+                    int slot = parseInt(slotPart.substring(6));
+                    return slot >= 0 && slot < departedArrived.size()
+                            ? resolveDepartedArrivedText(departedArrived.get(slot), field) : null;
+                }
+                if (slotPart.startsWith("next") && isDigits(slotPart, 4)) {
+                    int slot = parseInt(slotPart.substring(4));
+                    return slot >= 0 && slot < nextVisible.size() ? resolveNextText(nextVisible.get(slot), field) : null;
+                }
+                if (slotPart.startsWith("depNext") && isDigits(slotPart, 7)) {
+                    int slot = parseInt(slotPart.substring(7));
+                    return slot >= 0 && slot < departedNext.size() ? departedNext.get(slot) : null;
+                }
+            }
+            if ("track-clock".equals(c)) return clockText;
+            if ("track-number".equals(c)) return trackNumber > 0 ? String.valueOf(trackNumber) : null;
+            if ("arr-empty-text".equals(c)) {
+                if (!arrEmpty) return null;
+                return stationNameOrNull != null
+                        ? tr("tsu.monitor.no_train")
+                        : tr("tsu.rm.link_station_hint");
+            }
+            if ("next-empty-text".equals(c)) {
+                if (!nextEmpty) return null;
+                return tr("tsu.monitor.empty");
             }
             return null;
         }
 
-        @Override
-        public Boolean getDynamicBool(String[] classes, String key, boolean defaultValue) {
+        private Boolean bool(String key) {
             if (key == null) return null;
             // V3 stable IR: top-level visibility bindings
             switch (key) {
@@ -218,8 +245,7 @@ public class MonitorWorldRenderer {
             return null;
         }
 
-        @Override
-        public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
+        private Integer number(String key) {
             if (key == null) return null;
             // 種別バッジの動的幅: flex row が毎フレーム resolve して枠と隣要素を追従させる。
             // 4 文字種別 (区間快速) や英語 (Sec. Rapid) の切れ、2 文字種別の枠余りの両方を解消する。
@@ -263,8 +289,7 @@ public class MonitorWorldRenderer {
             };
         }
 
-        @Override
-        public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
+        private Integer color(String key) {
             if (key == null) return null;
             // 種別バッジの色は列車ごとに変わるので、 モニターの色設定ではなく種別から解決する。
             if (key.endsWith("_badge_color")) return resolveSlotBadgeColor(key);
@@ -277,17 +302,25 @@ public class MonitorWorldRenderer {
                 case "colorStopInfo" -> manager.getColorOrDefault(prefix + "stopInfo", "#ffc107");
                 case "colorRouteType" -> manager.getColorOrDefault(prefix + "routeType", "#555555");
                 case "colorStopSec" -> manager.getColorOrDefault(prefix + "stopSec", "#444444");
-                case "colorNextName" -> manager.getColorOrDefault(prefix + "nextName", "#555555");
+                case "colorNextName" -> {
+                    String c = manager.getMonitorColor("nextName", isBack);
+                    yield c.isEmpty() ? "#555555" : c;
+                }
                 case "colorSectionTitle" -> manager.getColorOrDefault(prefix + "sectionTitle", "#4fc3f7");
                 case "colorCountdown" -> manager.getColorOrDefault(prefix + "countdown", "#ffc107");
                 case "colorTrackNum" -> manager.getColorOrDefault(prefix + "trackNumber", "#4fc3f7");
                 default -> null;
             };
-            return hex == null ? null : parseHexColor(hex, defaultArgb);
+            if (hex == null) return null;
+            // A colour that does not parse is none - the node's own colour, as Manta 5 drew it (the
+            // pull handed back the default it was given: the static colour at the bake, but 0 in the
+            // Manta 6 per-frame poll, which then drew the text transparent - not copied). A parsed
+            // colour is opaque, so never 0.
+            int argb = parseHexColor(hex, 0);
+            return argb == 0 ? null : argb;
         }
 
-        @Override
-        public Animation getDynamicAnimation(String[] classes, String key) {
+        private Animation animation(String key) {
             if (key == null) return null;
             if (!key.endsWith("_anim")) return null;
             String slotPart = key.substring(0, key.length() - "_anim".length());
@@ -353,7 +386,7 @@ public class MonitorWorldRenderer {
         private static int badgeWidthFor(String text) {
             var bold = net.minecraft.network.chat.Component.literal(text)
                     .withStyle(net.minecraft.ChatFormatting.BOLD);
-            return Minecraft.getInstance().font.width(bold) + 4;
+            return com.manta.api.text.MantaText.uiWidth(Minecraft.getInstance().font, bold) + 4;
         }
 
         /** "&lt;prefix&gt;&lt;slot&gt;_badge_color" → その枠の列車の種別色。 該当なしは null (= JSON の静的色)。 */
@@ -641,7 +674,7 @@ public class MonitorWorldRenderer {
     }
 
     /** 路線マップ fallback 描画の列車 lerp 平滑化 state (trainId → {x, z, dirX, dirZ})。
-     *  broadcast (TrainPositionPayload 1Hz) を補間し、移動ベクトルから heading を導出する
+     *  broadcast (TrainPositionsData の host 1Hz) を補間し、移動ベクトルから heading を導出する
      *  (= 画面 MapRenderer.smoothTrainPos と同方式)。 */
     private static final Map<java.util.UUID, double[]> fallbackSmoothPos = new HashMap<>();
 
@@ -1005,7 +1038,7 @@ public class MonitorWorldRenderer {
         long irKey = (((long) (isBack ? 1 : 0)) << 1) ^ posKey;
         boolean enabled = manager != null && manager.isMonitorEnabled();
         boolean hasSymbol = manager != null && manager.getAssignedLineSymbol() != null;
-        IrNode sharedIr = getSharedMonitorIr();
+        CSSWorldRenderer.Document sharedDoc = getSharedMonitorDoc();
 
         // Per-frame handler state 更新 (IR は static、 dynamic data は全て handler 経由)
         MonitorMainHandler handler = monitorHandlers.computeIfAbsent(irKey, k -> new MonitorMainHandler());
@@ -1082,7 +1115,8 @@ public class MonitorWorldRenderer {
         handler.arrEmpty = handler.arrived.isEmpty() && handler.departedArrived.isEmpty();
         handler.nextEmpty = handler.nextVisible.isEmpty() && handler.departedNext.isEmpty();
 
-        groupRenderer.renderV3FromIr(sharedIr, handler, poseStack, bufferSource);
+        handler.push(groupRenderer.page(sharedDoc, handler, cssW, cssH));
+        groupRenderer.render(sharedDoc, handler, poseStack, bufferSource);
 
         // 路線記号パネル（CSSWorldRenderer 非発光モードで描画）
         if (manager != null && manager.getAssignedLineSymbol() != null) {
@@ -1137,26 +1171,19 @@ public class MonitorWorldRenderer {
         int totalSize = iconSize + borderW * 2;
         int radiusPx = Math.round(sym.getBorderRadius() * totalSize / 40f);
 
-        // Phase 5f++++ Step 12.F: 真の V3 IR-native — Element を経由せず直接 IrBuilder で構築。
-        // flex centering を IR で表現する代わりに、 icon を中央位置に直接配置する。
+        // 白い角丸の板 1 枚: icon を中央位置に直接配置する。2026-09-19 (MANTA_6_CUTOVER Phase 7.5)
+        // までは同じ 1 枚を Manta 5 の IR (IrBuilder → renderV3FromIr) で描いていた —
+        // paintRect は RectNode と同じ surface・同じ分岐なので頂点は同じ。
         int iconLocalX = (renderW - totalSize) / 2;
         int iconLocalY = (renderH - totalSize) / 2;
-        com.manta.api.ir.IrNode panelIr = com.manta.api.ir.IrBuilder.div()
-                .addClass("sym-root")
-                .rect(0, 0, renderW, renderH)
-                .child(com.manta.api.ir.IrBuilder.div()
-                        .addClass("sym-icon")
-                        .rect(iconLocalX, iconLocalY, totalSize, totalSize)
-                        .bgColor(0xFFFFFFFF)
-                        .borderRadius(radiusPx))
-                .build();
 
         poseStack.pushPose();
         poseStack.translate(posX, posY, 0.04f);
         // Z軸を再反転して、CSSWorldRendererの内部z順序 (bg=0.01<border=0.02<text=0.03) が
         // translucentの深度ソート (奥→手前) で正しい順序になるようにする
         poseStack.scale(1, 1, -1);
-        symRenderer.renderV3FromIr(panelIr, null, poseStack, bufferSource);
+        symRenderer.paintRect(poseStack, bufferSource, iconLocalX, iconLocalY, totalSize, totalSize,
+                radiusPx, 0xFFFFFFFF);
 
         // テキストと区切り線をGUI実装と同じ位置で手動描画 (z-fighting回避)
         // iconLocalX/Y は IR build 時に計算済 (line 546-547) を再利用
@@ -1172,8 +1199,8 @@ public class MonitorWorldRenderer {
         var font = Minecraft.getInstance().font;
         String letters = sym.getLetters();
         String numStr = sym.getNumberStr();
-        int lettersW = font.width(letters);
-        int numW = font.width(numStr);
+        int lettersW = com.manta.api.text.MantaText.worldWidth(font, letters);
+        int numW = com.manta.api.text.MantaText.worldWidth(font, numStr);
 
         // 区切り線（midY ～ midY+divH）
         var vcDiv = com.manta.api.draw.VectorRenderer.getWorldBufferText(bufferSource);
@@ -1189,10 +1216,10 @@ public class MonitorWorldRenderer {
         // テキスト描画 (z=textZでprivate translate)
         poseStack.pushPose();
         poseStack.translate(0, 0, textZ);
-        font.drawInBatch(letters, iconCenterX - lettersW / 2f, letterY, textColor, false,
-                poseStack.last().pose(), bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, 0xF000F0);
-        font.drawInBatch(numStr, iconCenterX - numW / 2f, numY, textColor, false,
-                poseStack.last().pose(), bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, 0xF000F0);
+        com.manta.api.text.MantaText.drawInBatch(font, letters, iconCenterX - lettersW / 2f, letterY, textColor, false,
+                poseStack.last().pose(), bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0xF000F0);
+        com.manta.api.text.MantaText.drawInBatch(font, numStr, iconCenterX - numW / 2f, numY, textColor, false,
+                poseStack.last().pose(), bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0xF000F0);
         poseStack.popPose();
 
         poseStack.popPose();
@@ -1268,21 +1295,21 @@ public class MonitorWorldRenderer {
         float textScale = halfSize / 12f;
         poseStack.pushPose();
         float letterY = cy - halfSize * 0.45f;
-        float letterW = font.width(letters) * textScale;
+        float letterW = com.manta.api.text.MantaText.worldWidth(font, letters) * textScale;
         poseStack.translate(cx - letterW / 2f, letterY, z + 0.03f);
         poseStack.scale(textScale, textScale, 1);
-        font.drawInBatch(letters, 0, 0, 0xFF000000, false, poseStack.last().pose(),
-                bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, 0xF000F0);
+        com.manta.api.text.MantaText.drawInBatch(font, letters, 0, 0, 0xFF000000, false, poseStack.last().pose(),
+                bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0xF000F0);
         poseStack.popPose();
 
         String numStr = String.format("%02d", number);
         poseStack.pushPose();
         float numY = cy + halfSize * 0.05f;
-        float numW = font.width(numStr) * textScale;
+        float numW = com.manta.api.text.MantaText.worldWidth(font, numStr) * textScale;
         poseStack.translate(cx - numW / 2f, numY, z + 0.03f);
         poseStack.scale(textScale, textScale, 1);
-        font.drawInBatch(numStr, 0, 0, 0xFF000000, false, poseStack.last().pose(),
-                bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, 0xF000F0);
+        com.manta.api.text.MantaText.drawInBatch(font, numStr, 0, 0, 0xFF000000, false, poseStack.last().pose(),
+                bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0xF000F0);
         poseStack.popPose();
     }
 
@@ -1454,14 +1481,15 @@ public class MonitorWorldRenderer {
     /** 管理コンピューターレイアウトに基づくモニター描画 */
     private static final Map<String, CSSWorldRenderer> layoutRenderers = new HashMap<>();
     private static final Map<String, Integer> layoutLastPage = new HashMap<>();
-    private static final ComputerLayoutHandler computerHandler = new ComputerLayoutHandler();
-    /** Per-panel-type static IR template cache (JSON load 1 度のみ、 全 monitor で共有)。 */
-    private static final Map<com.trainsystemutilities.blockentity.MonitorLayoutPanel.PanelType, IrNode> computerIrCache =
+    /** Per panel (the layoutRenderers key): its values, which the panel's page is keyed by (Manta 7 Phase 5). */
+    private static final Map<String, ComputerLayoutHandler> panelValues = new HashMap<>();
+    /** Per-panel-type document cache (JSON load 1 度のみ、 全 monitor で共有; Manta 6 Phase 6 hands the document in). */
+    private static final Map<com.trainsystemutilities.blockentity.MonitorLayoutPanel.PanelType, CSSWorldRenderer.Document> computerDocCache =
             new java.util.EnumMap<>(com.trainsystemutilities.blockentity.MonitorLayoutPanel.PanelType.class);
 
-    private static IrNode getComputerIr(com.trainsystemutilities.blockentity.MonitorLayoutPanel.PanelType type) {
+    private static CSSWorldRenderer.Document getComputerDoc(com.trainsystemutilities.blockentity.MonitorLayoutPanel.PanelType type) {
         if (type == com.trainsystemutilities.blockentity.MonitorLayoutPanel.PanelType.ROUTE_MAP) return null;
-        IrNode cached = computerIrCache.get(type);
+        CSSWorldRenderer.Document cached = computerDocCache.get(type);
         if (cached != null) return cached;
         String path = switch (type) {
             case STATION_COUNT, TRAIN_COUNT -> "layouts/renderers/computer-panel-stat-count.json";
@@ -1472,11 +1500,10 @@ public class MonitorWorldRenderer {
             default -> null;
         };
         if (path == null) return null;
-        String json = com.trainsystemutilities.client.gui.TsuLayouts.load(path);
-        com.google.gson.JsonObject root = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-        IrNode ir = com.manta.api.ir.compiler.JsonToIrCompiler.compile(root).root();
-        computerIrCache.put(type, ir);
-        return ir;
+        CSSWorldRenderer.Document doc = CSSWorldRenderer.Document.parse(
+                com.trainsystemutilities.client.gui.TsuLayouts.load(path));
+        computerDocCache.put(type, doc);
+        return doc;
     }
 
     private static void renderComputerLayout(PoseStack poseStack, MultiBufferSource bufferSource,
@@ -1536,8 +1563,8 @@ public class MonitorWorldRenderer {
                     k -> new CSSWorldRenderer(Minecraft.getInstance().font));
 
             var ptype = panel.getType();
-            IrNode panelIr = getComputerIr(ptype);
-            if (panelIr == null) {
+            CSSWorldRenderer.Document panelDoc = getComputerDoc(ptype);
+            if (panelDoc == null) {
                 // ROUTE_MAP は ベクター 描画のみ。下の overlay path に進む。
                 if (panel.getType() != com.trainsystemutilities.blockentity.MonitorLayoutPanel.PanelType.ROUTE_MAP) {
                     continue;
@@ -1621,17 +1648,19 @@ public class MonitorWorldRenderer {
                         trainListPage, trainListSlideIn, isBack);
             }
 
-            if (panelIr == null) {
+            if (panelDoc == null) {
                 // ROUTE_MAP: ベクター 描画 only。 IR レンダリングは skip。
                 poseStack.pushPose();
                 poseStack.translate(px, py, 0);
             } else {
-                computerHandler.updateForPanel(panel, computer, netData, level,
+                ComputerLayoutHandler values = panelValues.computeIfAbsent(key, k -> new ComputerLayoutHandler());
+                values.updateForPanel(panel, computer, netData, level,
                         pw, ph, fs, gap, pad, clockFs,
                         trainListPage, trainListSlideIn, schedulePage, scheduleSlideIn);
+                values.push(renderer.page(panelDoc, values, pw, ph));
                 poseStack.pushPose();
                 poseStack.translate(px, py, 0);
-                renderer.renderV3FromIr(panelIr, computerHandler, poseStack, bufferSource);
+                renderer.render(panelDoc, values, poseStack, bufferSource);
             }
 
             // 枠線はVectorRendererでZ=0角丸太枠描画
@@ -1683,6 +1712,7 @@ public class MonitorWorldRenderer {
             int rem = layoutRenderers.size() - 64;
             while (it.hasNext() && rem > 0) { it.next(); it.remove(); rem--; }
             layoutLastPage.keySet().retainAll(layoutRenderers.keySet());
+            panelValues.keySet().retainAll(layoutRenderers.keySet());
         }
     }
 
@@ -1751,7 +1781,7 @@ public class MonitorWorldRenderer {
             // 駅名テキスト
             if (showText) {
                 float textScale = fontSize / 9f;
-                int textW = (int)(font.width(station.name()) * textScale);
+                int textW = (int)(com.manta.api.text.MantaText.worldWidth(font, station.name()) * textScale);
                 boolean textLeft = (sx + stationIconSz + textW + 4) > clipX2;
                 poseStack.pushPose();
                 if (textLeft) {
@@ -1760,8 +1790,8 @@ public class MonitorWorldRenderer {
                     poseStack.translate(sx + stationIconSz + 2, sy - fontSize / 2f, 0.02f);
                 }
                 poseStack.scale(textScale, textScale, 1);
-                font.drawInBatch(station.name(), 0, 0, stationColor, true, poseStack.last().pose(),
-                        bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, 0xF000F0);
+                com.manta.api.text.MantaText.drawInBatch(font, station.name(), 0, 0, stationColor, true, poseStack.last().pose(),
+                        bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0xF000F0);
                 poseStack.popPose();
             }
         }
@@ -1818,7 +1848,7 @@ public class MonitorWorldRenderer {
             double fbHeadX = 0, fbHeadZ = 0, fbUx = 0, fbUz = 1;
             if (!posFound) {
                 // MP fallback: live train が取れない (dedicated server の未ロード列車等)。
-                // server broadcast (TrainPositionPayload 1Hz) を lerp 平滑化し、移動ベクトルから
+                // server broadcast (TrainPositionsData の host 1Hz) を lerp 平滑化し、移動ベクトルから
                 // heading を導出。 各車両は最寄り線路セグメントへ snap して曲線に沿わせる
                 // (= 画面 MapRenderer の fallback と同方式)。
                 double tx = train.worldX(), tz = train.worldZ();
@@ -1880,7 +1910,7 @@ public class MonitorWorldRenderer {
             // 列車名テキスト（先頭車両位置に表示）
             if (showText) {
                 float ts = fontSize / 9f;
-                int tw = (int)(font.width(train.name()) * ts);
+                int tw = (int)(com.manta.api.text.MantaText.worldWidth(font, train.name()) * ts);
                 boolean tLeft = (headSx + trainIconSz + tw + 4) > clipX2;
                 poseStack.pushPose();
                 if (tLeft) {
@@ -1889,8 +1919,8 @@ public class MonitorWorldRenderer {
                     poseStack.translate(headSx + trainIconSz + 2, headSy - fontSize / 2f, 0.02f);
                 }
                 poseStack.scale(ts, ts, 1);
-                font.drawInBatch(train.name(), 0, 0, trainColor, true, poseStack.last().pose(),
-                        bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0, 0xF000F0);
+                com.manta.api.text.MantaText.drawInBatch(font, train.name(), 0, 0, trainColor, true, poseStack.last().pose(),
+                        bufferSource, net.minecraft.client.gui.Font.DisplayMode.NORMAL, 0xF000F0);
                 poseStack.popPose();
             }
         }

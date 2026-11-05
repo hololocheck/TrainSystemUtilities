@@ -1,0 +1,62 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "groups": {
+        "type": "list",
+        "maxLength": 256,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "sg-id": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "sg-name": {
+            "type": "string",
+            "maxLen": 128
+          },
+          "sg-dim": {
+            "type": "string",
+            "maxLen": 48
+          },
+          "sg-min-x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "sg-min-y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "sg-min-z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "sg-max-x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "sg-max-y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "sg-max-z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "sg-stations": {
+            "type": "int",
+            "min": 0,
+            "max": 65535
+          }
+        }
+      }
+    }
+  }
+}

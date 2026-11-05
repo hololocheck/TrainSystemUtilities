@@ -9,89 +9,34 @@ tags: [tool, block, terminal]
 ```embed:item id=trainsystemutilities:transit_terminal size=48 label=true
 ```
 
-一种**手持物品**，用于检索并显示车站之间的换乘路线。
-借助管理用计算机的路线数据，它会像"智能手机乘车 App"一样，在屏幕上显示出发站 → 到达站的路线、所需时间与各时刻。
+手持使用的查询终端。右键后，会在画面右下角打开查询界面。打开期间用鼠标操作，按 Esc 关闭。
 
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__top__ja_jp.png)
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__top__zh_cn.png)
 
 [[TOC]]
 
-## 打开 / 持有
+## 查询路线
 
-1. **将换乘查询终端放入快捷栏并手持**（它是手持物品，而非可放置的方块）。
-2. 在任意位置**右键**（即物品使用键；默认为**鼠标右键**）。
-3. 一块高大的智能手机风格面板会从屏幕右下方向上滑出，这就是换乘导引界面。
-4. 要关闭它，请按 **Esc 键**（面板会向下滑动并消失）。
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__top__zh_cn.png)
 
-> [!NOTE]
-> 面板打开期间，鼠标光标可自由移动，能点击按钮和输入框。
-> 此时按下 `W / A / S / D` **不会移动玩家**（你可以在原地输入车站名而不必走动）。
+在「首页」输入出发站和到达站，并从候选中选择车站。用交换按钮可以互换两站。两站都选择后即可执行查询。
 
-## 界面操作（基础）
+选择结果后，可以查看各站的发到时刻、站台、列车名等。有多个候选时，用候选标签页切换。可以从详情中启用导航和路线详情 HUD。查询记录可以逐条删除，也可以一并删除。
 
-- **切换标签页**：在面板**底部**排列的 4 个图标中（🔍 检索 / 🕒 时刻表 / 🗺 地图 / ⚙ 设置）**左键**其中一个即可切换。
-- **选择输入框**：**左键**出发 / 到达车站输入框使其成为输入目标，然后用键盘输入车站名。输入时会自动在下方显示候选（自动补全），**左键候选**即可确认。
-- **数值 / 开关**：在设置标签页中，对开关行**左键**即可在 开 / 关 之间切换。
+## 其他界面
 
-## 四标签页布局
+- 时刻表：按列车名筛选，查看列车的时刻表。
 
-### 检索（TOP）🔍
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__schedule__zh_cn.png)
 
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__top__ja_jp.png)
+- 地图：显示线路图。拖动移动，滚轮缩放。
 
-主标签页，在此输入出发车站（●）和到达车站（■）来检索路线。
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__map__zh_cn.png)
 
-1. **左键顶部的出发车站输入框**，用键盘输入车站名（出现候选时**左键**确认）。
-2. 以同样方式在下方输入**到达车站**。
-3. **左键右侧的交换按钮（⇅）**，可交换出发站与到达站。
-4. 两个车站都设置好后，**"检索"按钮**会变绿，**左键**即可在下方显示路线。
-5. 当检索到多条路线时，顶部会出现 **1 / 2 / 3**（即 快捷 / 轻松 / 便宜）的**候选标签**，**左键**即可选中某个候选。
-6. **左键**某个路线卡片，可切换到列出每站到发时刻、股道和列车名的**详情（时间轴）**视图。在详情视图中，左上角的 **"←" 返回**，右上角的 **🧭（开始导航）**会显示路线导引 HUD，**🪟** 用于开 / 关详情 HUD。
-7. 检索前会列出**历史检索记录**，左键每行末尾的 **✕** 可删除单条记录，也可用右上角的批量删除清除全部。
+- 设置：切换 12・24 小时制、调整面板位置，以及切换详情 HUD 的显示。
 
-### 时刻表（SCHEDULE）🕒
+![](bws:trainsystemutilities:wiki/screens/transit-terminal__settings__zh_cn.png)
 
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__schedule__ja_jp.png)
+启用布局调整后，可以拖动标题部分移动面板。用「重置位置」恢复初始位置。
 
-所有列车时刻表的列表。**左键顶部的搜索框**并输入车站名，即可按与该车站相关的列车进行筛选。
-
-### 地图（MAP）🗺
-
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__map__ja_jp.png)
-
-整个铁路网络的 2D 地图。可**拖动移动（平移）**，并用**鼠标滚轮缩放**。
-
-### 设置（SETTINGS）⚙
-
-![](bws:trainsystemutilities:wiki/screens/transit-terminal__settings__ja_jp.png)
-
-对每一行**左键**，即可切换右侧开关的 开 / 关。
-
-| 设置项 | 说明 |
-|---|---|
-| 24 小时制 | 在 24 小时制 / 12 小时制之间切换时刻显示 |
-| 步行可达 | 是否在路线中包含前往邻近车站的步行区段 |
-| 布局调整模式 | 开启时，可**拖动**面板标题栏来移动其显示位置 |
-| 详情 HUD 显示 | 是否在屏幕上显示路线详情 HUD |
-
-**左键最下方的"重置布局"按钮**，可将已移动的面板和 HUD 位置恢复到初始状态。
-
-## 功能
-
-| 功能 | 概要 |
-|---|---|
-| 路线检索 | 给定出发站 + 到达站，给出路线建议 |
-| 时刻表显示 | 列出下一班列车的到 / 发时刻 |
-| 线路符号显示 | 显示路线上各站的线路符号 |
-
-## 与管理用计算机的联动
-
-终端会与管理用计算机（= 同一车站组内的那些）自动联动。
-管理用计算机上的时刻表 / 车站信息更新会立即反映。
-
-## 相关
-
-- [管理用计算机概述](../management-computer/overview.md)
-- [时刻表标签页](../management-computer/schedule.md)
-- [车站标签页](../management-computer/stations.md)
-- [铁路管理方块](../railway-management.md)
+查询使用[车站组](station-range-tool.md)和 Create 的列车时刻表，线路编号从[管理用计算机](../management-computer/overview.md)获取。找不到车站时，请确认车站组的登记。

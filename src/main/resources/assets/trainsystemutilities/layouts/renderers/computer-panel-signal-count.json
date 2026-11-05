@@ -8,6 +8,7 @@
   "dynamicH": "ph",
   "children": [
     {
+      "textKey": "signal-title",
       "tag": "span",
       "classes": [
         "panel-title",
@@ -20,6 +21,7 @@
       "fontWeight": "bold"
     },
     {
+      "textKey": "signal-total",
       "tag": "span",
       "classes": [
         "stat-large",
@@ -32,6 +34,7 @@
       "fontWeight": "bold"
     },
     {
+      "textKey": "signal-green",
       "tag": "span",
       "classes": [
         "signal-green"
@@ -43,6 +46,7 @@
       "visibleKey": "signal_green_visible"
     },
     {
+      "textKey": "signal-red",
       "tag": "span",
       "classes": [
         "signal-red"

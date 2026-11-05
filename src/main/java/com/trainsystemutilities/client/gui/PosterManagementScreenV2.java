@@ -6,6 +6,8 @@ import com.manta.api.anim.Animation;
 import com.manta.api.screen.JsonLayoutEngine;
 import com.manta.api.screen.JsonLayoutHandler;
 import com.manta.api.screen.JsonLayoutScreen;
+import com.manta.api.screen.PageLayer;
+import com.manta.api.state.MantaState;
 import com.manta.api.controller.ToggleSwitchController;
 import com.trainsystemutilities.blockentity.PosterManagementBlockEntity;
 import com.trainsystemutilities.blockentity.PosterManagementBlockEntity.AnimationType;
@@ -19,9 +21,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.neoforged.neoforge.network.PacketDistributor;
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,11 +31,17 @@ import java.util.UUID;
 
 /**
  * PosterManagementScreen V2 (Container 系、JsonLayoutScreen ベース)。
- * <p>主要レイアウトは JSON。動的要素 (knob 位置、テキスト、画像リスト) は
- * getDynamic*  / repeat で解決。アニメ設定 popup は overlayJson で表示。
+ * <p>主要レイアウトは JSON。Dynamic values (knob position, text, the image list) are pushed into
+ * the page (Manta 7 push) and laid out by repeat。アニメ設定 popup は overlayJson で表示。
  * オーナースキン顔 / 画像ホバープレビューは afterDialogRender で描画。
  */
 public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementMenu> {
+
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
 
     @Override
     protected String wikiPageId() { return "poster-management"; }
@@ -84,6 +89,16 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
 
     // ===== Wiki live-capture support (WikiLiveCapture から呼ばれる) =====
 
+    /**
+     * Built by wikiCreate: the block entity is the wiki's stand-in, so a press is applied to it here as the server's menu
+     * would apply it (clickButton), and the file button adds the next demo poster instead of opening the system's file
+     * dialog (改善1, 2026-10-07: the page added no image and changed nothing).
+     */
+    private boolean wikiMode = false;
+    /** The demo posters (wiki/demo/poster-N.png, drawn for the wiki from shapes only): the page starts with two. */
+    private static final int WIKI_POSTERS = 3;
+    private static final int WIKI_POSTERS_AT_START = 2;
+
     public static PosterManagementScreenV2 wikiCreate() {
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null) return null;
@@ -91,14 +106,43 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         var be = new com.trainsystemutilities.blockentity.PosterManagementBlockEntity(
                 pos, com.trainsystemutilities.registry.ModBlocks.POSTER_MANAGEMENT_BLOCK.get().defaultBlockState());
         be.setLevel(mc.level);
+        for (int i = 1; i <= WIKI_POSTERS_AT_START; i++) wikiAddPoster(be, i);
         Inventory inv = new Inventory(mc.player); // 空 (持ち物アイテム非表示)
         var menu = new PosterManagementMenu(0, inv, be);
-        return new PosterManagementScreenV2(menu, inv,
+        var screen = new PosterManagementScreenV2(menu, inv,
                 Component.translatable("tsu.poster_management.title"));
+        screen.wikiMode = true;
+        return screen;
     }
 
+    /**
+     * Demo poster {@code n} into the stand-in's list, its picture into the poster textures under its own name-based id (a
+     * random id of a real upload never takes that form), so the row's hover preview shows it - past the demo pictures
+     * (the sweep's "main-long"), one of them again, so no row asks the server for a picture. A picture that cannot be read
+     * leaves the row without one, as a real upload still downloading.
+     */
+    private static void wikiAddPoster(PosterManagementBlockEntity be, int n) {
+        UUID id = UUID.nameUUIDFromBytes(("tsu-wiki-poster-" + n).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        be.addImageId(id, "poster-" + n + ".png");
+        if (com.trainsystemutilities.client.renderer.PosterTextureManager.getDimensions(id) != null) return;
+        int picture = (n - 1) % WIKI_POSTERS + 1;
+        var rl = ResourceLocation.fromNamespaceAndPath("trainsystemutilities", "wiki/demo/poster-" + picture + ".png");
+        try (var in = Minecraft.getInstance().getResourceManager().open(rl)) {
+            com.trainsystemutilities.client.renderer.PosterTextureManager.onImageReceived(id, in.readAllBytes());
+        } catch (java.io.IOException e) {
+            com.trainsystemutilities.TrainSystemUtilities.LOGGER.warn("[PosterScreen] wiki demo poster {} unreadable: {}", rl, e.toString());
+        }
+    }
+
+    /**
+     * "anim" opens the animation settings. "main-long" is BelugaAOS's UI sweep's alone (WikiLiveCapture's sweep-only
+     * states): the image list holding twice the rows it shows, so its scrollbar thumb is up to be dragged.
+     */
     public void wikiApplyState(String state) {
         showAnimSettings = "anim".equals(state);
+        if ("main-long".equals(state)) {
+            for (int n = be().getImageIds().size() + 1; n <= 2 * VISIBLE_ROWS; n++) wikiAddPoster(be(), n);
+        }
     }
     // dialog 開封の scaleIn(180) と連動した inventory item scale-in は MCSS 基底クラス
     // (JsonLayoutScreen) が default で提供するため、本 subclass では override 不要。
@@ -125,179 +169,172 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
 
     private PosterManagementBlockEntity be() { return getMenu().getBlockEntity(); }
 
+    // ===== Manta 7 push (Phase 4, TSU batch 3, 2026-09-23) =====
+    // The page's values are WRITTEN here each frame before the engine draws, and once when a page
+    // opens: the screen overrides no getDynamic*. The hint toggle, dialog-open, anim-popup-open and
+    // the toggle transitions are the base's. The one overlay is the animation settings popup.
+    /** A row moved up by a swap slides in from below; one moved down, from above (the others do not move). */
+    private static final com.manta.api.anim.Animation SHUFFLE_UP = com.manta.api.anim.Animation.of(220)
+            .easing(com.manta.api.anim.Easing.EASE_OUT).translateY(19f, 0f).build();
+    private static final com.manta.api.anim.Animation SHUFFLE_DOWN = com.manta.api.anim.Animation.of(220)
+            .easing(com.manta.api.anim.Easing.EASE_OUT).translateY(-19f, 0f).build();
+    private static final int ANIM_TYPE_ITEMS = 11;
+
+    private MantaState pushed, overlayPage;
+    private com.manta.api.state.TextSlot tInfo, tBadge, tSection, tStatus, tMonitorInfo, tRowIdx, tRowName;
+    private com.manta.api.state.ColorSlot cFitTrack, cFitKnob, cSingleTrack, cSingleKnob, cMonitorTrack, cMonitorKnob;
+    private com.manta.api.state.ColorSlot cIndicator, cStatus, cOwner, cRowBg, cRowBorder, cRowIdx, cRowName;
+    private com.manta.api.state.NumberSlot nFitKnobX, nSingleKnobX, nMonitorKnobX, nRows, nScroll, nThumbY, nThumbH;
+    private com.manta.api.state.BoolSlot bScrollbar;
+    private com.manta.api.state.AnimationSlot aShuffle;
+    private com.manta.api.state.TextSlot tInterval, tDuration;
+    private final com.manta.api.state.ColorSlot[] cTypeBg = new com.manta.api.state.ColorSlot[ANIM_TYPE_ITEMS];
+    private final com.manta.api.state.ColorSlot[] cTypeColor = new com.manta.api.state.ColorSlot[ANIM_TYPE_ITEMS];
+
+    @Override
+    protected void pageOpened(Object page, PageLayer layer) {
+        if (layer == PageLayer.OVERLAY) {
+            overlayPage = MantaState.of(page);
+            tInterval = overlayPage.text("anim-interval-display");
+            tDuration = overlayPage.text("anim-duration-display");
+            for (int i = 0; i < ANIM_TYPE_ITEMS; i++) {
+                cTypeBg[i] = overlayPage.color("anim-type-" + i + "-bg");
+                cTypeColor[i] = overlayPage.color("anim-type-" + i + "-color");
+            }
+            overlayPage.set(overlayPage.animation("preview-flip"), com.manta.api.anim.Animation.flipX(420));
+            overlayPage.textByKeyOnly();
+            pushOverlay();
+            return;
+        }
+        if (layer != PageLayer.PRIMARY) return;
+        pushed = MantaState.of(page);
+        tInfo = pushed.text("info-text");
+        tBadge = pushed.text("image-count-badge");
+        tSection = pushed.text("section-title");
+        tStatus = pushed.text("monitor-status-label");
+        tMonitorInfo = pushed.text("monitor-info");
+        tRowIdx = pushed.text("image-idx");
+        tRowName = pushed.text("image-name");
+        cFitTrack = pushed.color("fit-toggle-bg");
+        cFitKnob = pushed.color("fit-knob-bg");
+        cSingleTrack = pushed.color("anim-single-toggle-bg");
+        cSingleKnob = pushed.color("anim-single-knob-bg");
+        cMonitorTrack = pushed.color("monitor-toggle-bg");
+        cMonitorKnob = pushed.color("monitor-knob-bg");
+        cIndicator = pushed.color("monitor-indicator-bg");
+        cStatus = pushed.color("monitor-status-color");
+        cOwner = pushed.color("owner-border");
+        cRowBg = pushed.color("image-row-bg");
+        cRowBorder = pushed.color("image-row-border");
+        cRowIdx = pushed.color("image-idx-color");
+        cRowName = pushed.color("image-name-color");
+        nFitKnobX = pushed.number("fit-knob-x");
+        nSingleKnobX = pushed.number("anim-single-knob-x");
+        nMonitorKnobX = pushed.number("monitor-knob-x");
+        nRows = pushed.number("image-count");
+        nScroll = pushed.number("image-scroll");
+        nThumbY = pushed.number("scrollbar-thumb-y");
+        nThumbH = pushed.number("scrollbar-thumb-h");
+        bScrollbar = pushed.bool("scrollbar-visible");
+        aShuffle = pushed.animation("image-row-shuffle");
+        pushed.textByKeyOnly();
+        pushAll();
+    }
+
+    /** The animation settings popup: its two durations, and the selected type's button in the primary colours. */
+    private void pushOverlay() {
+        if (overlayPage == null || !overlayPage.isOpen()) return;
+        var be = be();
+        overlayPage.set(tInterval, Component.translatable("tsu.poster.seconds_fmt", String.format("%.0f", be.getSlideInterval())).getString());
+        overlayPage.set(tDuration, Component.translatable("tsu.poster.seconds_fmt", String.format("%.1f", be.getAnimationDuration())).getString());
+        var types = PosterManagementBlockEntity.AnimationType.values();
+        for (int i = 0; i < ANIM_TYPE_ITEMS; i++) {
+            boolean selected = i < types.length && be.getAnimationType() == types[i];
+            overlayPage.set(cTypeBg[i], selected ? 0xFF4FC3F7 : 0x4D000000);      // primary, or the default row bg
+            overlayPage.set(cTypeColor[i], selected ? 0xFF000000 : 0xFFAAAAAA);   // black on cyan, or muted
+        }
+    }
+
+    private void pushAll() {
+        pushOverlay();
+        if (pushed == null || !pushed.isOpen()) return;
+        var be = be();
+        pushed.set(tInfo, be.getAnimationType().getDisplayName()
+                + " / " + Component.translatable("tsu.poster.interval_fmt", String.format("%.0f", be.getSlideInterval())).getString());
+        pushed.set(tBadge, Component.translatable("tsu.poster.image_count_fmt", be.getImageIds().size()).getString());
+        pushed.set(tSection, Component.translatable("tsu.poster.section_images_fmt", be.getImageIds().size()).getString());
+        int groups = be.getLinkedMonitorGroupCount();
+        pushed.set(tStatus, Component.translatable(monitorEnabled() && groups > 0
+                ? "tsu.poster.monitor_online" : "tsu.poster.monitor_offline").getString());
+        pushed.set(tMonitorInfo, groups > 0
+                ? Component.translatable("tsu.poster.monitor_groups_linked_fmt", groups).getString()
+                : Component.translatable("tsu.rm.monitor_disconnected").getString());
+        // Every toggle is its controller's; the monitor's derives its visual state (withVisualState).
+        pushed.set(cFitTrack, fitToggle.trackBg());
+        pushed.set(cFitKnob, fitToggle.knobBg());
+        pushed.set(cSingleTrack, animSingleToggle.trackBg());
+        pushed.set(cSingleKnob, animSingleToggle.knobBg());
+        pushed.set(cMonitorTrack, monitorToggle.trackBg());
+        pushed.set(cMonitorKnob, monitorToggle.knobBg());
+        pushed.set(cIndicator, monitorToggle.indicatorBg());
+        pushed.set(cStatus, monitorToggle.statusText());
+        // The owner's face box: private red, public green.
+        pushed.set(cOwner, com.manta.api.hud.OwnerAccess.ringColor(be.isPrivateMode()));
+        // Offsets: knobX / thumbY are default + delta, so each delta is its answer for 0.
+        pushed.setOffset(nFitKnobX, fitToggle.knobX(0));
+        pushed.setOffset(nSingleKnobX, animSingleToggle.knobX(0));
+        pushed.setOffset(nMonitorKnobX, monitorToggle.knobX(0));
+        pushed.set(nRows, imageScroll.rowCount());
+        pushed.set(nScroll, 0);
+        pushed.setOffset(nThumbY, imageScroll.thumbY(0, (VISIBLE_ROWS * 19 - 1) - 2, SCROLLBAR_THUMB_H));
+        pushed.set(nThumbH, SCROLLBAR_THUMB_H);
+        pushed.set(bScrollbar, imageScroll.needsScrollbar());
+        // The image rows, under the scroll: a disabled image's row goes grey, an enabled one keeps the
+        // layout's colours; only the two rows a swap moved slide in.
+        java.util.List<UUID> ids = be.getImageIds();
+        java.util.List<String> names = be.getImageNames();
+        pushed.clear(aShuffle);
+        for (int row = 0; row < imageScroll.rowCount(); row++) {
+            int realIdx = row + imageScroll.offset();
+            if (realIdx >= ids.size()) break;
+            int displayNum = 0;
+            for (int j = 0; j <= realIdx; j++) if (imageEnabled(j)) displayNum++;
+            pushed.set(tRowIdx, row, imageEnabled(realIdx) ? String.valueOf(displayNum) : "-");
+            pushed.set(tRowName, row, realIdx < names.size() && !names.get(realIdx).isEmpty()
+                    ? names.get(realIdx)
+                    : "image-" + ids.get(realIdx).toString().substring(0, 6) + ".png");
+            if (imageEnabled(realIdx)) {
+                pushed.clear(cRowBg, row);
+                pushed.clear(cRowBorder, row);
+                pushed.clear(cRowIdx, row);
+                pushed.clear(cRowName, row);
+            } else {
+                pushed.set(cRowBg, row, 0x66000000);
+                pushed.set(cRowBorder, row, 0xFF333333);
+                pushed.set(cRowIdx, row, 0xFF666666);
+                pushed.set(cRowName, row, 0xFF888888);
+            }
+            if (realIdx == lastSwapMovedUpIdx) {
+                pushed.set(aShuffle, row, SHUFFLE_UP);
+            } else if (realIdx == lastSwapMovedDownIdx) {
+                pushed.set(aShuffle, row, SHUFFLE_DOWN);
+            } else {
+                pushed.clear(aShuffle, row);
+            }
+        }
+    }
+
+    @Override
+    public void render(net.minecraft.client.gui.GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+        pushAll();
+        super.render(g, mouseX, mouseY, partialTick);
+    }
+
     private boolean fitMode() { return localFitMode != null ? localFitMode : be().isFitToMonitor(); }
     private boolean animSingle() { return localAnimSingle != null ? localAnimSingle : be().isAnimateSingle(); }
     private boolean monitorEnabled() { return localMonitorEnabled != null ? localMonitorEnabled : be().isMonitorEnabled(); }
     private boolean imageEnabled(int i) {
         return localImageEnabled.containsKey(i) ? localImageEnabled.get(i) : be().isImageEnabled(i);
-    }
-
-    @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        var be = be();
-        for (String c : classes) {
-            switch (c) {
-                case "info-text":
-                    return be.getAnimationType().getDisplayName()
-                            + " / " + Component.translatable("tsu.poster.interval_fmt", String.format("%.0f", be.getSlideInterval())).getString();
-                case "image-count-badge":
-                    return Component.translatable("tsu.poster.image_count_fmt", be.getImageIds().size()).getString();
-                case "section-title":
-                    return Component.translatable("tsu.poster.section_images_fmt", be.getImageIds().size()).getString();
-                case "fit-mode-text":
-                    return fitMode() ? "FIT" : "COVER";
-                case "monitor-status-label": {
-                    int groups = be.getLinkedMonitorGroupCount();
-                    boolean on = monitorEnabled() && groups > 0;
-                    return Component.translatable(on ? "tsu.poster.monitor_online" : "tsu.poster.monitor_offline").getString();
-                }
-                case "monitor-info": {
-                    int groups = be.getLinkedMonitorGroupCount();
-                    return groups > 0
-                            ? Component.translatable("tsu.poster.monitor_groups_linked_fmt", groups).getString()
-                            : Component.translatable("tsu.rm.monitor_disconnected").getString();
-                }
-                case "anim-type-value":
-                    return be.getAnimationType().getDisplayName();
-                case "anim-interval-display":
-                    return Component.translatable("tsu.poster.seconds_fmt", String.format("%.0f", be.getSlideInterval())).getString();
-                case "anim-duration-display":
-                    return Component.translatable("tsu.poster.seconds_fmt", String.format("%.1f", be.getAnimationDuration())).getString();
-            }
-        }
-        // image row (repeat)
-        int idx = JsonLayoutEngine.currentRepeatIndex();
-        if (idx >= 0) {
-            int realIdx = idx + imageScroll.offset();
-            List<UUID> ids = be.getImageIds();
-            List<String> names = be.getImageNames();
-            if (realIdx < ids.size()) {
-                for (String c : classes) {
-                    if ("image-idx".equals(c)) {
-                        if (!imageEnabled(realIdx)) return "-";
-                        int displayNum = 0;
-                        for (int j = 0; j <= realIdx; j++) if (imageEnabled(j)) displayNum++;
-                        return String.valueOf(displayNum);
-                    }
-                    if ("image-name".equals(c)) {
-                        String raw = realIdx < names.size() && !names.get(realIdx).isEmpty()
-                                ? names.get(realIdx)
-                                : "image-" + ids.get(realIdx).toString().substring(0, 6) + ".png";
-                        return raw;
-                    }
-                }
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public com.manta.api.anim.Animation getDynamicAnimation(String[] classes, String key) {
-        com.manta.api.anim.Animation base = super.getDynamicAnimation(classes, key);
-        if (base != null) return base;
-        if ("image-row-shuffle".equals(key)) {
-            // swap で動いた 2 行だけ方向付きで slide-in、それ以外は無アニメ。
-            int repeatIdx = com.manta.api.screen.JsonLayoutEngine.currentRepeatIndex();
-            if (repeatIdx < 0) return null;
-            int realIdx = repeatIdx + imageScroll.offset();
-            if (realIdx == lastSwapMovedUpIdx) {
-                // 下から上に上がった → translateY +19→0 (下からスライドイン)
-                return com.manta.api.anim.Animation.of(220)
-                        .easing(com.manta.api.anim.Easing.EASE_OUT)
-                        .translateY(19f, 0f)
-                        .build();
-            }
-            if (realIdx == lastSwapMovedDownIdx) {
-                return com.manta.api.anim.Animation.of(220)
-                        .easing(com.manta.api.anim.Easing.EASE_OUT)
-                        .translateY(-19f, 0f)
-                        .build();
-            }
-            return null;
-        }
-        if ("preview-flip".equals(key)) return com.manta.api.anim.Animation.flipX(420);
-        return null;
-    }
-
-    @Override
-    public com.manta.api.anim.Transition getDynamicTransition(String[] classes, String key) {
-        // toggle-bg / toggle-knob は基底 JsonLayoutScreen が解決。
-        return super.getDynamicTransition(classes, key);
-    }
-
-    @Override
-    public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-        // hint-toggle-bg / hint-knob-bg は JsonLayoutEngine が HintToggleHelper にルートするので解決不要。
-        // 全 toggle (fit/anim-single/monitor) は controller、monitor は withVisualState で derived 解決。
-        switch (key) {
-            case "fit-toggle-bg":           return fitToggle.trackBg();
-            case "fit-knob-bg":             return fitToggle.knobBg();
-            case "anim-single-toggle-bg":   return animSingleToggle.trackBg();
-            case "anim-single-knob-bg":     return animSingleToggle.knobBg();
-            case "monitor-toggle-bg":       return monitorToggle.trackBg();
-            case "monitor-knob-bg":         return monitorToggle.knobBg();
-            case "monitor-indicator-bg":    return monitorToggle.indicatorBg();
-            case "monitor-status-color":    return monitorToggle.statusText();
-        }
-        // Owner face box border: Private = 赤、Public = 緑
-        if ("owner-border".equals(key)) {
-            return com.manta.api.hud.OwnerAccess.ringColor(be().isPrivateMode());
-        }
-        // Anim popup の type ボタン: 選択中だけ primary 配色で強調 (V1 anim-type-selected 相当)
-        if (key.startsWith("anim-type-") && (key.endsWith("-bg") || key.endsWith("-color"))) {
-            int dash = key.lastIndexOf('-');
-            int firstDash = "anim-type-".length();
-            String idxStr = key.substring(firstDash, dash);
-            try {
-                int idx = Integer.parseInt(idxStr);
-                var types = com.trainsystemutilities.blockentity.PosterManagementBlockEntity
-                        .AnimationType.values();
-                boolean selected = idx >= 0 && idx < types.length
-                        && be().getAnimationType() == types[idx];
-                if (key.endsWith("-bg"))    return selected ? 0xFF4FC3F7 : 0x4D000000; // primary or default row bg
-                if (key.endsWith("-color")) return selected ? 0xFF000000 : 0xFFAAAAAA; // black on cyan vs muted
-            } catch (NumberFormatException ignored) {}
-        }
-        // 画像行が disabled (= isImageEnabled(false)) なら全体的にグレー化。
-        int idx = JsonLayoutEngine.currentRepeatIndex();
-        if (idx < 0) return null;
-        int realIdx = idx + imageScroll.offset();
-        if (realIdx >= be().getImageIds().size()) return null;
-        boolean enabled = imageEnabled(realIdx);
-        if (enabled) return null; // default を尊重
-        switch (key) {
-            case "image-row-bg":     return 0x66000000;    // より暗い
-            case "image-row-border": return 0xFF333333;
-            case "image-idx-color":  return 0xFF666666;
-            case "image-name-color": return 0xFF888888;
-        }
-        return null;
-    }
-
-    @Override
-    public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
-        switch (key) {
-            // hint-knob-x は JsonLayoutEngine が HintToggleHelper にルート (解決不要)。
-            case "fit-knob-x":         return fitToggle.knobX(defaultValue);
-            case "anim-single-knob-x": return animSingleToggle.knobX(defaultValue);
-            case "monitor-knob-x":     return monitorToggle.knobX(defaultValue);
-            case "image-count":
-                return imageScroll.rowCount();
-            case "image-scroll":       return 0;
-            case "scrollbar-thumb-y":
-                return imageScroll.thumbY(defaultValue, (VISIBLE_ROWS * 19 - 1) - 2, SCROLLBAR_THUMB_H);
-            case "scrollbar-thumb-h":
-                return SCROLLBAR_THUMB_H;
-        }
-        return null;
-    }
-
-    @Override
-    public Boolean getDynamicBool(String[] classes, String key, boolean defaultValue) {
-        if ("scrollbar-visible".equals(key)) {
-            return imageScroll.needsScrollbar();
-        }
-        return null;
     }
 
     @Override
@@ -320,7 +357,6 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
                     int idx = Integer.parseInt(tail);
                     clickButton(20 + idx);
                     animPreviewStartNano = System.nanoTime();
-                    clearOverlayAnimByClass("anim-preview-canvas");
                     return;
                 } catch (NumberFormatException ignored) {}
             }
@@ -335,6 +371,12 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         for (String c : classes) {
             switch (c) {
                 case "file-pick-btn":
+                    if (wikiMode) {
+                        // The next demo poster not yet in the list; none left, nothing (as a dialog closed unchosen).
+                        int n = be().getImageIds().size() + 1;
+                        if (n <= WIKI_POSTERS) wikiAddPoster(be(), n);
+                        return;
+                    }
                     openFileDialog();
                     return;
                 case "anim-settings-btn":
@@ -374,7 +416,10 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
                 }
                 if ("image-row".equals(c)) {
                     // 行右端 60px 以内のクリックはボタン領域 → toggle スキップ。
-                    int rowRightX = this.leftPos + 10 + (DLG_INNER_W - 4 - 6);  // PAD + LIST_INNER_W
+                    // mouseX は基底が渡す dialog-local なので、境界も local で持つ。
+                    // this.leftPos を足していたので (local 0..280 に対し 340+260-60) この分岐は
+                    // 一度も成立していなかった (最終読み 2026-09-12)。
+                    int rowRightX = 10 + (DLG_INNER_W - 4 - 6);  // PAD + LIST_INNER_W
                     if (mouseX >= rowRightX - 60) return;
                     localImageEnabled.put(realIdx, !imageEnabled(realIdx));
                     clickButton(500 + realIdx);
@@ -396,7 +441,6 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
             lastSwapMovedDownIdx = toIdx;
             lastSwapMovedUpIdx   = fromIdx;
         }
-        clearMainAnimByClass("image-row");
     }
 
     /** poster JSON 上の DLG_INNER_W (幅 260)。Java 側ヒット判定で使用。 */
@@ -404,8 +448,15 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
     /** scrollbar thumb の固定高さ (画像数に依らず一定)。 */
     private static final int SCROLLBAR_THUMB_H = 20;
 
-    /** MCSS 基底の sendButtonClick に委譲。 */
-    private void clickButton(int id) { sendButtonClick(id); }
+    /** MCSS 基底の sendButtonClick に委譲。 The wiki's stand-in takes the button as the server's menu would
+     *  (PosterManagementMenu.clickMenuButton: its block entity's values only). */
+    private void clickButton(int id) {
+        if (wikiMode) {
+            getMenu().clickMenuButton(Minecraft.getInstance().player, id);
+            return;
+        }
+        sendButtonClick(id);
+    }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
@@ -421,37 +472,40 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
     public boolean mouseScrolled(double mx, double my, double dx, double dy) {
         // Image list scroll — VISIBLE_ROWS (5) を超えるときだけ有効。
         // popup 表示中もメイン GUI 操作は許可するので showAnimSettings は条件にしない。
-        int[] r = findElementByClass("image-list-wrap");
-        if (r != null) {
-            int rx = dialogX() + r[0], ry = dialogY() + r[1];
-            if (mx >= rx && mx < rx + r[2] && my >= ry && my < ry + r[3]) {
-                imageScroll.scroll(dy > 0 ? -1 : 1);  // ScrollViewport が clamp 内包 (§4.19)
-                return true;
-            }
+        // 宣言矩形は dialog-local、mx/my は screen。UI スケールつまみが 1.0 でないと
+        // dialogX() + local は描画位置と一致しない (実機 2026-09-12、つまみ 0.910) ので、
+        // manta の isOverElement に写像を任せる。
+        if (isOverElement("image-list-wrap", mx, my)) {
+            imageScroll.scroll(dy > 0 ? -1 : 1);  // ScrollViewport が clamp 内包 (§4.19)
+            return true;
         }
-        // Overlay popup wheel: cycle interval/duration if hovered display.
-        // overlayX/Y は popup の現在位置 (drag 後も含む) を返すので、findElementByClass の
-        // popup-local 座標に加算して画面座標に変換する。
-        if (showAnimSettings && hasOverlay()) {
-            int ox = overlayX(), oy = overlayY();
-            int[] intR = findElementByClass("anim-interval-display");
-            if (intR != null) {
-                int ix = ox + intR[0], iy = oy + intR[1];
-                if (mx >= ix && mx < ix + intR[2] && my >= iy && my < iy + intR[3]) {
-                    clickButton(dy > 0 ? 2 : 3);
-                    return true;
-                }
-            }
-            int[] durR = findElementByClass("anim-duration-display");
-            if (durR != null) {
-                int dxx = ox + durR[0], dyy = oy + durR[1];
-                if (mx >= dxx && mx < dxx + durR[2] && my >= dyy && my < dyy + durR[3]) {
-                    clickButton(dy > 0 ? 4 : 5);
-                    return true;
-                }
-            }
-        }
+        // The popup's interval / duration: the engine's wheel (their wheelKey, onElementWheel - 2026-10-07, so a wiki
+        // playback's wheel is aimed at its display as a press is).
         return super.mouseScrolled(mx, my, dx, dy);
+    }
+
+    /** The image list's thumb, grabbed and dragged (Manta 2.87.0's dragThumb, R4.19.5). */
+    @Override
+    public boolean onElementDrag(String[] classes, String key, int mouseX, int mouseY,
+                                 int elementX, int elementY, int elementW, int elementH, boolean pressed) {
+        if ("poster-image-thumb-drag".equals(key)) {
+            return imageScroll.dragThumb(mouseY, pressed);
+        }
+        return super.onElementDrag(classes, key, mouseX, mouseY, elementX, elementY, elementW, elementH, pressed);
+    }
+
+    @Override
+    public boolean onElementWheel(String[] classes, String key, int mouseX, int mouseY, double scrollY) {
+        if (!showAnimSettings) return false;
+        if ("anim-interval-wheel".equals(key)) {
+            clickButton(scrollY > 0 ? 2 : 3);
+            return true;
+        }
+        if ("anim-duration-wheel".equals(key)) {
+            clickButton(scrollY > 0 ? 4 : 5);
+            return true;
+        }
+        return false;
     }
 
     // === Canvas painters — JSON declares the slots, we just paint ===
@@ -489,14 +543,17 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
     private void drawImagePreviewTooltip(GuiGraphics g, int mouseX, int mouseY) {
         int[] listR = findElementByClass("image-list-wrap");
         if (listR == null) { hoveredImageIndex = -1; return; }
-        int lx0 = this.leftPos + listR[0];
-        int ly0 = this.topPos  + listR[1];
+        // 行の高さ 19 は dialog-local の値なので、判定も local で行う (screen に写すと
+        // UI スケールつまみが 1.0 でないときだけ行がずれる - 実機 2026-09-12)。
+        double lmx = toLocalMx(mouseX);
+        double lmy = toLocalMy(mouseY);
+        int lx0 = listR[0];
+        int ly0 = listR[1];
         int lw = listR[2];
         int lh = listR[3];
         int newHover = -1;
-        if (mouseX >= lx0 && mouseX < lx0 + lw
-                && mouseY >= ly0 && mouseY < ly0 + lh) {
-            int rel = mouseY - ly0;
+        if (com.manta.api.hud.Rects.contains(lmx, lmy, lx0, ly0, lw, lh)) {
+            int rel = (int) (lmy - ly0);
             int rowIdx = rel / 19;
             if (rowIdx >= 0 && rowIdx < VISIBLE_ROWS) {
                 int realIdx = rowIdx + imageScroll.offset();
@@ -537,12 +594,16 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         int px = this.leftPos - panelW;
         int py = this.topPos;
         if (px < 4) px = this.leftPos + this.imageWidth + 4;
+        if (wikiMode) {
+            // The wiki's picture is the dialog: the preview stands over the dialog's upper right, inside it.
+            px = getDialogScreenX() + getDialogDisplayW() - panelW - 8;
+            py = getDialogScreenY() + 30;
+        }
         int maxScreenY = this.height - panelH - 4;
         if (py > maxScreenY) py = maxScreenY;
 
         // パネル枠 (cyan border) + 半透明背景
-        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, px, py, panelW, panelH, 5f, 0xFF4fc3f7);
-        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, px + 1, py + 1, panelW - 2, panelH - 2, 4f, 0xDD1a1a2e);
+        com.manta.api.hud.HudChrome.innerRect(g, px, py, panelW, panelH, 0xDD1a1a2e, 0xFF4fc3f7);
         if (tex != null) {
             // MCSS のバッファ描画では DynamicTexture の blit を flush で挟んで texture binding を
             // 確定させる必要がある (ImageNode と同じ定石)。flush 無しだと binding が確定せず空白になる。
@@ -552,9 +613,8 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         } else {
             // 読込中の placeholder
             String msg = Component.translatable("tsu.poster.loading").getString();
-            int tw = this.font.width(msg);
-            g.drawString(this.font, msg,
-                    px + (panelW - tw) / 2, py + panelH / 2 - 4, 0xFF888888, false);
+            int tw = com.manta.api.text.MantaText.uiWidth(this.font, msg);
+            com.manta.api.text.MantaText.draw(g, this.font, msg, px + (panelW - tw) / 2, py + panelH / 2 - 4, 0xFF888888);
         }
     }
 
@@ -571,8 +631,7 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
             animPreviewStartNano = System.nanoTime();
         }
         // 背景パネル
-        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, 0xFF000000);
-        com.manta.api.draw.SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, 0xFF12122a);
+        com.manta.api.hud.HudChrome.innerRect(g, x, y, w, h, 0xFF12122a, 0xFF000000);
 
         // 2 枚のサンプル (cyan / orange) を切替えながら anim 再生。
         // canvas 領域から食み出ないよう scissor で内部 rect にクリップする。
@@ -595,12 +654,9 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         // overlay は overlayScale(=dialogScale) で scale 描画されるため、pose 行列から実
         // screen rect を算出する (overlayX()+innerX の手動加算は dialogScale 非乗算で高 GUI
         // スケール時に切れる)。
-        var pm = g.pose().last().pose();
-        int sx = Math.round(innerX * pm.m00() + pm.m30());
-        int sy = Math.round(innerY * pm.m11() + pm.m31());
-        g.enableScissor(sx, sy,
-                Math.round((innerX + innerW) * pm.m00() + pm.m30()),
-                Math.round((innerY + innerH) * pm.m11() + pm.m31()));
+        int[] clip = com.manta.api.preview.GuiPreviewCamera.scissorRect(
+                g.pose().last().pose(), innerX, innerY, innerW, innerH);
+        g.enableScissor(clip[0], clip[1], clip[2], clip[3]);
         drawAnimSample(g, innerX, innerY, innerW, innerH, type, t, colorA, colorB);
         g.disableScissor();
         // 種別名はリストで強調表示するので preview 上には描かない (見にくいため)。
@@ -692,19 +748,13 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
         }
     }
 
-    // === File dialog (TinyFileDialogs) ===
+    // === File dialog (NativeFileDialog: only for the open screen, never for the wiki's stand-in) ===
 
     private void openFileDialog() {
-        Thread t = new Thread(() -> {
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-                PointerBuffer filters = stack.mallocPointer(3);
-                filters.put(stack.UTF8("*.png"));
-                filters.put(stack.UTF8("*.jpg"));
-                filters.put(stack.UTF8("*.jpeg"));
-                filters.flip();
-                String result = TinyFileDialogs.tinyfd_openFileDialog(
-                        Component.translatable("tsu.upload.pick_image_dialog_title").getString(), "", filters,
-                        "Image Files (*.png, *.jpg, *.jpeg)", false);
+        NativeFileDialog.open(this, "Poster-FileChooser-V2",
+                Component.translatable("tsu.upload.pick_image_dialog_title").getString(),
+                new String[] {"*.png", "*.jpg", "*.jpeg"}, "Image Files (*.png, *.jpg, *.jpeg)", result -> {
+            try {
                 if (result == null) return;
                 Path filePath = Path.of(result);
                 byte[] fileData = Files.readAllBytes(filePath);
@@ -731,8 +781,6 @@ public class PosterManagementScreenV2 extends JsonLayoutScreen<PosterManagementM
                     });
                 }
             } catch (Exception e) { com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[PosterScreen] file-chooser image upload failed", e); }
-        }, "Poster-FileChooser-V2");
-        t.setDaemon(true);
-        t.start();
+        });
     }
 }

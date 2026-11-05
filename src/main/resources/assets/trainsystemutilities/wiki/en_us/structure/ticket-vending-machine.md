@@ -9,42 +9,19 @@ tags: [structure, block, ticket]
 ```embed:item id=trainsystemutilities:ticket_vending_machine size=48 label=true
 ```
 
-A station ticket vending machine. It is a 2-block-tall cabinet; right-click it to open a UI like a real station's vending machine, where you pick a destination and issue a ticket.
+Equipment that issues tickets for the destination you choose. Make room 2 blocks high and place it inside a [station group](../tools/station-range-tool.md). The station it belongs to is judged from its position and used as the departure station.
 
 [[TOC]]
 
-## Placement and station linking {#place}
+![](bws:trainsystemutilities:wiki/screens/ticket-vending-machine__main__en_us.png)
 
-1. Hold the ticket vending machine item.
-2. **Right-click** where you want to place it (the cabinet needs 2 blocks of vertical space, so leave 1 block empty above). It faces toward you.
-3. **Placing it inside the range of a station group created with the **[**Station Range Tool**](../tools/station-range-tool.md)** auto-links it to that station** (= that station becomes the origin).
-4. Placing it later inside an existing range also connects it. If you create the range afterwards, it re-links the next time the machine is opened.
+Right-click to open its screen and choose a destination button, and a ticket goes into your inventory. Tickets are free. When there are many destinations, scroll with the mouse wheel. Close it with the close button or Esc.
 
-> [!WARNING]
-> **A machine placed outside any station range cannot be used.** Right-clicking it won't open the UI; instead it shows "Place this inside a station range" in red. Always place it inside a station group's range. See the [Station Range Tool](../tools/station-range-tool.md) for how to create station groups.
-
-## Opening the UI and issuing tickets {#open}
-
-**Right-click** a placed machine to open the vending UI.
-
-- Destinations (= stations set as sellable) are listed as rounded buttons. When there are many, scroll with the **mouse wheel**.
-- **Left-click** the button for the station you want and a **ticket** is issued into your inventory (free in v1).
-- The listed destinations are only the sellable stations that are **connected to the same rail network** as this machine (the machine's own station is excluded).
-- The header follows the BelugaExperience standard (**× to close** / **hint toggle** / **📖 wiki**). Close with the × button or the Esc key.
-
-## Ticket
+Set the destinations on sale in the [Tickets Tab of the Management Computer](../management-computer/tickets.md). The destinations shown are the stations connected to the same track network, excluding the machine's own station. If no station is selected in the Tickets Tab, all of those stations are shown. The Tickets Tab's settings are shared across the whole server and apply to every ticket vending machine. It cannot be used outside a station group, so register the station's range first.
 
 ```embed:item id=trainsystemutilities:ticket size=32 label=true
 ```
 
-An issued ticket records its **origin and destination**, shown in the item tooltip as "From: ○○ / To: △△ (valid until)". In v1 it is an informational item; fare-gate validation is planned for the future.
+A ticket records its departure and arrival stations; check the section in its tooltip.
 
-## Choosing which stations are sold
-
-The destinations listed at a machine are decided per station in the [**management computer's Tickets tab**](../management-computer/tickets.md), by toggling each station sellable or not. The setting is shared network-wide and applies to every ticket machine.
-
-## Related pages
-
-- [Management Computer: Tickets tab](../management-computer/tickets.md)
-- [Station Range Tool](../tools/station-range-tool.md)
-- [Platform Fence](platform-fence.md) / [Platform Screen Door](platform-screen-door.md)
+At an automatic ticket gate, you enter at the ticket's departure station. You can exit at the arrival station or at a station partway along the section you bought. Exiting collects the ticket. When a ticket is passed through, the gate opens for 3 seconds.

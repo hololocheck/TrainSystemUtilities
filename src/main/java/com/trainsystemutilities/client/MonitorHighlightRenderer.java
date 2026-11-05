@@ -51,7 +51,7 @@ public class MonitorHighlightRenderer {
 
                 for (BlockPos mPos : positions) {
                     AABB box = new AABB(mPos).inflate(0.005);
-                    LevelRenderer.renderLineBox(poseStack, consumer, box, 0.3f, 0.8f, 1.0f, 0.8f); // Cyan
+                    com.manta.api.render.WorldOutline.box(poseStack, mc.renderBuffers().bufferSource(), box, 0.3f, 0.8f, 1.0f, 0.8f, false); // Cyan
                 }
 
                 mc.renderBuffers().bufferSource().endBatch(RenderType.lines());

@@ -2,16 +2,14 @@ package com.trainsystemutilities.client.transit;
 import com.manta.api.draw.VectorRenderer;
 import com.manta.api.anim.Animation;
 
-import com.manta.api.render.OverlayPopIn;
 import com.manta.api.screen.JsonLayoutEngine;
 import com.manta.api.screen.JsonLayoutHandler;
 import com.manta.api.screen.JsonLayoutPlainScreen;
+import com.manta.api.screen.PanelTransform;
 import com.manta.api.draw.SmoothRenderer;
 import com.manta.api.hud.ToggleColors;
-import com.manta.api.anim.Transition;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.station.StationGroup;
-import com.trainsystemutilities.station.StationGroupClientCache;
 import com.trainsystemutilities.station.routing.ComposedRouteFinder;
 import com.trainsystemutilities.station.routing.TrainRouter;
 import net.minecraft.client.Minecraft;
@@ -51,6 +49,12 @@ import java.util.UUID;
 @OnlyIn(Dist.CLIENT)
 public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainScreen {
 
+    /** Every value on this screen's pages is pushed (MANTA_7_CONCEPT §4.2): a page asks it nothing. */
+    @Override
+    protected boolean pushOnly() {
+        return true;
+    }
+
     static final int PANEL_W = 200;
     private static final int PANEL_H = 340;
     private static final int RIGHT_MARGIN = 12;
@@ -81,7 +85,13 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     private static final int AC_MAX_ROWS = 5;
     private static final int AC_ROW_H = 12;
     /** BelugaExperience 標準 pop-in 演出 (= Animation.popIn 同等の 180ms/0.85→1.0/ease-out)。 */
-    private final OverlayPopIn acAnim = new OverlayPopIn();
+    /**
+     * How the autocomplete list unfolds under its field and folds when the field loses focus - the one dropdown motion
+     * (Manta DropdownMotion, 2026-10-07; it was OverlayPopIn's scale-in, with no close). {@code acShown} is the field
+     * whose list is drawn: the focused one, or the one whose list is still folding.
+     */
+    private com.manta.api.anim.DropdownMotion acMotion = new com.manta.api.anim.DropdownMotion();
+    private AcField acShown = null;
 
     // ドラッグ状態 (レイアウト調整モード時のスクリーン移動)
     private boolean draggingScreen = false;
@@ -91,13 +101,63 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     private double dragHudAnchorX = 0, dragHudAnchorY = 0;
     private int dragHudStartX = 0, dragHudStartY = 0;
 
+    /**
+     * The wiki's stand-in has a terminal of its own - its state, its stations, trains and track (TransitTerminalWikiDemo) -
+     * installed on this thread for every call into it (scoped). Null for the player's terminal. A wiki page shows several
+     * tabs of this screen at once (tools/transit-terminal.md) and plays a search on one (改善1, 2026-10-07): a stand-in on
+     * the player's state would put every picture and the player's own terminal on the last tab built, its search and its
+     * map view.
+     */
+    private TransitTerminalState.Data wikiState = null;
+    private TransitTerminalClientCache.WikiData wikiData = null;
+
+    /** The wiki's stand-in (WikiLiveCapture): its own terminal from the start, so init reads that one. */
+    public static TransitTerminalScreen wikiCreate() {
+        TransitTerminalScreen s = new TransitTerminalScreen();
+        s.wikiState = TransitTerminalWikiDemo.state();
+        s.wikiData = TransitTerminalWikiDemo.cache();
+        return s;
+    }
+
+    /** Runs {@code body} on this screen's terminal: the stand-in's own installed, or the player's as it is. */
+    private <T> T scoped(java.util.function.Supplier<T> body) {
+        if (wikiState == null) return body.get();
+        return TransitTerminalState.underWiki(wikiState, () -> TransitTerminalClientCache.underWiki(wikiData, body));
+    }
+
+    private void scopedRun(Runnable body) {
+        scoped(() -> { body.run(); return null; });
+    }
+
+    /** The tab this screen shows: its terminal's. */
+    private TransitTerminalState.Tab tab() {
+        return TransitTerminalState.tab();
+    }
+
+    private void setTab(TransitTerminalState.Tab t) {
+        TransitTerminalState.setTab(t);
+    }
+
+    /** The wiki's states (WikiLiveCapture): "top", "schedule", "map", "settings" - this screen's own tab. */
+    public void wikiApplyState(String state) {
+        scopedRun(() -> {
+            setTab(switch (state) {
+                case "schedule" -> TransitTerminalState.Tab.SCHEDULE;
+                case "map" -> TransitTerminalState.Tab.MAP;
+                case "settings" -> TransitTerminalState.Tab.SETTINGS;
+                default -> TransitTerminalState.Tab.TOP;
+            });
+            rebuildEditBoxes();
+        });
+    }
+
     public String wikiCaptureState() {
-        return switch (TransitTerminalState.tab()) {
+        return scoped(() -> switch (tab()) {
             case TOP -> "top";
             case SCHEDULE -> "schedule";
             case MAP -> "map";
             case SETTINGS -> "settings";
-        };
+        });
     }
 
     public TransitTerminalScreen() {
@@ -137,43 +197,129 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
 
     @Override
     protected void init() {
-        super.init();   // layout を parse + dialogX/Y を dialogAnchor から設定
-        rebuildEditBoxes();
-        if (TransitTerminalState.tab() == TransitTerminalState.Tab.SCHEDULE) requestScheduleSync();
-        if (TransitTerminalState.tab() == TransitTerminalState.Tab.MAP) requestMapSync();
+        scopedRun(() -> {
+            super.init();   // layout を parse + dialogX/Y を dialogAnchor から設定
+            rebuildEditBoxes();
+            if (tab() == TransitTerminalState.Tab.SCHEDULE) requestScheduleSync();
+            if (tab() == TransitTerminalState.Tab.MAP) requestMapSync();
+        });
+    }
+
+    // ===== Manta 7 push (Phase 4, TSU batch 3, 2026-09-23) =====
+    // The page's values are WRITTEN here each frame before the engine draws (the clock moves every
+    // second, the tab on a click), and once when the page opens: the screen overrides no getDynamic*.
+    // The toggle transitions are the base's. The three input boxes draw their text and caret in
+    // renderInputs(), so the layout's boxes stay empty - they are class-only nodes nothing asks.
+    private com.manta.api.state.MantaState pushed;
+    private com.manta.api.state.TextSlot tTitle, tClock, tZoom, tSegments;
+    private com.manta.api.state.BoolSlot bTop, bSchedule, bMap, bSettings, bScrollbar;
+    private com.manta.api.state.NumberSlot nSearchW, nKnob24h, nKnobWalk, nKnobLayout, nKnobHud;
+    private com.manta.api.state.ColorSlot cNavTop, cNavSchedule, cNavMap, cNavSettings;
+    private com.manta.api.state.ColorSlot cTrack24h, cTrackWalk, cTrackLayout, cTrackHud;
+    private com.manta.api.state.ColorSlot cKnob24h, cKnobWalk, cKnobLayout, cKnobHud;
+
+    @Override
+    protected void pageOpened(Object page, com.manta.api.screen.PageLayer layer) {
+        if (layer != com.manta.api.screen.PageLayer.PRIMARY) return;
+        pushed = com.manta.api.state.MantaState.of(page);
+        tTitle = pushed.text("tt-title");
+        tClock = pushed.text("tt-clock");
+        tZoom = pushed.text("tt-map-zoom");
+        tSegments = pushed.text("tt-map-segcount");
+        bTop = pushed.bool("tt-tab-top");
+        bSchedule = pushed.bool("tt-tab-schedule");
+        bMap = pushed.bool("tt-tab-map");
+        bSettings = pushed.bool("tt-tab-settings");
+        bScrollbar = pushed.bool("tt-sch-scrollbar-visible");
+        nSearchW = pushed.number("btn-search-label-w");
+        nKnob24h = pushed.number("tt-set-knob-24h-x");
+        nKnobWalk = pushed.number("tt-set-knob-walk-x");
+        nKnobLayout = pushed.number("tt-set-knob-layout-x");
+        nKnobHud = pushed.number("tt-set-knob-hud-x");
+        cNavTop = pushed.color("tt-nav-top-color");
+        cNavSchedule = pushed.color("tt-nav-schedule-color");
+        cNavMap = pushed.color("tt-nav-map-color");
+        cNavSettings = pushed.color("tt-nav-settings-color");
+        cTrack24h = pushed.color("tt-set-track-24h-bg");
+        cTrackWalk = pushed.color("tt-set-track-walk-bg");
+        cTrackLayout = pushed.color("tt-set-track-layout-bg");
+        cTrackHud = pushed.color("tt-set-track-hud-bg");
+        cKnob24h = pushed.color("tt-set-knob-24h-bg");
+        cKnobWalk = pushed.color("tt-set-knob-walk-bg");
+        cKnobLayout = pushed.color("tt-set-knob-layout-bg");
+        cKnobHud = pushed.color("tt-set-knob-hud-bg");
+        pushed.textByKeyOnly();
+        pushAll();
+    }
+
+    private void pushAll() {
+        if (pushed == null || !pushed.isOpen()) return;
+        var tab = tab();
+        pushed.set(tTitle, headerTitleText());
+        pushed.set(tClock, formatClock());
+        pushed.set(tZoom, String.format("x%.2f", TransitTerminalState.mapZoomD()));
+        pushed.set(tSegments, TransitTerminalClientCache.mapSegments().size() + " seg");
+        // Phase 3-6: every tab's content is layout-driven, shown by its tab.
+        pushed.set(bTop, tab == TransitTerminalState.Tab.TOP);
+        pushed.set(bSchedule, tab == TransitTerminalState.Tab.SCHEDULE);
+        pushed.set(bMap, tab == TransitTerminalState.Tab.MAP);
+        pushed.set(bSettings, tab == TransitTerminalState.Tab.SETTINGS);
+        pushed.set(bScrollbar, scheduleFilteredCount() > SCHEDULE_ROWS_VISIBLE);
+        // R4.23.1: the search button's glyph became icon + label; the label's width is LabelWidth's.
+        pushed.set(nSearchW, com.trainsystemutilities.client.gui.LabelWidth.of("tsu.transit_terminal.btn_search"));
+        // SETTINGS knobs: BelugaExperience's standard travel (an offset from each knob's own x).
+        int travel = ToggleSwitchController.KNOB_TRAVEL_PX;
+        pushed.setOffset(nKnob24h, TransitTerminalState.clock24h() ? travel : 0);
+        pushed.setOffset(nKnobWalk, TransitTerminalState.walkGateEnabled() ? travel : 0);
+        pushed.setOffset(nKnobLayout, TransitTerminalState.layoutAdjustMode() ? travel : 0);
+        pushed.setOffset(nKnobHud, TransitTerminalState.showDetailHud() ? travel : 0);
+        // The nav cells: the active tab bright cyan (TRACK_ON), the others grey.
+        pushed.set(cNavTop, tabColor(TransitTerminalState.Tab.TOP));
+        pushed.set(cNavSchedule, tabColor(TransitTerminalState.Tab.SCHEDULE));
+        pushed.set(cNavMap, tabColor(TransitTerminalState.Tab.MAP));
+        pushed.set(cNavSettings, tabColor(TransitTerminalState.Tab.SETTINGS));
+        // SETTINGS toggles: BelugaExperience's standard ToggleColors.
+        pushed.set(cTrack24h, ToggleColors.trackBg(TransitTerminalState.clock24h()));
+        pushed.set(cTrackWalk, ToggleColors.trackBg(TransitTerminalState.walkGateEnabled()));
+        pushed.set(cTrackLayout, ToggleColors.trackBg(TransitTerminalState.layoutAdjustMode()));
+        pushed.set(cTrackHud, ToggleColors.trackBg(TransitTerminalState.showDetailHud()));
+        pushed.set(cKnob24h, ToggleColors.knobBg(TransitTerminalState.clock24h()));
+        pushed.set(cKnobWalk, ToggleColors.knobBg(TransitTerminalState.walkGateEnabled()));
+        pushed.set(cKnobLayout, ToggleColors.knobBg(TransitTerminalState.layoutAdjustMode()));
+        pushed.set(cKnobHud, ToggleColors.knobBg(TransitTerminalState.showDetailHud()));
     }
 
     // === スマホ型 PiP slide: 開く=下端外→resting、 閉じる=resting→下端外。 base の scale+fade は
     //     onClose を直接 override しているため走らない (= 自前の縦 slide が優先)。 ===
     @Override
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        float offY = slideOffsetY();
-        float s = panelScale();
-        int pvx = px + PANEL_W, pvy = py + PANEL_H;  // 右下 pivot を固定して flush 右下を保つ
-        g.pose().pushPose();
-        if (offY != 0f) g.pose().translate(0, offY, 0);
-        if (s != 1f) {
-            g.pose().translate(pvx, pvy, 0);
-            g.pose().scale(s, s, 1f);
-            g.pose().translate(-pvx, -pvy, 0);
-        }
-        // V3 ツリー / afterDialogRender の hover を scale 後の panel 座標に合わせる
-        super.render(g, (int) Math.round(sMx(mouseX)), (int) Math.round(sMy(mouseY)), partialTick);
-        g.pose().popPose();
-        if (closing && closeProgress() >= 1f) finishClose();
+        scopedRun(() -> {
+            pushAll();
+            super.render(g, mouseX, mouseY, partialTick);   // base が panelTransform() の下で panel を描く
+            if (closing && closeProgress() >= 1f) finishClose();
+        });
     }
 
-    /** 「常にサイズ2相当」+ 画面に収める scale。 GUI スケール2では 1.0 (無変更)。 */
-    private float panelScale() {
-        double gs = net.minecraft.client.Minecraft.getInstance().getWindow().getGuiScale();
-        float target = gs > 0 ? (float) (2.0 / gs) : 1f;
-        float fitW = (this.width  - 4) / (float) PANEL_W;
-        float fitH = (this.height - 4) / (float) PANEL_H;
-        return Math.min(target, Math.min(fitW, fitH));
+    /**
+     * 下端からの slide と画面に収める縮尺。右下 pivot を固定して flush 右下を保つ。
+     *
+     * <p>base がこの変換で描き、ポインタを逆に写し、hitmap もこれを通して報告する。2026-09-30 まではこの画面が
+     * 前の 2 つを自前で行い、hitmap はどちらも知らなかった (wiki の再生が schedule タブを狙って top タブに届いた)。
+     */
+    @Override
+    protected PanelTransform panelTransform() {
+        return new PanelTransform(px + PANEL_W, py + PANEL_H, panelScale(), 0f, slideOffsetY());
     }
-    /** screen mouse → scale 前の panel 座標系 (右下 pivot)。 hit-test は全て px/py 基準なのでこれで一致。 */
-    private double sMx(double mx) { float s = panelScale(); int p = px + PANEL_W; return p + (mx - p) / s; }
-    private double sMy(double my) { float s = panelScale(); int p = py + PANEL_H; return p + (my - p) / s; }
+
+    /**
+     * GUI スケールに素直に追従し (R4.22.4)、入らないときだけ縮める。
+     *
+     * <p>旧実装は {@code 2.0 / guiScale} を掛けていた = v1.22 で全廃したはずの
+     * 「常にサイズ 2 相当」正規化。GUI スケール 2 では完全に同じ値。
+     */
+    private float panelScale() {
+        return com.manta.api.screen.PanelFit.scale(this.width, this.height, PANEL_W, PANEL_H, 4);
+    }
 
     /** 開く: 画面下端の外から resting へスライドアップ。 閉じる: resting から下端外へスライドダウン。 */
     private float slideOffsetY() {
@@ -193,9 +339,9 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         return Math.min(1f, (System.nanoTime() - closingAtNano) / (float) SLIDE_NANOS);
     }
 
+    /** 二次 ease-out。 展開した多項式を置かない (動きは変えない)。 */
     private static float easeOut(float t) {
-        float inv = 1f - t;
-        return 1f - inv * inv;
+        return com.manta.api.anim.Easing.EASE_OUT.apply(t);
     }
 
     @Override
@@ -210,31 +356,56 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         super.performClose();
     }
 
+    /**
+     * 接続が無いときは送らない。{@code PacketDistributor.sendToServer} は接続を
+     * {@code Objects.requireNonNull} するので、接続の無い状態で送ると **クライアントが落ちる**
+     * (2026-09-22 実測、crash-2026-09-22_15.59.53-client.txt: Ticking screen -> requestScheduleSync)。
+     *
+     * <p>この画面はタイトル画面からでも開ける (wiki キャプチャ・カタログ経路) ので、そこには接続が無い。
+     * これまで出なかったのは、開いてから閉じるまでが tick より短く tick が一度も回らなかったから。
+     * 画面を 900ms 保持する計測を入れた初回に落ちた。
+     *
+     * <p><b>guard は呼び出し元ではなく、ここに置く。</b>最初は {@code tick()} の先頭に置いたが、
+     * この 2 つを呼ぶのは tick だけではない —— {@code init()} (初期タブが SCHEDULE / MAP のとき) と
+     * {@code switchTab()} (タブをクリックしたとき) も呼ぶ。「tick の中の送信」を探して
+     * 「送信する関数の呼び出し元」を探さなかった、という掃き方の誤り (二次読みが指摘)。
+     * 絞り込み点は送る側にしかない。
+     */
+    private boolean connected() {
+        // The wiki's stand-in asks no server: its data is its own (TransitTerminalWikiDemo).
+        if (TransitTerminalState.wiki()) return false;
+        return net.minecraft.client.Minecraft.getInstance().getConnection() != null;
+    }
+
     private void requestScheduleSync() {
+        if (!connected()) return;
         long now = System.nanoTime();
         if (now - lastScheduleRequestNanos < 2_000_000_000L) return; // 2 秒に 1 回まで
         lastScheduleRequestNanos = now;
-        com.trainsystemutilities.network.TransitScheduleRequestPayload.send();
+        com.trainsystemutilities.client.TransitClient.schedule();
     }
 
     private void requestMapSync() {
+        if (!connected()) return;
         long now = System.nanoTime();
         if (now - lastMapRequestNanos < 5_000_000_000L) return; // 5 秒に 1 回 (重い)
         lastMapRequestNanos = now;
-        com.trainsystemutilities.network.TransitMapRequestPayload.send();
+        com.trainsystemutilities.client.TransitClient.map();
     }
 
     @Override
     public void tick() {
-        super.tick();
-        if (TransitTerminalState.tab() == TransitTerminalState.Tab.SCHEDULE) requestScheduleSync();
-        if (TransitTerminalState.tab() == TransitTerminalState.Tab.MAP) requestMapSync();
+        scopedRun(() -> {
+            super.tick();
+            if (tab() == TransitTerminalState.Tab.SCHEDULE) requestScheduleSync();
+            if (tab() == TransitTerminalState.Tab.MAP) requestMapSync();
+        });
     }
 
     void rebuildEditBoxes() {
         // tab 切替 / init 時: controller の値を state から復元し、focus を解除する。
         // (vanilla EditBox の再生成は廃止 — TextInputController は永続 instance)
-        acField = null;
+        setAcField(null);
         acSelected = -1;
         fromCtrl.setValue(TransitTerminalState.fromQuery());
         toCtrl.setValue(TransitTerminalState.toQuery());
@@ -250,21 +421,6 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         };
     }
 
-    private AcField hitTestBox(double mx, double my) {
-        var tab = TransitTerminalState.tab();
-        if (tab == TransitTerminalState.Tab.TOP) {
-            if (inRect(mx, my, boxRect(AcField.FROM))) return AcField.FROM;
-            if (inRect(mx, my, boxRect(AcField.TO))) return AcField.TO;
-        } else if (tab == TransitTerminalState.Tab.SCHEDULE) {
-            if (inRect(mx, my, boxRect(AcField.SCHEDULE))) return AcField.SCHEDULE;
-        }
-        return null;
-    }
-
-    private static boolean inRect(double mx, double my, int[] r) {
-        return mx >= r[0] && mx < r[0] + r[2] && my >= r[1] && my < r[1] + r[3];
-    }
-
     private TextInputController ctrlOf(AcField f) {
         return switch (f) {
             case FROM -> fromCtrl;
@@ -275,7 +431,7 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
 
     /** 現在 tab の入力欄テキスト + caret を描画 (JSON が box 背景を、ここが文字を担当)。 */
     private void renderInputs(GuiGraphics g) {
-        var tab = TransitTerminalState.tab();
+        var tab = tab();
         if (tab == TransitTerminalState.Tab.TOP) {
             drawInput(g, AcField.FROM, fromCtrl);
             drawInput(g, AcField.TO, toCtrl);
@@ -290,14 +446,14 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         int ty = r[1] + (r[3] - 8) / 2;          // vertical center
         String val = c.value();
         if (val.isEmpty()) {
-            g.drawString(this.font, c.display(), tx, ty, 0xFF707070, false); // placeholder
+            com.manta.api.text.MantaText.draw(g, this.font, c.display(), tx, ty, 0xFF707070); // placeholder
         } else {
             // 長い駅名が枠外へはみ出さないよう収める: 編集中は末尾(caret 側)、非編集は head + "…"。
             int availW = r[2] - 6;
             String shown = (acField == f)
                     ? com.manta.api.hud.HudText.tailFit(this.font, val, availW)
                     : com.manta.api.hud.HudText.ellipsize(this.font, val, availW);
-            g.drawString(this.font, shown, tx, ty, 0xFFFFFFFF, false);
+            com.manta.api.text.MantaText.draw(g, this.font, shown, tx, ty, 0xFFFFFFFF);
         }
         if (acField == f) {
             TextCaretRenderer.draw(g, this.font, val, r[0], r[1], r[2], r[3], 0xFF4FC3F7);
@@ -315,9 +471,33 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         renderAutocomplete(g, mouseX, mouseY);
     }
 
+    /**
+     * Moves the focus between the fields (null: none). A field that takes the focus unfolds its list from the start;
+     * losing it folds the list where it is (2026-10-07).
+     */
+    private void setAcField(AcField f) {
+        if (f == acField) return;
+        if (f == null) {
+            acMotion.close();
+        } else if (f == acShown && acMotion.isShown()) {
+            // The same field's list, still folding: it turns round where it is, as every dropdown does (second reading,
+            // 2026-10-07 - it restarted from folded).
+            acMotion.open();
+        } else {
+            acMotion = new com.manta.api.anim.DropdownMotion();
+            acMotion.open();
+            acShown = f;
+        }
+        acField = f;
+    }
+
     private String acQuery() {
-        if (acField == null) return "";
-        return switch (acField) {
+        return acQuery(acField);
+    }
+
+    private String acQuery(AcField f) {
+        if (f == null) return "";
+        return switch (f) {
             case FROM -> TransitTerminalState.fromQuery();
             case TO -> TransitTerminalState.toQuery();
             case SCHEDULE -> TransitTerminalState.scheduleQuery();
@@ -325,20 +505,32 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     }
 
     private java.util.List<com.trainsystemutilities.station.StationGroup> acCandidates() {
-        if (acField == null) return java.util.List.of();
-        return TransitTerminalState.autocomplete(acQuery(), AC_MAX_ROWS);
+        return acCandidates(acField);
+    }
+
+    private java.util.List<com.trainsystemutilities.station.StationGroup> acCandidates(AcField f) {
+        if (f == null) return java.util.List.of();
+        return TransitTerminalState.autocomplete(acQuery(f), AC_MAX_ROWS);
     }
 
     private int acDropdownX() {
-        if (acField == null) return 0;
+        return acDropdownX(acField);
+    }
+
+    private int acDropdownX(AcField f) {
+        if (f == null) return 0;
         // JSON box の左端 (px+24) に揃える
         return px + 24;
     }
 
     private int acDropdownY() {
-        if (acField == null) return 0;
+        return acDropdownY(acField);
+    }
+
+    private int acDropdownY(AcField f) {
+        if (f == null) return 0;
         // JSON box (h=14) の下端に揃える
-        return switch (acField) {
+        return switch (f) {
             case FROM -> py + 32 + 14;
             case TO -> py + 54 + 14;
             case SCHEDULE -> py + 32 + 14;
@@ -346,27 +538,35 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     }
 
     private int acDropdownW() {
-        if (acField == null) return 0;
+        return acDropdownW(acField);
+    }
+
+    private int acDropdownW(AcField f) {
+        if (f == null) return 0;
         // JSON box の幅に揃える: FROM/TO=150, SCHEDULE=168
-        return switch (acField) {
+        return switch (f) {
             case FROM, TO -> 150;
             case SCHEDULE -> 168;
         };
     }
 
     private void renderAutocomplete(GuiGraphics g, int mouseX, int mouseY) {
-        if (acField == null) return;
-        var cands = acCandidates();
+        // the focused field's list, or the one still folding after the focus left
+        AcField f = acField != null ? acField : (acMotion.isShown() ? acShown : null);
+        if (f == null) return;
+        var cands = acCandidates(f);
         if (cands.isEmpty()) return;
-        int x = acDropdownX();
-        int y = acDropdownY();
-        int w = acDropdownW();
+        int x = acDropdownX(f);
+        int y = acDropdownY(f);
+        int w = acDropdownW(f);
         int h = cands.size() * AC_ROW_H + 2;
-        // BelugaExperience 標準 pop-in (= JSON Animation.popIn 同等)
-        acAnim.push(g, x + w / 2f, y);
+        // The dropdown's unfold from its top edge (Manta DropdownMotion), above the screen (z 500, as the pop-in was).
+        g.pose().pushPose();
+        g.pose().translate(x, y, 500f);
+        g.pose().scale(1f, acMotion.scaleY(), 1f);
+        g.pose().translate(-x, -y, 0f);
         // 背景 + 枠 (R2.4.1 二層: border 5f + bg 4f inset)
-        SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, 0xFF4FC3F7);
-        SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, 0xF0101820);
+        com.manta.api.hud.HudChrome.innerRect(g, x, y, w, h, 0xF0101820, 0xFF4FC3F7);
 
         for (int i = 0; i < cands.size(); i++) {
             int rowY = y + 1 + i * AC_ROW_H;
@@ -375,10 +575,9 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
             boolean active = i == acSelected || hover;
             if (active) SmoothRenderer.fillRoundedRect(g, x + 1, rowY, w - 2, AC_ROW_H, 5f, 0xFF1f4a5e);
             String name = truncate(cands.get(i).name(), w - 12);
-            g.drawString(this.font, name, x + 6, rowY + 2,
-                    active ? 0xFFFFFFFF : 0xFFE0E0E0, false);
+            com.manta.api.text.MantaText.draw(g, this.font, name, x + 6, rowY + 2, active ? 0xFFFFFFFF : 0xFFE0E0E0);
         }
-        acAnim.pop(g);
+        g.pose().popPose();
     }
 
     private void applyAcSelection(int idx) {
@@ -386,7 +585,7 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         if (idx < 0 || idx >= cands.size()) return;
         String name = cands.get(idx).name();
         ctrlOf(acField).setValue(name);   // onChange が state を更新
-        acField = null;                   // defocus
+        setAcField(null);                 // defocus: the list folds
         acSelected = -1;
     }
 
@@ -401,19 +600,19 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
 
     private void renderHeader(GuiGraphics g) {
         String title;
-        switch (TransitTerminalState.tab()) {
+        switch (tab()) {
             case TOP -> title = Component.translatable("tsu.transit_terminal.title").getString();
             case SCHEDULE -> title = Component.translatable("tsu.transit_terminal.tab_schedule").getString();
             case MAP -> title = Component.translatable("tsu.transit_terminal.tab_map").getString();
             case SETTINGS -> title = Component.translatable("tsu.transit_terminal.tab_settings").getString();
             default -> title = "";
         }
-        g.drawString(this.font, title, px + 10, py + 8, 0xFF4FC3F7, false);
+        com.manta.api.text.MantaText.draw(g, this.font, title, px + 10, py + 8, 0xFF4FC3F7);
 
         // 右上時計
         String clock = formatClock();
-        int cw = this.font.width(clock);
-        g.drawString(this.font, clock, px + PANEL_W - 10 - cw, py + 8, 0xFFFFD54F, false);
+        int cw = com.manta.api.text.MantaText.uiWidth(this.font, clock);
+        com.manta.api.text.MantaText.draw(g, this.font, clock, px + PANEL_W - 10 - cw, py + 8, 0xFFFFD54F);
 
         g.fill(px + 8, py + HEADER_H, px + PANEL_W - 8, py + HEADER_H + 1, 0xFF4FC3F7);
     }
@@ -429,16 +628,16 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
             int cy = navY + 2;
             int cw = cellW;
             int ch = NAV_H - 4;
-            boolean active = TransitTerminalState.tab() == tabs[i];
-            boolean hover = mouseX >= cx && mouseX < cx + cw && mouseY >= cy && mouseY < cy + ch;
+            boolean active = tab() == tabs[i];
+            boolean hover = com.manta.api.hud.Rects.contains(mouseX, mouseY, cx, cy, cw, ch);
             int color = active ? 0xFF4FC3F7 : (hover ? 0xFF80DEEA : 0xFF80808F);
             // W7-1: タブの glyph を manta registry icon へ (中央寄せは icon 幅で計算)。
             String icon = navIcon(tabs[i]);
             String label = navLabel(tabs[i]);
             int iw = NAV_ICON_SIZE;
             com.manta.api.render.Icons.draw(g, icon, cx + (cw - iw) / 2, cy + 3, iw, color);
-            int lw = this.font.width(label);
-            g.drawString(this.font, label, cx + (cw - lw) / 2, cy + 14, color, false);
+            int lw = com.manta.api.text.MantaText.uiWidth(this.font, label);
+            com.manta.api.text.MantaText.draw(g, this.font, label, cx + (cw - lw) / 2, cy + 14, color);
         }
     }
 
@@ -491,12 +690,11 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
             String msg = since > 5000
                     ? Component.translatable("tsu.transit_terminal.timeout").getString()
                     : Component.translatable("tsu.transit_terminal.searching").getString();
-            g.drawString(this.font, msg, x, y + 4, since > 5000 ? 0xFFFF8A65 : 0xFFFFD54F, false);
+            com.manta.api.text.MantaText.draw(g, this.font, msg, x, y + 4, since > 5000 ? 0xFFFF8A65 : 0xFFFFD54F);
             return;
         }
         if (!r.found()) {
-            g.drawString(this.font, Component.translatable("tsu.transit_terminal.no_route").getString(),
-                    x, y + 4, 0xFFFF8A80, false);
+            com.manta.api.text.MantaText.draw(g, this.font, Component.translatable("tsu.transit_terminal.no_route").getString(), x, y + 4, 0xFFFF8A80);
             String reason = r.reason() == null ? "" : r.reason();
             if (!reason.isEmpty()) drawWrapped(g, reason, x, y + 16, w, 0xFFAAAAAA);
             return;
@@ -674,9 +872,9 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
      */
     int renderSettingRow(GuiGraphics g, int x, int y, int w, int h, int mouseX, int mouseY,
                                  String labelKey, boolean value) {
-        boolean hover = mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
+        boolean hover = com.manta.api.hud.Rects.contains(mouseX, mouseY, x, y, w, h);
         if (hover) g.fill(x, y, x + w, y + h, 0xFF1f3a50);
-        g.drawString(this.font, Component.translatable(labelKey).getString(), x + 4, y + 5, 0xFFE0E0E0, false);
+        com.manta.api.text.MantaText.draw(g, this.font, Component.translatable(labelKey).getString(), x + 4, y + 5, 0xFFE0E0E0);
         // TSU 標準トグル: track 24×12, knob 8×8
         int tw = 24, th = 12;
         int tx = x + w - tw - 2;
@@ -736,8 +934,16 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     // -------- Mouse / Keyboard handling --------
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        return scoped(() -> clicked(mouseX, mouseY, button));
+    }
+
+    private boolean clicked(double mouseX, double mouseY, int button) {
         if (closing) return true; // スライドアウト中は入力無視
-        mouseX = sMx(mouseX); mouseY = sMy(mouseY);  // size2 scale の逆変換 (= panel 座標へ)
+        // 以下のこの画面自身の判定は panel の座標 (px/py 基準) で行う。base には受け取った画面の点を
+        // そのまま渡す — base が panelTransform() で自分で写す (写した点を渡すと二重に写る)。
+        double screenX = mouseX, screenY = mouseY;
+        PanelTransform panel = panelTransform();
+        mouseX = panel.toPanelX(screenX); mouseY = panel.toPanelY(screenY);
         // Phase 2: BelugaExperience JSON shell の nav 領域クリックを優先処理。
         // (tab 切替は handler.onElementClick が処理)。
         // layoutAdjustMode 時の header drag は JSON click より優先するので
@@ -752,15 +958,13 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
             // Shift+click で HUD を非表示に
             if (TransitTerminalState.showDetailHud()
                     && hasShiftDown()
-                    && mouseX >= hudX && mouseX < hudX + hudW
-                    && mouseY >= hudY && mouseY < hudY + hudH) {
+                    && com.manta.api.hud.Rects.contains(mouseX, mouseY, hudX, hudY, hudW, hudH)) {
                 TransitTerminalState.setShowDetailHud(false);
                 return true;
             }
             // HUD ドラッグ開始
             if (TransitTerminalState.showDetailHud()
-                    && mouseX >= hudX && mouseX < hudX + hudW
-                    && mouseY >= hudY && mouseY < hudY + hudH) {
+                    && com.manta.api.hud.Rects.contains(mouseX, mouseY, hudX, hudY, hudW, hudH)) {
                 draggingHud = true;
                 dragHudAnchorX = mouseX; dragHudAnchorY = mouseY;
                 dragHudStartX = TransitTerminalState.hudOffsetX();
@@ -768,8 +972,7 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
                 return true;
             }
             // Screen ヘッダクリックで Screen drag 開始
-            if (mouseX >= px && mouseX < px + PANEL_W
-                    && mouseY >= py && mouseY < py + HEADER_H) {
+            if (com.manta.api.hud.Rects.contains(mouseX, mouseY, px, py, PANEL_W, HEADER_H)) {
                 draggingScreen = true;
                 dragAnchorX = mouseX; dragAnchorY = mouseY;
                 dragStartPx = px; dragStartPy = py;
@@ -781,8 +984,7 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
             int hudW = 200, hudH = 220;
             int hudX = 8 + TransitTerminalState.hudOffsetX();
             int hudY = this.height - hudH - 8 + TransitTerminalState.hudOffsetY();
-            if (mouseX >= hudX && mouseX < hudX + hudW
-                    && mouseY >= hudY && mouseY < hudY + hudH) {
+            if (com.manta.api.hud.Rects.contains(mouseX, mouseY, hudX, hudY, hudW, hudH)) {
                 TransitTerminalState.setShowDetailHud(false);
                 return true;
             }
@@ -795,44 +997,43 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
                 int y = acDropdownY();
                 int w = acDropdownW();
                 int h = cands.size() * AC_ROW_H + 2;
-                if (mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h) {
+                if (com.manta.api.hud.Rects.contains(mouseX, mouseY, x, y, w, h)) {
                     int idx = ((int) (mouseY - y - 1)) / AC_ROW_H;
                     applyAcSelection(idx);
                     return true;
                 }
             }
         }
-        // 入力欄クリック → focus。box/autocomplete 以外のクリックは defocus する。
-        if (button == 0) {
-            AcField clicked = hitTestBox(mouseX, mouseY);
-            if (clicked != null) {
-                if (acField != clicked) { acField = clicked; acSelected = -1; acAnim.start(); }
-                return true;
-            }
-            acField = null;
-            acSelected = -1;
-        }
+        // 入力欄クリック → focus: the field's own press, through the engine (onElementClick on tt-from-box / tt-to-box /
+        // tt-sch-box - 2026-10-07: a wiki playback's press is aimed at its node, and the screen's own hit test answered
+        // before the engine saw it). box/autocomplete 以外のクリックは defocus する。
         // base (JsonLayoutPlainScreen) が JSON click を V3 EventGraph 経由で onElementClick へ
         // dispatch する (nav / settings rows / buttons / tt-top-content canvas → mouseClickedTop)。
-        if (super.mouseClicked(mouseX, mouseY, button)) return true;
+        fieldPressed = null;
+        boolean taken = super.mouseClicked(screenX, screenY, button);
+        if (button == 0 && fieldPressed == null) {
+            setAcField(null);
+            acSelected = -1;
+        }
+        if (taken) return true;
         // 以下は base が消費しなかった (= JSON 要素に当たらなかった) 場合のみ到達。
         // Fallback: JSON 無効時の従来 hit-test
         int navY = py + PANEL_H - NAV_H;
-        if (mouseY >= navY && mouseY < navY + NAV_H && mouseX >= px && mouseX < px + PANEL_W) {
+        if (com.manta.api.hud.Rects.contains(mouseX, mouseY, px, navY, PANEL_W, NAV_H)) {
             int cellW = (PANEL_W - 8) / 4;
             int relX = (int)(mouseX - (px + 4));
             if (relX >= 0 && relX < cellW * 4) {
                 int idx = relX / cellW;
                 TransitTerminalState.Tab[] tabs = TransitTerminalState.Tab.values();
                 if (idx >= 0 && idx < tabs.length) {
-                    TransitTerminalState.setTab(tabs[idx]);
+                    setTab(tabs[idx]);
                     rebuildEditBoxes();
                     return true;
                 }
             }
         }
 
-        switch (TransitTerminalState.tab()) {
+        switch (tab()) {
             case TOP -> { return TransitTerminalRender.mouseClickedTop(this, mouseX, mouseY, button); }
             case SETTINGS -> {
                 // SETTINGS click は base が onElementClick 経由で処理済み。
@@ -888,21 +1089,27 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     }
 
     private static boolean inRect(double mx, double my, int x, int y, int w, int h) {
-        return mx >= x && mx < x + w && my >= y && my < y + h;
+        return com.manta.api.hud.Rects.contains(mx, my, x, y, w, h);
     }
 
     @Override
     public boolean charTyped(char codePoint, int modifiers) {
-        // 入力欄 focus 中は文字を controller に流す
-        if (acField != null && ctrlOf(acField).charTyped(codePoint)) {
-            acSelected = -1;
-            return true;
-        }
-        return super.charTyped(codePoint, modifiers);
+        return scoped(() -> {
+            // 入力欄 focus 中は文字を controller に流す
+            if (acField != null && ctrlOf(acField).charTyped(codePoint)) {
+                acSelected = -1;
+                return true;
+            }
+            return super.charTyped(codePoint, modifiers);
+        });
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        return scoped(() -> keyed(keyCode, scanCode, modifiers));
+    }
+
+    private boolean keyed(int keyCode, int scanCode, int modifiers) {
         if (closing) return true; // スライドアウト中は入力無視
         // 入力欄 focus 中は delegate (autocomplete navigation 優先)
         if (acField != null) {
@@ -928,9 +1135,9 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
                     applyAcSelection(acSelected);
                     return true;
                 }
-                if (TransitTerminalState.tab() == TransitTerminalState.Tab.TOP) {
+                if (tab() == TransitTerminalState.Tab.TOP) {
                     TransitTerminalState.onSearchSubmit();
-                    acField = null;
+                    setAcField(null);
                     return true;
                 }
             }
@@ -950,13 +1157,13 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         // Tab 切替: Tab キーで次タブ
         if (keyCode == org.lwjgl.glfw.GLFW.GLFW_KEY_TAB) {
             TransitTerminalState.Tab[] tabs = TransitTerminalState.Tab.values();
-            int next = (TransitTerminalState.tab().ordinal() + 1) % tabs.length;
-            TransitTerminalState.setTab(tabs[next]);
+            int next = (tab().ordinal() + 1) % tabs.length;
+            setTab(tabs[next]);
             rebuildEditBoxes();
             return true;
         }
         // MAP タブのズーム / リセット
-        if (TransitTerminalState.tab() == TransitTerminalState.Tab.MAP) {
+        if (tab() == TransitTerminalState.Tab.MAP) {
             switch (keyCode) {
                 case org.lwjgl.glfw.GLFW.GLFW_KEY_EQUAL, org.lwjgl.glfw.GLFW.GLFW_KEY_KP_ADD ->
                     { TransitTerminalState.setMapZoomD(TransitTerminalState.mapZoomD() * 1.25); return true; }
@@ -971,53 +1178,113 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        mouseX = sMx(mouseX); mouseY = sMy(mouseY);  // size2 scale の逆変換
-        if (draggingScreen || draggingHud) {
-            draggingScreen = false;
-            draggingHud = false;
-            return true;
-        }
-        return super.mouseReleased(mouseX, mouseY, button);
+        return scoped(() -> {
+            if (draggingScreen || draggingHud) {
+                draggingScreen = false;
+                draggingHud = false;
+                return true;
+            }
+            return super.mouseReleased(mouseX, mouseY, button);
+        });
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        if (closing) return true; // スライドアウト中は入力無視
-        mouseX = sMx(mouseX); mouseY = sMy(mouseY);  // size2 scale の逆変換
-        if (TransitTerminalState.tab() == TransitTerminalState.Tab.MAP) {
-            // マウス位置を中心にズーム (画面座標を維持してズームイン/アウト)
-            int innerX = px + CONTENT_PAD;
-            int innerW = PANEL_W - CONTENT_PAD * 2;
-            int contentY = py + HEADER_H + 2;
-            int contentH = (py + PANEL_H - NAV_H) - contentY;
-            double centerSX = innerX + innerW / 2.0;
-            double centerSY = contentY + contentH / 2.0;
-            double oldZoom = TransitTerminalState.mapZoomD();
-            if (oldZoom <= 0.0001) oldZoom = 1.0; // 未初期化なら 1 から
-            double factor = scrollY > 0 ? 1.25 : 1.0 / 1.25;
-            double newZoom = Math.max(0.05, Math.min(8.0, oldZoom * factor));
-            // ワールド座標 = (mouseScreen - centerS) / zoom - pan を維持。
-            double oldPanX = TransitTerminalState.mapPanXD();
-            double oldPanZ = TransitTerminalState.mapPanZD();
-            double worldX = (mouseX - centerSX) / oldZoom - oldPanX;
-            double worldZ = (mouseY - centerSY) / oldZoom - oldPanZ;
-            // 新しい pan = (mouseScreen - centerS) / newZoom - worldX
-            double newPanX = (mouseX - centerSX) / newZoom - worldX;
-            double newPanZ = (mouseY - centerSY) / newZoom - worldZ;
-            TransitTerminalState.setMapZoomD(newZoom);
-            TransitTerminalState.setMapPan(newPanX, newPanZ);
-            return true;
-        }
-        if (TransitTerminalState.tab() == TransitTerminalState.Tab.SCHEDULE) {
+        // The map's zoom and the timetable's scroll are the engine's (tt-map-canvas / tt-sch-list wheelKey,
+        // onElementWheel - 2026-10-07, so a wiki playback's wheel is aimed at its node as a press is).
+        return scoped(() -> {
+            if (closing) return true;
+            if (super.mouseScrolled(mouseX, mouseY, scrollX, scrollY)) return true;
+            // As before 2026-10-07: on the timetable a wheel anywhere scrolls the list - over its scrollbar or the
+            // search box too, not only over the list's node (second reading); on the map a wheel anywhere zooms.
+            if (tab() == TransitTerminalState.Tab.SCHEDULE) {
+                TransitTerminalState.scheduleScroll().scroll(-(int) scrollY);  // ScrollViewport が clamp 内包 (§4.19)
+                return true;
+            }
+            if (tab() == TransitTerminalState.Tab.MAP) {
+                PanelTransform panel = panelTransform();
+                zoomMapAt(panel.toPanelX(mouseX), panel.toPanelY(mouseY), scrollY);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    @Override
+    public boolean onElementWheel(String[] classes, String key, int mouseX, int mouseY, double scrollY) {
+        if ("tt-sch-wheel".equals(key) && tab() == TransitTerminalState.Tab.SCHEDULE) {
             TransitTerminalState.scheduleScroll().scroll(-(int) scrollY);  // ScrollViewport が clamp 内包 (§4.19)
             return true;
         }
-        return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        if (!"tt-map-wheel".equals(key) || tab() != TransitTerminalState.Tab.MAP) return false;
+        // The point is the panel's local one: + px, py is this screen's own panel space, as onElementClick's tt-top-content.
+        zoomMapAt(mouseX + px, mouseY + py, scrollY);
+        return true;
+    }
+
+    /** The map's zoom about a point of this screen's panel space - the point's world position stays under it. */
+    private void zoomMapAt(double mouseX, double mouseY, double scrollY) {
+        // マウス位置を中心にズーム (画面座標を維持してズームイン/アウト)。
+        int innerX = px + CONTENT_PAD;
+        int innerW = PANEL_W - CONTENT_PAD * 2;
+        int contentY = py + HEADER_H + 2;
+        int contentH = (py + PANEL_H - NAV_H) - contentY;
+        double centerSX = innerX + innerW / 2.0;
+        double centerSY = contentY + contentH / 2.0;
+        double oldZoom = TransitTerminalState.mapZoomD();
+        if (oldZoom <= 0.0001) oldZoom = 1.0; // 未初期化なら 1 から
+        double factor = scrollY > 0 ? 1.25 : 1.0 / 1.25;
+        double newZoom = Math.max(0.05, Math.min(8.0, oldZoom * factor));
+        // ワールド座標 = (mouseScreen - centerS) / zoom - pan を維持。
+        double oldPanX = TransitTerminalState.mapPanXD();
+        double oldPanZ = TransitTerminalState.mapPanZD();
+        double worldX = (mouseX - centerSX) / oldZoom - oldPanX;
+        double worldZ = (mouseY - centerSY) / oldZoom - oldPanZ;
+        // 新しい pan = (mouseScreen - centerS) / newZoom - worldX
+        double newPanX = (mouseX - centerSX) / newZoom - worldX;
+        double newPanZ = (mouseY - centerSY) / newZoom - worldZ;
+        TransitTerminalState.setMapZoomD(newZoom);
+        TransitTerminalState.setMapPan(newPanX, newPanZ);
+    }
+
+    /** Where the map's drag last stood (screen), for the next step's delta. */
+    private double mapDragLastX, mapDragLastY;
+
+    /** The map's pan: the engine's drag on tt-map-canvas (its dragKey tt-map-pan). */
+    @Override
+    public boolean onElementDrag(String[] classes, String key, int mouseX, int mouseY,
+                                 int elementX, int elementY, int elementW, int elementH, boolean pressed) {
+        if ("tt-sch-thumb-drag".equals(key)) {
+            // The schedule list's thumb, drawn on its scrollbar canvas, grabbed and dragged (Manta 2.87.0's
+            // dragThumb, R4.19.5): a press on the thumb grabs it, one on the rest of the track is refused.
+            if (pressed) {
+                int[] t = scheduleThumb;
+                scheduleThumbHeld = t != null && mouseY >= t[1] && mouseY < t[1] + t[3]
+                        && TransitTerminalState.scheduleScroll().dragThumb(mouseY, true);
+                return scheduleThumbHeld;
+            }
+            return scheduleThumbHeld && TransitTerminalState.scheduleScroll().dragThumb(mouseY, false);
+        }
+        if (!"tt-map-pan".equals(key) || tab() != TransitTerminalState.Tab.MAP) return false;
+        if (!pressed) {
+            double zoom = TransitTerminalState.mapZoomD();
+            if (zoom <= 0.0001) zoom = 1.0;
+            TransitTerminalState.mapPanBy((mouseX - mapDragLastX) / zoom, (mouseY - mapDragLastY) / zoom);
+        }
+        mapDragLastX = mouseX;
+        mapDragLastY = mouseY;
+        return true;
     }
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        mouseX = sMx(mouseX); mouseY = sMy(mouseY);  // size2 scale の逆変換
+        return scoped(() -> dragged(mouseX, mouseY, button, dragX, dragY));
+    }
+
+    private boolean dragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        double screenX = mouseX, screenY = mouseY;   // base へはこのまま (base が自分で写す)
+        PanelTransform panel = panelTransform();
+        mouseX = panel.toPanelX(screenX); mouseY = panel.toPanelY(screenY);
         // レイアウト調整: アンカーベース smooth drag
         if (draggingScreen && button == 0) {
             int newPx = (int)(dragStartPx + (mouseX - dragAnchorX));
@@ -1035,22 +1302,8 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
             TransitTerminalState.setHudOffset(newOffX, newOffY);
             return true;
         }
-        if (super.mouseDragged(mouseX, mouseY, button, dragX, dragY)) return true;
-        if (TransitTerminalState.tab() == TransitTerminalState.Tab.MAP && button == 0) {
-            int innerX = px + CONTENT_PAD;
-            int innerW = PANEL_W - CONTENT_PAD * 2;
-            int contentY = py + HEADER_H + 2;
-            int contentH = (py + PANEL_H - NAV_H) - contentY;
-            // ドラッグ範囲をマップ領域に限定
-            if (mouseX >= innerX && mouseX < innerX + innerW
-                    && mouseY >= contentY + 2 && mouseY < contentY + contentH - 4) {
-                double zoom = TransitTerminalState.mapZoomD();
-                if (zoom <= 0.0001) zoom = 1.0;
-                TransitTerminalState.mapPanBy(dragX / zoom, dragY / zoom);
-                return true;
-            }
-        }
-        return false;
+        // The map's pan is the engine's drag (onElementDrag).
+        return super.mouseDragged(screenX, screenY, button, dragX, dragY);
     }
 
     // -------- helpers --------
@@ -1077,7 +1330,7 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
 
     static StationGroup findGroup(UUID id) {
         if (id == null) return null;
-        for (var g : StationGroupClientCache.all()) {
+        for (var g : TransitTerminalState.groups()) {
             if (g.id().equals(id)) return g;
         }
         return null;
@@ -1096,8 +1349,8 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     }
 
     void drawWrapped(GuiGraphics g, String text, int x, int y, int w, int color) {
-        for (var line : this.font.split(Component.literal(text), w)) {
-            g.drawString(this.font, line, x, y, color, false);
+        for (var line : com.manta.api.text.MantaText.split(this.font, Component.literal(text), w)) {
+            com.manta.api.text.MantaText.draw(g, this.font, line, x, y, color);
             y += 10;
         }
     }
@@ -1113,57 +1366,13 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     private static final String NAV_COLOR_ACTIVE = "#4FC3F7";
     private static final String NAV_COLOR_INACTIVE = "#80808F";
 
-    @Override
-    public String getDynamicText(String[] classes, String defaultText) {
-        if (classes == null) return defaultText;
-        for (String c : classes) {
-            switch (c) {
-                case "tt-title" -> { return headerTitleText(); }
-                case "tt-clock" -> { return formatClock(); }
-                // 入力欄テキスト + caret は renderInputs() が描画するので JSON 側は背景のみ (空文字)。
-                case "tt-from-box", "tt-to-box", "tt-sch-box" -> { return ""; }
-                case "tt-map-zoom" -> { return String.format("x%.2f", TransitTerminalState.mapZoomD()); }
-                case "tt-map-segcount" -> {
-                    int n = TransitTerminalClientCache.mapSegments().size();
-                    return n + " seg";
-                }
-            }
-        }
-        return defaultText;
-    }
-
     private String headerTitleText() {
-        return Component.translatable(switch (TransitTerminalState.tab()) {
+        return Component.translatable(switch (tab()) {
             case TOP -> "tsu.transit_terminal.title";
             case SCHEDULE -> "tsu.transit_terminal.tab_schedule";
             case MAP -> "tsu.transit_terminal.tab_map";
             case SETTINGS -> "tsu.transit_terminal.tab_settings";
         }).getString();
-    }
-
-    @Override
-    public Boolean getDynamicBool(String[] classes, String key, boolean defaultValue) {
-        // Phase 3-6: 全 tab content を JSON layout 駆動に。
-        if (key != null) {
-            switch (key) {
-                case "tt-tab-top" -> {
-                    return TransitTerminalState.tab() == TransitTerminalState.Tab.TOP;
-                }
-                case "tt-tab-schedule" -> {
-                    return TransitTerminalState.tab() == TransitTerminalState.Tab.SCHEDULE;
-                }
-                case "tt-tab-map" -> {
-                    return TransitTerminalState.tab() == TransitTerminalState.Tab.MAP;
-                }
-                case "tt-tab-settings" -> {
-                    return TransitTerminalState.tab() == TransitTerminalState.Tab.SETTINGS;
-                }
-                case "tt-sch-scrollbar-visible" -> {
-                    return scheduleFilteredCount() > SCHEDULE_ROWS_VISIBLE;
-                }
-            }
-        }
-        return defaultValue;
     }
 
     /** SCHEDULE tab で表示中の (フィルタ後) snapshot 件数 (= scheduleScroll の total に委譲)。 */
@@ -1176,61 +1385,8 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
     static final int SCHEDULE_ROW_STRIDE = SCHEDULE_ROW_H + 2;
     static final int SCHEDULE_ROWS_VISIBLE = 256 / SCHEDULE_ROW_STRIDE;
 
-    @Override
-    public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
-        if (key == null) return defaultValue;
-        // SETTINGS knob x position: BelugaExperience 標準 ToggleSwitchController.KNOB_TRAVEL_PX
-        int travel = ToggleSwitchController.KNOB_TRAVEL_PX;
-        // R4.23.1 で glyph を外して icon + label にした検索ボタンのラベル幅。
-        if ("btn-search-label-w".equals(key)) {
-            return com.trainsystemutilities.client.gui.LabelWidth.of(
-                    "tsu.transit_terminal.btn_search");
-        }
-        return switch (key) {
-            case "tt-set-knob-24h-x"    -> TransitTerminalState.clock24h() ? defaultValue + travel : defaultValue;
-            case "tt-set-knob-walk-x"   -> TransitTerminalState.walkGateEnabled() ? defaultValue + travel : defaultValue;
-            case "tt-set-knob-layout-x" -> TransitTerminalState.layoutAdjustMode() ? defaultValue + travel : defaultValue;
-            case "tt-set-knob-hud-x"    -> TransitTerminalState.showDetailHud() ? defaultValue + travel : defaultValue;
-            default -> defaultValue;
-        };
-    }
-
-    @Override
-    public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-        if (key == null) return null;
-        return switch (key) {
-            // nav cell color: active tab = bright cyan (TRACK_ON), others = gray
-            case "tt-nav-top-color"      -> tabColor(TransitTerminalState.Tab.TOP);
-            case "tt-nav-schedule-color" -> tabColor(TransitTerminalState.Tab.SCHEDULE);
-            case "tt-nav-map-color"      -> tabColor(TransitTerminalState.Tab.MAP);
-            case "tt-nav-settings-color" -> tabColor(TransitTerminalState.Tab.SETTINGS);
-            // SETTINGS toggle track bg (BelugaExperience 標準 ToggleColors)
-            case "tt-set-track-24h-bg"    -> ToggleColors.trackBg(TransitTerminalState.clock24h());
-            case "tt-set-track-walk-bg"   -> ToggleColors.trackBg(TransitTerminalState.walkGateEnabled());
-            case "tt-set-track-layout-bg" -> ToggleColors.trackBg(TransitTerminalState.layoutAdjustMode());
-            case "tt-set-track-hud-bg"    -> ToggleColors.trackBg(TransitTerminalState.showDetailHud());
-            // SETTINGS toggle knob bg (BelugaExperience 標準 ToggleColors)
-            case "tt-set-knob-24h-bg"    -> ToggleColors.knobBg(TransitTerminalState.clock24h());
-            case "tt-set-knob-walk-bg"   -> ToggleColors.knobBg(TransitTerminalState.walkGateEnabled());
-            case "tt-set-knob-layout-bg" -> ToggleColors.knobBg(TransitTerminalState.layoutAdjustMode());
-            case "tt-set-knob-hud-bg"    -> ToggleColors.knobBg(TransitTerminalState.showDetailHud());
-            default -> null;
-        };
-    }
-
     private int tabColor(TransitTerminalState.Tab t) {
-        return TransitTerminalState.tab() == t ? ToggleColors.TRACK_ON : 0xFF80808F;
-    }
-
-    @Override
-    public ImageRef getDynamicImage(String[] classes, String key) { return null; }
-
-    @Override
-    public Transition getDynamicTransition(String[] classes, String key) {
-        if (key == null) return null;
-        if ("toggle-bg".equals(key))   return Transition.toggleBg();
-        if ("toggle-knob".equals(key)) return Transition.toggleKnob();
-        return null;
+        return tab() == t ? ToggleColors.TRACK_ON : 0xFF80808F;
     }
 
     @Override
@@ -1266,10 +1422,15 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         // track
         SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, 0xFF2a2a3a);
         // thumb (= ScrollViewport.thumbY で位置算出、formula は従来同等)
-        int thumbH = Math.max(12, h * SCHEDULE_ROWS_VISIBLE / Math.max(1, filteredCount));
+        int thumbH = TransitTerminalState.scheduleScroll().thumbH(h, 12);
         int thumbY = TransitTerminalState.scheduleScroll().thumbY(y, h, thumbH);
         SmoothRenderer.fillRoundedRect(g, x, thumbY, w, thumbH, 5f, 0xFF4FC3F7);
+        scheduleThumb = new int[] {x, thumbY, w, thumbH};
     }
+
+    /** The schedule list's thumb as its canvas last drew it (x, y, w, h), and whether a drag holds it. */
+    private int[] scheduleThumb;
+    private boolean scheduleThumbHeld;
 
     /** TOP tab の results / history area を描画 (canvas drawer)。 */
     private void drawTopContentCanvas(GuiGraphics g, int x, int y, int w, int h, int mouseX, int mouseY) {
@@ -1288,7 +1449,7 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
             // W7-1: 先頭の ✕ を manta:x icon へ (幅は Render 側と同じ式)。
             String clearText = Component.translatable("tsu.transit_terminal.clear_results").getString();
             int clIco = TransitTerminalRender.CLEAR_ICON_SIZE;
-            int clW = clIco + TransitTerminalRender.CLEAR_ICON_GAP + this.font.width(clearText);
+            int clW = clIco + TransitTerminalRender.CLEAR_ICON_GAP + com.manta.api.text.MantaText.uiWidth(this.font, clearText);
             boolean clHover = mouseX >= x + w - clW - 6 && mouseX < x + w
                     && mouseY >= resY - 1 && mouseY < resY + 11;
             g.fill(x + w - clW - 6, resY - 1, x + w, resY + 11,
@@ -1296,8 +1457,7 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
             int clX = x + w - clW - 3;
             int clC = clHover ? 0xFFFFFFFF : 0xFFAAAAAA;
             com.manta.api.render.Icons.draw(g, "manta:x", clX, resY + 1, clIco, clC);
-            g.drawString(this.font, clearText,
-                    clX + clIco + TransitTerminalRender.CLEAR_ICON_GAP, resY, clC, false);
+            com.manta.api.text.MantaText.draw(g, this.font, clearText, clX + clIco + TransitTerminalRender.CLEAR_ICON_GAP, resY, clC);
             resY += 14;
             resH -= 14;
         }
@@ -1338,6 +1498,10 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
                     rebuildEditBoxes();
                     return;
                 }
+                // The fields: a press focuses its own (the engine's - 2026-10-07; mouseClicked defocused every field first).
+                case "tt-from-box" -> { focusField(AcField.FROM); return; }
+                case "tt-to-box" -> { focusField(AcField.TO); return; }
+                case "tt-sch-box" -> { focusField(AcField.SCHEDULE); return; }
                 // TOP buttons
                 case "tt-swap-btn" -> {
                     TransitTerminalState.swapFromTo();
@@ -1358,8 +1522,16 @@ public class TransitTerminalScreen extends com.manta.api.screen.JsonLayoutPlainS
         }
     }
 
+    /** The field this press landed on (onElementClick), or null: mouseClicked defocuses the fields after any other. */
+    private AcField fieldPressed = null;
+
+    private void focusField(AcField f) {
+        fieldPressed = f;
+        if (acField != f) { setAcField(f); acSelected = -1; }
+    }
+
     private void switchTab(TransitTerminalState.Tab t) {
-        TransitTerminalState.setTab(t);
+        setTab(t);
         rebuildEditBoxes();
         if (t == TransitTerminalState.Tab.SCHEDULE) requestScheduleSync();
         if (t == TransitTerminalState.Tab.MAP) requestMapSync();

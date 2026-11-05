@@ -73,11 +73,20 @@ public final class PresetPreviewRenderer {
             int centerX = x + w / 2;
             int centerY = y + h / 2;
 
-            // viewport の 80% に収まるフィット (回転で投影が少し膨らむ余裕を残す)
-            float baseScale = Math.min(w * 0.80f, h * 0.80f) / range;
+            // 最長辺 fit は回転後の投影を見ないので、 収容 fit と小さい方を採る
+            // (= 既に収まっている preset の見た目は変えず、 はみ出すものだけ縮める)。
+            float baseScale = Math.min(
+                    Math.min(w * 0.80f, h * 0.80f) / range,
+                    com.manta.api.preview.GuiPreviewCamera.containScale(
+                            w, h, maxX - minX, maxY - minY, maxZ - minZ, rotX, rotY, 0.95f));
             float scale = baseScale * zoom;
 
-            g.enableScissor(x, y, x + w, y + h);
+            // enableScissor は pose 非考慮。 caller は dialog pose を打ち消して screen
+            // 座標を渡すが、 打ち消せるのは translation だけで scale は残る。 pose の
+            // scale も掛けないと矩形が ずれ + 拡大 し、 model が枠外へ漏れる。
+            int[] clip = com.manta.api.preview.GuiPreviewCamera.scissorRect(
+                    g.pose().last().pose(), x, y, w, h);
+            g.enableScissor(clip[0], clip[1], clip[2], clip[3]);
             com.mojang.blaze3d.platform.Lighting.setupForEntityInInventory();
 
             g.pose().pushPose();
@@ -105,7 +114,7 @@ public final class PresetPreviewRenderer {
                 g.pose().translate(p.getX(), p.getY(), p.getZ());
                 // Create コピーパネル等の BlockEntity-driven な見た目を再現するため
                 // entry.beNbt() を渡して PreviewBlockRenderer 経由で描画 (ModelData 解決)。
-                PreviewBlockRenderer.renderBlock(state, entry.beNbt(), p,
+                com.manta.api.preview.PreviewBlockRenderer.renderBlock(state, entry.beNbt(), p,
                         g.pose(), bufferSource, light, overlay);
                 g.pose().popPose();
             }

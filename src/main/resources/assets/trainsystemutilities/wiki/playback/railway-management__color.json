@@ -1,0 +1,85 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "color-target-dropdown"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.color_target",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "color-target-item"
+        ],
+        "index": 5
+      },
+      "do": "click",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "color-preset-5"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.color_preset",
+      "holdMs": 1400
+    },
+    {
+      "target": {
+        "classes": [
+          "color-preset-3"
+        ]
+      },
+      "do": "click",
+      "holdMs": 1400
+    },
+    {
+      "target": {
+        "classes": [
+          "color-target-dropdown"
+        ]
+      },
+      "do": "click",
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "color-target-item"
+        ],
+        "index": 8
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.color_countdown",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "color-preset-4"
+        ]
+      },
+      "do": "click",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "color-reset-all-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.color_reset",
+      "holdMs": 1800
+    }
+  ]
+}

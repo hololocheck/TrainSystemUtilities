@@ -1,0 +1,112 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "file-pick-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pm.file",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "image-row"
+        ],
+        "index": 2,
+        "at": [
+          0.3,
+          0.5
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.pm.preview",
+      "holdMs": 2400
+    },
+    {
+      "target": {
+        "classes": [
+          "image-up-btn"
+        ],
+        "index": 2
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pm.order",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "image-row"
+        ],
+        "index": 0,
+        "at": [
+          0.3,
+          0.5
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pm.toggle",
+      "holdMs": 1400
+    },
+    {
+      "target": {
+        "classes": [
+          "image-row"
+        ],
+        "index": 0,
+        "at": [
+          0.3,
+          0.5
+        ]
+      },
+      "do": "click",
+      "holdMs": 900
+    },
+    {
+      "target": {
+        "classes": [
+          "fit-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pm.fit",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "anim-single-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pm.single",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "anim-settings-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pm.anim",
+      "holdMs": 1500
+    },
+    {
+      "target": {
+        "classes": [
+          "anim-type-5"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.pm.type",
+      "holdMs": 3000
+    }
+  ]
+}

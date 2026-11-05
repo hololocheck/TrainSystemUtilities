@@ -1,89 +1,30 @@
 ---
-title: 列車管理系統 Wiki
+title: Train System Utilities Wiki
 id: index
 tags: [overview]
 ---
 
-# 列車管理系統 Wiki
+# Train System Utilities Wiki
 
-列車管理系統（TrainSystem Utilities）的綜合指南，結合實際遊戲內 GUI 截圖與 3D 模型展示。  
-可在此頁面導航至各功能、工具和電氣化系統的說明。
+匯總 Train System Utilities 各項功能和操作方法的指南。可以一邊檢視介面圖片和 3D 模型，一邊了解運行管理、車站設備、電氣化和列車預設的用法。
 
-## 從這裡開始
+## 初次使用
 
-- [快速開始](getting-started.md) — 基礎操作與提示 / F1 跳轉功能
-- [什麼是 TSU](about.md) — MOD 整體範圍與推薦執行環境
-- [管理用計算機概述](management-computer/overview.md)
-- [鐵路管理方塊](railway-management.md)
+請先在「[快速開始](getting-started.md)」中了解介面和基本操作，再在「[關於 Train System Utilities](about.md)」中檢視功能全貌。要管理運行，請從「[管理用計算機](management-computer/overview.md)」開始閱讀；要製作車站的列車資訊，請從「[鐵路管理方塊](railway-management.md)」開始閱讀。
 
-## 影片教程
+## 按目的查找
 
-無需離開遊戲即可觀看的影片教程。
+- 管理運行：[管理用計算機](management-computer/overview.md)、[線路圖](management-computer/route-map.md)、[列車](management-computer/trains.md)、[電子時刻表](management-computer/schedule.md)、[車站](management-computer/stations.md)、[售票機](management-computer/tickets.md)、[線路編號](management-computer/line-symbols.md)
+- 調整顯示：[顯示器顯示](management-computer/monitor.md)、[佈局編輯器](management-computer/layout-editor.md)、[顏色設定](management-computer/color-settings.md)、[線路編號編輯器](management-computer/symbol-editor.md)
+- 在車站顯示資訊：[鐵路管理方塊](railway-management.md)、[顯示器設定](railway-management/settings.md)、[顏色設定](railway-management/color.md){{if-mod spatialaudiosystem}}、[廣播設定（安裝 SAS 時）](railway-management/announcement.md){{/if}}
+- 顯示圖片：[海報管理方塊](poster-management.md)、[動畫設定](poster-management/animation.md)
+- 運用編組：[連掛・解編](trains/coupling.md)
+- 登錄車站和設備：[車站範圍指定工具](tools/station-range-tool.md)、[儲存卡](tools/memory-card.md)、[顯示器連線卡](tools/monitor-link-card.md)、[列車檢測卡](tools/train-detection-card.md)
+- 查詢路線：[換乘查詢終端](tools/transit-terminal.md)
+- 儲存・放置編組：[儲存列車預設](train-preset-tool/save.md)、[材料補充](train-preset-tool/refill.md)、[瀏覽・放置預設](train-preset-tool/browse.md)
+- 共享編組：[Preset Place](preset-place/overview.md)、[上傳](preset-place/upload.md)、[預設詳情](preset-place/detail.md)、[個人資料](preset-place/profile.md)、[創作者中心](preset-place/creator-center.md)
+- 線路電氣化：[電氣化系統概述](electrification/index.md)、[接觸網連線工具](electrification/wire-connector.md)、[自定義接觸網](electrification/custom-wire.md)、[受電弓](electrification/pantograph.md)、[FE 逆變器](electrification/fe-inverter.md)、[逆變器佔位方塊](electrification/dummy-inverter.md)、[箱式變電站](electrification/substation.md)、[絕緣子](electrification/insulator.md)、[電力檢查器](electrification/power-checker.md)、[接觸網支柱](electrification/overhead-pole.md)、[接觸網桁架](electrification/overhead-truss.md)、[接觸網支柱佈置輔助工具](tools/overhead-pole-auto-tool.md)
+- 建造車站：[站臺護欄](structure/platform-fence.md)、[站臺遮蔽門](structure/platform-screen-door.md)、[自動售票機](structure/ticket-vending-machine.md)、[站名牌](structure/station-name-sign.md)
+- 拍攝：[綠幕](structure/green-back.md)
 
-- [影片教程](tutorial-videos.md) — 先從「使用遊戲內影片系統」開始
-
-## 管理用計算機
-
-只需一個方塊即可監控與管理整個鐵路網路的中樞 GUI。
-
-- [概述](management-computer/overview.md)
-- [顯示器](management-computer/monitor.md) / [顯示器連線](tools/monitor-link-card.md)
-- [線路圖](management-computer/route-map.md)
-- [列車標籤頁](management-computer/trains.md)
-- [時刻表標籤頁](management-computer/schedule.md)
-- [車站標籤頁](management-computer/stations.md)
-- [線路編號標籤頁](management-computer/line-symbols.md) / [編號編輯器](management-computer/symbol-editor.md)
-- [佈局編輯器](management-computer/layout-editor.md)
-- [顏色設定](management-computer/color-settings.md)
-
-## 鐵路管理方塊（車站顯示）
-
-- [概述](railway-management.md)
-- [顯示器設定](railway-management/settings.md)
-- [顏色設定](railway-management/color.md)
-{{if-mod spatialaudiosystem}}
-- [廣播設定](railway-management/announcement.md) （SAS 整合）
-{{/if}}
-
-## 海報管理方塊
-
-- [概述](poster-management.md)
-- [動畫設定](poster-management/animation.md)
-
-## 電氣化系統
-
-透過接觸網從 FE 或 Create 能量為 Create 列車供電的子系統。
-
-- [受電弓](electrification/pantograph.md) — 安裝在車頂上的集電裝置
-- [接觸網與連線工具](electrification/wire-connector.md) — 5 種內建設計 + 自定義預設
-- [箱式變電所](electrification/substation.md) — 3×4×2 多方塊結構
-- [FE 逆變器](electrification/fe-inverter.md) — 為 Mekanism / AE2 等 MOD 提供能量緩衝
-- [自定義接觸網設計](electrification/custom-wire.md) — 自由調整粗細、間距和列數
-
-## 工具與物品
-
-- [車站範圍指定工具](tools/station-range-tool.md)
-- [換乘查詢終端](tools/transit-terminal.md)
-- [儲存卡](tools/memory-card.md)
-- [顯示器連線卡](tools/monitor-link-card.md)
-- [列車檢測卡](tools/train-detection-card.md)
-- [列車預設工具](train-preset-tool/save.md)
-  - [預設儲存](train-preset-tool/save.md)
-  - [預設瀏覽](train-preset-tool/browse.md)
-  - [材料補充](train-preset-tool/refill.md)
-
-## Preset Place（線上共享）
-
-- [概述](preset-place/overview.md)
-- [預設詳情](preset-place/detail.md)
-- [個人資料](preset-place/profile.md)
-- [釋出](preset-place/upload.md)
-- [創作者中心](preset-place/creator-center.md)
-
-## 其他
-
-- [列車連掛與解編](trains/coupling.md)
-
----
-
-如果不知從何下手，[快速開始](getting-started.md) 中的 [提示與 F1](getting-started.md#hints-and-f1) 章節是快速上手的最快途徑。
+不知道如何操作時，請在遊戲內介面開啟「[提示](getting-started.md#hints-and-f1)」，將游標移到想了解的項目上並按 F1。

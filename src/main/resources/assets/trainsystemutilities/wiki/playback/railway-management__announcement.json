@@ -1,0 +1,120 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "ann-add-entry-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.ann_add",
+      "holdMs": 1000
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-cond-display"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.ann_cond",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-cond-dd-item-2"
+        ]
+      },
+      "do": "click",
+      "holdMs": 1000
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-delay-display"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.rm.ann_delay",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-delay-display"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-delay-display"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-count-display"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.rm.ann_count",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-count-display"
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-master-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.ann_enable",
+      "holdMs": 1100
+    },
+    {
+      "target": {
+        "classes": [
+          "inv-slot"
+        ],
+        "index": 27
+      },
+      "do": "slot",
+      "quick": true,
+      "say": "trainsystemutilities.wiki.play.rm.ann_medium",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "ann-entry-test-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.rm.ann_test",
+      "holdMs": 2800
+    }
+  ]
+}

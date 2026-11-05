@@ -1,0 +1,78 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "sched-edit-add-entry"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sched.add",
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-add-entry-item"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sched.add_kind",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-station-pick-item"
+        ],
+        "index": 1
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sched.pick",
+      "holdMs": 1800
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-edit-body"
+        ]
+      },
+      "do": "wheel",
+      "delta": -2,
+      "say": "trainsystemutilities.wiki.play.sched.scroll",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-edit-cyclic"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sched.cyclic",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-edit-cyclic"
+        ]
+      },
+      "do": "click",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "sched-edit-apply"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.sched.apply",
+      "holdMs": 1500
+    }
+  ]
+}

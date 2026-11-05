@@ -1,0 +1,58 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "wire-tank-bar"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.wire.tank",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "wire-refill-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.wire.refill",
+      "holdMs": 500
+    },
+    {
+      "do": "screen",
+      "screen": {
+        "id": "wire-connector-refill",
+        "state": "main"
+      },
+      "say": "trainsystemutilities.wiki.play.wire.refill_screen",
+      "holdMs": 1300
+    },
+    {
+      "target": {
+        "classes": [
+          "inv-slot"
+        ],
+        "index": 27
+      },
+      "do": "slot",
+      "quick": true,
+      "say": "trainsystemutilities.wiki.play.wire.put",
+      "holdMs": 2200
+    },
+    {
+      "target": {
+        "classes": [
+          "refill-tank-bar"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.wire.filled",
+      "holdMs": 2000
+    }
+  ]
+}

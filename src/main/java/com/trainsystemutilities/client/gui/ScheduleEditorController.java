@@ -170,6 +170,27 @@ public final class ScheduleEditorController {
         showScheduleEditor = true;
     }
 
+    /** The add-entry list's station dropdown, open on {@code names} for an entry of {@code type}. */
+    private void openStationPick(String type, List<String> names) {
+        stationDropdownType = type;
+        showAddEntryDropdown = false;
+        stationPickList.clear();
+        stationPickList.addAll(names);
+        stationScroll.setOffset(0);
+        showStationDropdown = true;
+    }
+
+    /**
+     * BelugaAOS's UI sweep's "sched-station-long" (WikiLiveCapture's sweep-only states): the station dropdown open as
+     * choosing "destination" opens it, its stations followed by stand-ins up to twice the rows it shows - so its
+     * scrollbar thumb is up to be dragged.
+     */
+    public void openStationPickLong(Supplier<List<String>> stationNames) {
+        List<String> names = new ArrayList<>(filteredStationNames(stationNames));
+        for (int i = names.size(); i < 2 * STATION_VISIBLE; i++) names.add("駅 " + (i + 1));
+        openStationPick("destination", names);
+    }
+
     public List<EditEntryData> getEntries() { return editEntries; }
     public boolean isCyclic() { return editCyclic; }
 
@@ -206,11 +227,7 @@ public final class ScheduleEditorController {
                     int realIdx = ri + stationScroll.offset();
                     if (realIdx < stationPickList.size()) {
                         String n = stationPickList.get(realIdx);
-                        int maxW = 106;
-                        if (font.width(n) <= maxW) return n;
-                        while (n.length() > 0 && font.width(n + "…") > maxW)
-                            n = n.substring(0, n.length() - 1);
-                        return n + "…";
+                        return com.manta.api.hud.HudText.ellipsize(font, n, 106);
                     }
                     return "";
                 }
@@ -259,6 +276,28 @@ public final class ScheduleEditorController {
     // === 駅選択 dropdown scroll ===
     public boolean handleStationWheel(int delta) { stationScroll.scroll(delta); return true; }
     public int stationThumbY(int defaultY) { return stationScroll.thumbY(defaultY, STATION_TRACK_H - 2, STATION_THUMB_H); }
+    /** The station list's thumb, grabbed and dragged (Manta 2.87.0's dragThumb, R4.19.5). */
+    public boolean dragStationThumb(int mouseY, boolean pressed) { return stationScroll.dragThumb(mouseY, pressed); }
+
+    /** The edit list's thumb as drawBody last drew it (popup-local x, y, w, h), or null while the list fits. */
+    private int[] editThumb;
+    private boolean editThumbHeld;
+
+    /**
+     * The edit list's thumb, drawn on the body canvas, grabbed and dragged (Manta 2.87.0's dragThumb, R4.19.5): a press
+     * on the thumb (2 px either side of its 3) grabs it; any other press on the body is refused, so its click still
+     * lands where it did.
+     */
+    public boolean dragEditThumb(int mouseX, int mouseY, boolean pressed) {
+        if (pressed) {
+            int[] t = editThumb;
+            boolean onThumb = t != null && mouseX >= t[0] - 2 && mouseX < t[0] + t[2] + 2
+                    && mouseY >= t[1] && mouseY < t[1] + t[3];
+            editThumbHeld = onThumb && editScroll.dragThumb(mouseY, true);
+            return editThumbHeld;
+        }
+        return editThumbHeld && editScroll.dragThumb(mouseY, false);
+    }
     public int stationThumbH() { return STATION_THUMB_H; }
 
     // === rename inline text input (screen.charTyped / keyPressed から呼ぶ) ===
@@ -294,7 +333,7 @@ public final class ScheduleEditorController {
     public boolean handleWheel(int mouseX, int mouseY, int delta) {
         // Hovered editable condition → wheel-edit the value
         for (int[] b : entryCondHoverBounds) {
-            if (mouseX >= b[0] && mouseX < b[0] + b[2] && mouseY >= b[1] && mouseY < b[1] + b[3]) {
+            if (com.manta.api.hud.Rects.contains(mouseX, mouseY, b[0], b[1], b[2], b[3])) {
                 int eIdx = b[4], cIdx = b[5];
                 if (eIdx >= 0 && eIdx < editEntries.size()) {
                     var e = editEntries.get(eIdx);
@@ -313,7 +352,7 @@ public final class ScheduleEditorController {
         }
         // Hovered throttle entry value → wheel-edit (0..100, 5% step)
         for (int[] b : entryValueHoverBounds) {
-            if (mouseX >= b[0] && mouseX < b[0] + b[2] && mouseY >= b[1] && mouseY < b[1] + b[3]) {
+            if (com.manta.api.hud.Rects.contains(mouseX, mouseY, b[0], b[1], b[2], b[3])) {
                 int eIdx = b[4];
                 if (eIdx >= 0 && eIdx < editEntries.size()) {
                     var e = editEntries.get(eIdx);
@@ -340,14 +379,7 @@ public final class ScheduleEditorController {
                 if ("sched-add-entry-item".equals(c) && rii >= 0 && rii < ADD_ENTRY_TYPES.length) {
                     String type = ADD_ENTRY_TYPES[rii][0];
                     switch (type) {
-                        case "destination", "deliver", "fetch" -> {
-                            stationDropdownType = type;
-                            showAddEntryDropdown = false;
-                            stationPickList.clear();
-                            stationPickList.addAll(filteredStationNames(stationNames));
-                            stationScroll.setOffset(0);
-                            showStationDropdown = true;
-                        }
+                        case "destination", "deliver", "fetch" -> openStationPick(type, filteredStationNames(stationNames));
                         case "rename" -> {
                             editEntries.add(new EditEntryData("rename", tr("tsu.mc.rename_default_text"), 0, new ArrayList<>()));
                             showAddEntryDropdown = false;
@@ -498,7 +530,7 @@ public final class ScheduleEditorController {
     }
 
     private static boolean hit(int mx, int my, int[] b) {
-        return mx >= b[0] && mx < b[0] + b[2] && my >= b[1] && my < b[1] + b[3];
+        return com.manta.api.hud.Rects.contains(mx, my, b[0], b[1], b[2], b[3]);
     }
 
     /** ESC 1 段階閉じ。sub-dropdown が開いていればそれを 1 つ閉じ、無ければ editor 自体を閉じる。 */
@@ -592,12 +624,8 @@ public final class ScheduleEditorController {
 
         // scissor は pose 行列 (overlayScale 含む) から実 screen rect を算出する。
         // overlayX+x の手動加算は dialogScale 非乗算で高 GUI スケール時に切れる。
-        var pm = g.pose().last().pose();
-        int sx = Math.round(x * pm.m00() + pm.m30());
-        int sy = Math.round(y * pm.m11() + pm.m31());
-        g.enableScissor(sx, sy,
-                Math.round((x + w) * pm.m00() + pm.m30()),
-                Math.round((y + h) * pm.m11() + pm.m31()));
+        int[] clip = com.manta.api.preview.GuiPreviewCamera.scissorRect(g.pose().last().pose(), x, y, w, h);
+        g.enableScissor(clip[0], clip[1], clip[2], clip[3]);
 
         int rowH = 18;
         int condRowH = 12;
@@ -607,14 +635,12 @@ public final class ScheduleEditorController {
 
         int yy = y;
         if (total == 0) {
-            g.drawString(this.font, tr("tsu.mc.entries_empty"), x, yy + 2, TEXT_DIM, false);
+            com.manta.api.text.MantaText.draw(g, this.font, tr("tsu.mc.entries_empty"), x, yy + 2, TEXT_DIM);
             g.disableScissor();
             return;
         }
         if (editScroll.offset() > 0) {
-            g.drawString(this.font,
-                    Component.translatable("tsu.mc.scroll_up_count_fmt", editScroll.offset()).getString(),
-                    x, yy, TEXT_DIM, false);
+            com.manta.api.text.MantaText.draw(g, this.font, Component.translatable("tsu.mc.scroll_up_count_fmt", editScroll.offset()).getString(), x, yy, TEXT_DIM);
             yy += 11;
         }
 
@@ -623,7 +649,7 @@ public final class ScheduleEditorController {
             var entry = editEntries.get(i);
 
             // --- 動作行 (角丸二層) ---
-            boolean rowHover = mouseX >= x && mouseX < x + contentW && mouseY >= yy && mouseY < yy + rowH;
+            boolean rowHover = com.manta.api.hud.Rects.contains(mouseX, mouseY, x, yy, contentW, rowH);
             roundedRow(g, x, yy, contentW, rowH, rowHover ? ROW_BG_HOVER : ROW_BG, ROW_BORDER);
 
             // 右端: ▲ ▼ × ミニボタン
@@ -659,13 +685,13 @@ public final class ScheduleEditorController {
             int textColor = "throttle".equals(entry.type) ? TEXT_VALUE : TEXT_MAIN;
             // rename 編集中はハイライト
             if ("rename".equals(entry.type) && renameFocusEntry == i) textColor = TEXT_CYAN;
-            g.drawString(this.font, labelTrunc, x + 6, yy + 5, textColor, false);
+            com.manta.api.text.MantaText.draw(g, this.font, labelTrunc, x + 6, yy + 5, textColor);
             // W7-1 (R4.23.1): throttle は wheel で変更できるので、ラベル直後に
             // manta:arrow-up-down を置く (旧: ラベル文字列末尾の "↕")。
             // truncate 後の実幅から位置を出すので、切り詰められても重ならない。
             if ("throttle".equals(entry.type)) {
                 com.manta.api.render.Icons.draw(g, "manta:arrow-up-down",
-                        x + 6 + this.font.width(labelTrunc) + 2, yy + 5f, 7f, 7f, textColor);
+                        x + 6 + com.manta.api.text.MantaText.uiWidth(this.font, labelTrunc) + 2, yy + 5f, 7f, 7f, textColor);
             }
 
             // throttle: 値部を wheel-edit hover 対象に
@@ -705,21 +731,21 @@ public final class ScheduleEditorController {
                     // W7-1 (R4.23.1): editable の目印 ↕ は registry icon で描く。
                     // 箱幅は text 幅 + icon 幅で出すので、当たり判定も見た目と一致したまま。
                     int iconW = editable ? 9 : 0;
-                    int vw = this.font.width(valueText) + 6 + iconW;
+                    int vw = com.manta.api.text.MantaText.uiWidth(this.font, valueText) + 6 + iconW;
                     int vx = cdX - vw - 3;
                     boolean vHover = mouseX >= vx && mouseX < vx + vw && mouseY >= yy + 1 && mouseY < yy + condRowH - 1;
                     SmoothRenderer.fillRoundedRect(g, vx, yy + 1, vw, condRowH - 2, 3f, vHover ? 0xFF2a4a5e : 0xFF14202c);
                     int vc = editable ? TEXT_VALUE : TEXT_CYAN;
-                    g.drawString(this.font, valueText, vx + 3, yy + 2, vc, false);
+                    com.manta.api.text.MantaText.draw(g, this.font, valueText, vx + 3, yy + 2, vc);
                     if (editable) {
                         com.manta.api.render.Icons.draw(g, "manta:arrow-up-down",
-                                vx + 3 + this.font.width(valueText) + 2, yy + 2.5f, 7f, 7f, vc);
+                                vx + 3 + com.manta.api.text.MantaText.uiWidth(this.font, valueText) + 2, yy + 2.5f, 7f, 7f, vc);
                     }
                     entryCondHoverBounds.add(new int[]{vx, yy, vw, condRowH, i, ci});
-                    g.drawString(this.font, truncate(name, vx - condX - 8), condX + 5, yy + 2, TEXT_SUB, false);
+                    com.manta.api.text.MantaText.draw(g, this.font, truncate(name, vx - condX - 8), condX + 5, yy + 2, TEXT_SUB);
                 } else {
                     // 値なし (powered/unloaded/coupling/decoupling): 名前のみ
-                    g.drawString(this.font, truncate(name, condW - cdW - 8), condX + 5, yy + 2, TEXT_DIM, false);
+                    com.manta.api.text.MantaText.draw(g, this.font, truncate(name, condW - cdW - 8), condX + 5, yy + 2, TEXT_DIM);
                 }
                 yy += condRowH + 1;
             }
@@ -728,27 +754,27 @@ public final class ScheduleEditorController {
             if (("destination".equals(entry.type) || "deliver".equals(entry.type)
                     || "fetch".equals(entry.type)) && yy + condRowH <= y + h - 11) {
                 String addLbl = "+ " + tr("create.gui.schedule.add_condition");
-                int aw = this.font.width(addLbl) + 8;
+                int aw = com.manta.api.text.MantaText.uiWidth(this.font, addLbl) + 8;
                 boolean hac = inBtn(mouseX, mouseY, x + 12, yy, aw, condRowH);
-                g.drawString(this.font, addLbl, x + 14, yy + 2, hac ? TEXT_GREEN : 0xFF5fae7a, false);
+                com.manta.api.text.MantaText.draw(g, this.font, addLbl, x + 14, yy + 2, hac ? TEXT_GREEN : 0xFF5fae7a);
                 entryAddCondBtns.add(new int[]{x + 12, yy, aw, condRowH, i});
                 yy += condRowH + 2;
             }
             yy += 1;
         }
         if (showEnd < total) {
-            g.drawString(this.font,
-                    Component.translatable("tsu.mc.scroll_down_count_fmt", total - showEnd).getString(),
-                    x, Math.min(yy, y + h - 11), TEXT_DIM, false);
+            com.manta.api.text.MantaText.draw(g, this.font, Component.translatable("tsu.mc.scroll_down_count_fmt", total - showEnd).getString(), x, Math.min(yy, y + h - 11), TEXT_DIM);
         }
         // スクロールバー (右端)。 editScroll (entry 数ベース) の thumb を描く。
+        editThumb = null;
         if (editScroll.needsScrollbar()) {
             int sbX = x + w - 4;
             int trackH = h;
             SmoothRenderer.fillRoundedRect(g, sbX, y, 3, trackH, 1.5f, 0x33000000);
-            int thumbH = Math.max(14, trackH * editScroll.visible() / Math.max(1, editScroll.total()));
+            int thumbH = editScroll.thumbH(trackH, 14);
             int thumbYpos = editScroll.thumbY(y, trackH, thumbH);
             SmoothRenderer.fillRoundedRect(g, sbX, thumbYpos, 3, thumbH, 1.5f, 0xFF4fc3f7);
+            editThumb = new int[] {sbX, thumbYpos, 3, thumbH};
         }
         g.disableScissor();
     }
@@ -756,8 +782,7 @@ public final class ScheduleEditorController {
     // === 描画ヘルパ (SmoothRenderer 二層 = BelugaExperience R2.4) ===
 
     private static void roundedRow(GuiGraphics g, int x, int y, int w, int h, int bg, int border) {
-        SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, border);
-        SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, bg);
+        com.manta.api.hud.HudChrome.innerRect(g, x, y, w, h, bg, border);
     }
 
     private static void roundedBtn(GuiGraphics g, int x, int y, int w, int h, int bg) {
@@ -765,13 +790,10 @@ public final class ScheduleEditorController {
     }
 
     private static boolean inBtn(int mx, int my, int x, int y, int w, int h) {
-        return mx >= x && mx < x + w && my >= y && my < y + h;
+        return com.manta.api.hud.Rects.contains(mx, my, x, y, w, h);
     }
 
     private String truncate(String s, int maxW) {
-        if (this.font.width(s) <= maxW) return s;
-        String t = s;
-        while (t.length() > 0 && this.font.width(t + "…") > maxW) t = t.substring(0, t.length() - 1);
-        return t + "…";
+        return com.manta.api.hud.HudText.ellipsize(this.font, s, maxW);
     }
 }

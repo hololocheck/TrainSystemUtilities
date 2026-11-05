@@ -1,0 +1,47 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "manta-confirm-body"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.mcr.holds",
+      "holdMs": 2200
+    },
+    {
+      "target": {
+        "classes": [
+          "manta-confirm-detail"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.mcr.link",
+      "holdMs": 2000
+    },
+    {
+      "target": {
+        "classes": [
+          "manta-confirm-yes"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.mcr.reset",
+      "holdMs": 2200
+    },
+    {
+      "target": {
+        "classes": [
+          "manta-confirm-no"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.mcr.cancel",
+      "holdMs": 1800
+    }
+  ]
+}

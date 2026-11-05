@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * S2: 各パンタグラフ BE がレンダリング時に「自分の集電バー Y オフセット」を引くためのクライアントキャッシュ。
  *
- * <p>サーバから {@code TrainElectrificationSyncPayload} で配信されるたびに更新。
+ * <p>サーバの電化の全体 host ({@code ElectrificationData}) が更新されるたびに更新。
  * {@link com.trainsystemutilities.client.electrification.PantographGeoModel#setCustomAnimations}
  * が BE の {@code getBlockPos()} (= contraption ローカル座標) で参照する。
  *

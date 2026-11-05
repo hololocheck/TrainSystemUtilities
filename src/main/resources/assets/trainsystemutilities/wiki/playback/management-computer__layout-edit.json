@@ -1,0 +1,116 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "layout-tile-item",
+          "layout-tile-ROUTE_MAP"
+        ]
+      },
+      "do": "drag",
+      "to": {
+        "classes": [
+          "layout-preview"
+        ],
+        "at": [
+          0.3,
+          0.4
+        ]
+      },
+      "durationMs": 1100,
+      "say": "trainsystemutilities.wiki.play.layout.drag",
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "layout-tile-item",
+          "layout-tile-CLOCK"
+        ]
+      },
+      "do": "drag",
+      "to": {
+        "classes": [
+          "layout-preview"
+        ],
+        "at": [
+          0.82,
+          0.18
+        ]
+      },
+      "durationMs": 1000,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "layout-preview"
+        ],
+        "at": [
+          0.3,
+          0.4
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "say": "trainsystemutilities.wiki.play.layout.resize",
+      "holdMs": 450
+    },
+    {
+      "target": {
+        "classes": [
+          "layout-preview"
+        ],
+        "at": [
+          0.3,
+          0.4
+        ]
+      },
+      "do": "wheel",
+      "delta": 1,
+      "holdMs": 700
+    },
+    {
+      "target": {
+        "classes": [
+          "layout-preview"
+        ],
+        "at": [
+          0.82,
+          0.18
+        ]
+      },
+      "do": "drag",
+      "by": [
+        -30,
+        45
+      ],
+      "durationMs": 900,
+      "say": "trainsystemutilities.wiki.play.layout.move",
+      "holdMs": 800
+    },
+    {
+      "target": {
+        "classes": [
+          "layout-recommend-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.layout.recommend",
+      "holdMs": 1600
+    },
+    {
+      "target": {
+        "classes": [
+          "layout-save-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.layout.save",
+      "holdMs": 1500
+    }
+  ]
+}

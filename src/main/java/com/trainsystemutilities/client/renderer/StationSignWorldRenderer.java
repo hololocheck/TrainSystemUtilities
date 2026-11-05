@@ -1,8 +1,10 @@
 package com.trainsystemutilities.client.renderer;
 
-import com.manta.api.ir.IrBuilder;
-import com.manta.api.ir.IrNode;
-import com.manta.api.screen.JsonLayoutHandler;
+import com.manta.api.state.BoolSlot;
+import com.manta.api.state.ColorSlot;
+import com.manta.api.state.MantaState;
+import com.manta.api.state.NumberSlot;
+import com.manta.api.state.TextSlot;
 import com.manta.api.world.CSSWorldRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
@@ -63,10 +65,10 @@ public class StationSignWorldRenderer {
 
     private static final int SCAN_RANGE = 64;
 
-    private static volatile IrNode sharedIr;
-    private static volatile IrNode sharedBadgeTextIr;
+    private static volatile CSSWorldRenderer.Document sharedDoc;
+    private static volatile CSSWorldRenderer.Document sharedBadgeTextDoc;
 
-    private static final Map<Long, SignHandler> handlers = new HashMap<>();
+    private static final Map<Long, SignFace> faces = new HashMap<>();
     private static final Map<Long, CSSWorldRenderer> renderers = new HashMap<>();
     private static final Map<Long, CSSWorldRenderer> badgeRenderers = new HashMap<>();
 
@@ -108,8 +110,8 @@ public class StationSignWorldRenderer {
         if (didRender) {
             bufferSource.endBatch();
         }
-        if (handlers.size() > 64) {
-            handlers.clear();
+        if (faces.size() > 64) {
+            faces.clear();
             renderers.clear();
             badgeRenderers.clear();
         }
@@ -139,11 +141,14 @@ public class StationSignWorldRenderer {
         // 同じツリーの不透明背景の裏へ回る (クラス javadoc 参照)。
         poseStack.scale(1, -1, 1);
 
-        SignHandler handler = handlers.computeIfAbsent(key, k -> new SignHandler());
-        handler.update(be);
+        // Manta 7 Phase 5: the face WRITES its values into its pages (nothing is asked): the page is
+        // opened at the canvas size, the values pushed, then drawn.
+        SignFace face = faces.computeIfAbsent(key, k -> new SignFace());
+        face.update(be);
 
-        renderers.computeIfAbsent(key, k -> nonEmissiveRenderer())
-                .renderV3FromIr(getSharedIr(), handler, poseStack, bufferSource);
+        CSSWorldRenderer r = renderers.computeIfAbsent(key, k -> nonEmissiveRenderer());
+        face.pushSign(r.page(getSharedDoc(), face, CANVAS_W, CANVAS_H));
+        r.render(getSharedDoc(), face, poseStack, bufferSource);
 
         // バッジはモニターの路線記号バッジと同一構造で描く: 不透明の面 quad は白背景 1 枚だけ、
         // 縁の角丸リングと区切り線は text バッファ (VectorRenderer)、 文字は IR テキスト。
@@ -160,7 +165,10 @@ public class StationSignWorldRenderer {
             CSSWorldRenderer br = badgeRenderers.computeIfAbsent(key, k -> nonEmissiveRenderer());
             poseStack.pushPose();
             poseStack.translate(0, 0, 0.04f);
-            br.renderV3FromIr(buildBadgeBgIr(radius), null, poseStack, bufferSource);
+            // The badge's white plate: until 2026-09-19 (MANTA_6_CUTOVER Phase 7.5) a Manta 5
+            // IR div drawn through renderV3FromIr; paintRect takes RectNode's own branch on
+            // the same surface, so the one quad is the one it was.
+            br.paintRect(poseStack, bufferSource, BADGE_X, BADGE_Y, BADGE_SIZE, BADGE_SIZE, radius, 0xFFFFFFFF);
 
             var vc = com.manta.api.draw.VectorRenderer.getWorldBufferText(bufferSource);
             com.manta.api.draw.VectorRenderer.strokeRoundedRect(vc, poseStack.last().pose(),
@@ -171,21 +179,12 @@ public class StationSignWorldRenderer {
                     dividerW, 2f, borderColor, 0.05f);
 
             poseStack.translate(0, 0, 0.06f);
-            br.renderV3FromIr(getBadgeTextIr(), handler, poseStack, bufferSource);
+            face.pushBadge(br.page(getBadgeTextDoc(), face, CANVAS_W, CANVAS_H));
+            br.render(getBadgeTextDoc(), face, poseStack, bufferSource);
             poseStack.popPose();
         }
 
         poseStack.popPose();
-    }
-
-    /** バッジの白背景 (不透明の面 quad はこの 1 枚だけ)。 縁 / 区切り線 / 文字は上へ別バッファで載る。 */
-    private static IrNode buildBadgeBgIr(int radius) {
-        return IrBuilder.div()
-                .addClass("sign-badge")
-                .rect(BADGE_X, BADGE_Y, BADGE_SIZE, BADGE_SIZE)
-                .bgColor(0xFFFFFFFF)
-                .borderRadius(radius)
-                .build();
     }
 
     /** モニターと違い看板は自発光しないので emissive を切る (既定 true = 全明で描かれ、
@@ -217,38 +216,37 @@ public class StationSignWorldRenderer {
         return result;
     }
 
-    private static IrNode getSharedIr() {
-        IrNode ir = sharedIr;
-        if (ir == null) {
+    private static CSSWorldRenderer.Document getSharedDoc() {
+        CSSWorldRenderer.Document doc = sharedDoc;
+        if (doc == null) {
             synchronized (StationSignWorldRenderer.class) {
-                ir = sharedIr;
-                if (ir == null) {
-                    ir = compileLayout("layouts/renderers/station-name-sign.json");
-                    sharedIr = ir;
+                doc = sharedDoc;
+                if (doc == null) {
+                    doc = loadDocument("layouts/renderers/station-name-sign.json");
+                    sharedDoc = doc;
                 }
             }
         }
-        return ir;
+        return doc;
     }
 
-    private static IrNode getBadgeTextIr() {
-        IrNode ir = sharedBadgeTextIr;
-        if (ir == null) {
+    private static CSSWorldRenderer.Document getBadgeTextDoc() {
+        CSSWorldRenderer.Document doc = sharedBadgeTextDoc;
+        if (doc == null) {
             synchronized (StationSignWorldRenderer.class) {
-                ir = sharedBadgeTextIr;
-                if (ir == null) {
-                    ir = compileLayout("layouts/renderers/station-name-sign-badge.json");
-                    sharedBadgeTextIr = ir;
+                doc = sharedBadgeTextDoc;
+                if (doc == null) {
+                    doc = loadDocument("layouts/renderers/station-name-sign-badge.json");
+                    sharedBadgeTextDoc = doc;
                 }
             }
         }
-        return ir;
+        return doc;
     }
 
-    private static IrNode compileLayout(String path) {
-        String json = com.trainsystemutilities.client.gui.TsuLayouts.load(path);
-        com.google.gson.JsonObject root = com.google.gson.JsonParser.parseString(json).getAsJsonObject();
-        return com.manta.api.ir.compiler.JsonToIrCompiler.compile(root).root();
+    /** The layout file as a document (Manta 6 Phase 6): Manta compiles it, and decides the engine per its registry. */
+    private static CSSWorldRenderer.Document loadDocument(String path) {
+        return CSSWorldRenderer.Document.parse(com.trainsystemutilities.client.gui.TsuLayouts.load(path));
     }
 
     static int parseHexColor(String hex, int fallback) {
@@ -261,8 +259,13 @@ public class StationSignWorldRenderer {
         }
     }
 
-    /** per-frame の表示値を JSON layout の binding へ渡す handler。 */
-    private static final class SignHandler implements JsonLayoutHandler {
+    /**
+     * One sign side: the values the pull handler answered - in the same state - WRITTEN into the side's
+     * two pages, the sign and the badge's text (Manta 7 Phase 5). The renderer hands back the same page
+     * object while a page lasts; a new one gets its handles taken again. Both layouts carry their text
+     * by key, so a class-only node is never asked (textByKeyOnly).
+     */
+    private static final class SignFace {
         private String stationName = "";
         private String prevName = "";
         private String nextName = "";
@@ -271,6 +274,14 @@ public class StationSignWorldRenderer {
         private boolean hasSymbol;
         private int bandColor = 0xFF4fc3f7;
         private int nameScale = 400;
+
+        private Object signPage;
+        private Object badgePage;
+        private MantaState sign, badge;
+        private TextSlot tName, tPrev, tNext, tLetters, tNumber;
+        private NumberSlot nNameScale, nSideScale, nBadgeScale;
+        private ColorSlot cBand;
+        private BoolSlot bSign, bBand;
 
         void update(StationNameSignBlockEntity be) {
             stationName = be.getStationName();
@@ -287,46 +298,55 @@ public class StationSignWorldRenderer {
                 symNumber = "";
             }
 
-            int w = Minecraft.getInstance().font.width(stationName);
+            int w = com.manta.api.text.MantaText.uiWidth(Minecraft.getInstance().font, stationName);
             int avail = hasSymbol ? CANVAS_W - BADGE_X * 2 - BADGE_SIZE : CANVAS_W - 40;
             nameScale = w <= 0 ? 400 : Math.max(100, Math.min(400, avail * 100 / w));
         }
 
-        private static boolean has(String[] classes, String name) {
-            if (classes == null) return false;
-            for (String c : classes) if (name.equals(c)) return true;
-            return false;
+        /** The sign's values: its three names, the name and side scales, the band's colour and visibility. */
+        void pushSign(Object page) {
+            if (page == null) {
+                return;
+            }
+            if (page != signPage) {
+                signPage = page;
+                sign = MantaState.of(page);
+                tName = sign.text("stationName");
+                tPrev = sign.text("prevName");
+                tNext = sign.text("nextName");
+                nNameScale = sign.number("nameScale");
+                nSideScale = sign.number("sideScale");
+                cBand = sign.color("bandColor");
+                bSign = sign.bool("signVisible");
+                bBand = sign.bool("bandVisible");
+                sign.textByKeyOnly();
+            }
+            sign.set(tName, stationName == null ? "" : stationName);
+            sign.set(tPrev, prevName == null ? "" : prevName);
+            sign.set(tNext, nextName == null ? "" : nextName);
+            sign.set(nNameScale, nameScale);
+            sign.set(nSideScale, 180);
+            sign.set(cBand, bandColor);
+            sign.set(bSign, true);
+            sign.set(bBand, hasSymbol);
         }
 
-        @Override
-        public String getDynamicText(String[] classes, String defaultText) {
-            if (has(classes, "sign-name")) return stationName;
-            if (has(classes, "sign-prev")) return prevName;
-            if (has(classes, "sign-next")) return nextName;
-            if (has(classes, "sign-badge-letters")) return symLetters;
-            if (has(classes, "sign-badge-number")) return symNumber;
-            return null;
-        }
-
-        @Override
-        public Integer getDynamicNumber(String[] classes, String key, int defaultValue) {
-            if ("nameScale".equals(key)) return nameScale;
-            if ("sideScale".equals(key)) return 180;
-            if ("badgeScale".equals(key)) return 150;
-            return null;
-        }
-
-        @Override
-        public Integer getDynamicColor(String[] classes, String key, int defaultArgb) {
-            if ("bandColor".equals(key)) return bandColor;
-            return null;
-        }
-
-        @Override
-        public Boolean getDynamicBool(String[] classes, String key, boolean defaultValue) {
-            if ("signVisible".equals(key)) return true;
-            if ("bandVisible".equals(key)) return hasSymbol;
-            return null;
+        /** The badge's text: the symbol's letters and number, at the badge scale. */
+        void pushBadge(Object page) {
+            if (page == null) {
+                return;
+            }
+            if (page != badgePage) {
+                badgePage = page;
+                badge = MantaState.of(page);
+                tLetters = badge.text("symLetters");
+                tNumber = badge.text("symNumber");
+                nBadgeScale = badge.number("badgeScale");
+                badge.textByKeyOnly();
+            }
+            badge.set(tLetters, symLetters == null ? "" : symLetters);
+            badge.set(tNumber, symNumber == null ? "" : symNumber);
+            badge.set(nBadgeScale, 150);
         }
     }
 }

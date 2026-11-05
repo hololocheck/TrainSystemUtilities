@@ -135,30 +135,15 @@ public class StationRangeRenderer {
     }
 
 
+    /** 視線の先のブロック。 実体は {@code LookTarget.blockPos} (4 実装を 1 本へ)。 */
     private static BlockPos getLookTargetPos() {
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.level == null) return null;
-        Vec3 eye = mc.player.getEyePosition(1.0f);
-        Vec3 look = mc.player.getLookAngle();
-        Vec3 end = eye.add(look.scale(MAX_LOOK_DISTANCE));
-        BlockHitResult hit = mc.level.clip(new ClipContext(
-                eye, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, mc.player));
-        return hit.getType() == HitResult.Type.BLOCK ? hit.getBlockPos() : null;
+        return com.manta.api.hud.LookTarget.blockPos(mc.player, mc.level, MAX_LOOK_DISTANCE);
     }
 
+    /** 2 点が張る箱を camera 相対で描く。 実体は {@code WorldOutline.blockBox} (5 実装を 1 本へ)。 */
     private static void renderBox(PoseStack poseStack, Vec3 camera, MultiBufferSource bufferSource,
                                   BlockPos p1, BlockPos p2, float r, float g, float b, float a) {
-        double minX = Math.min(p1.getX(), p2.getX());
-        double minY = Math.min(p1.getY(), p2.getY());
-        double minZ = Math.min(p1.getZ(), p2.getZ());
-        double maxX = Math.max(p1.getX(), p2.getX()) + 1;
-        double maxY = Math.max(p1.getY(), p2.getY()) + 1;
-        double maxZ = Math.max(p1.getZ(), p2.getZ()) + 1;
-
-        AABB aabb = new AABB(
-                minX - camera.x, minY - camera.y, minZ - camera.z,
-                maxX - camera.x, maxY - camera.y, maxZ - camera.z);
-        VertexConsumer consumer = bufferSource.getBuffer(RenderType.lines());
-        LevelRenderer.renderLineBox(poseStack, consumer, aabb, r, g, b, a);
+        com.manta.api.render.WorldOutline.blockBox(poseStack, bufferSource, p1, p2, camera, r, g, b, a, false);
     }
 }

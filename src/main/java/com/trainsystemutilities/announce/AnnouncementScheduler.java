@@ -4,18 +4,15 @@ import com.simibubi.create.content.trains.entity.Train;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.blockentity.RailwayManagementBlockEntity;
 import com.trainsystemutilities.compat.sas.SasIntegration;
-import com.trainsystemutilities.network.AnnouncementPlaybackStatePayload;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -72,17 +69,9 @@ public final class AnnouncementScheduler {
         return GlobalPos.of(dim, pos.immutable());
     }
 
+    /** The entry playing at the block, on its host (MANTA_7_CONCEPT C4): the screens subscribed to it see it. */
     private static void syncPlaybackState(ServerLevel sl, BlockPos bePos, int entryIdx, boolean playing) {
-        int idx = playing ? entryIdx : -1;
-        var payload = new AnnouncementPlaybackStatePayload(bePos, idx, idx >= 0);
-        double px = bePos.getX() + 0.5;
-        double py = bePos.getY() + 0.5;
-        double pz = bePos.getZ() + 0.5;
-        for (ServerPlayer player : sl.players()) {
-            if (player.distanceToSqr(px, py, pz) <= 256.0D * 256.0D) {
-                PacketDistributor.sendToPlayer(player, payload);
-            }
-        }
+        com.trainsystemutilities.network.RailwayManagementData.publishPlaying(sl, bePos, playing ? entryIdx : -1);
     }
 
     private static void removeSequence(ServerLevel sl, SequenceState s) {
@@ -90,15 +79,10 @@ public final class AnnouncementScheduler {
         if (sl != null) syncPlaybackState(sl, s.bePos, -1, false);
     }
 
-    public static void syncCurrentPlaybackTo(ServerPlayer player, BlockPos bePos) {
-        if (player == null || bePos == null) return;
-        int idx = -1;
-        SequenceState s = sequences.get(keyOf(player.level().dimension(), bePos));
-        if (s != null && s.isPlaying) {
-            idx = s.currentEntryIdx;
-        }
-        PacketDistributor.sendToPlayer(player,
-                new AnnouncementPlaybackStatePayload(bePos, idx, idx >= 0));
+    /** The entry playing at the block now, -1 for none - what its host starts with. */
+    public static int playingEntry(ResourceKey<Level> dim, BlockPos bePos) {
+        SequenceState s = sequences.get(keyOf(dim, bePos));
+        return s != null && s.isPlaying ? s.currentEntryIdx : -1;
     }
 
     public static void clearPlaybackState(ServerLevel sl, BlockPos bePos) {

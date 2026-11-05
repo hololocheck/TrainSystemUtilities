@@ -93,14 +93,10 @@ public class WireConnectorHudRenderer {
 
     private static void renderModeBadge(GuiGraphics g, Minecraft mc, int x, int y, int w, int h,
                                          float fade, int toolMode) {
-        int bgA = (int) (0xE0 * fade);
-        int borderA = (int) (0xFF * fade);
         int borderRgb = (toolMode == WireConnectorItem.TOOL_MODE_GUI)
                 ? 0xBA68C8     // GUI = 紫
                 : 0x66BB6A;    // SELECTION = 緑
-        int bg = (bgA << 24) | 0x1a1a2e;
-        int border = (borderA << 24) | borderRgb;
-        HudChrome.drawRoundedRect(g, x, y, w, h, bg, border);
+        HudChrome.panel(g, x, y, w, h, fade, borderRgb);
 
         String label = (toolMode == WireConnectorItem.TOOL_MODE_GUI)
                 ? Component.translatable("tsu.wire_connector.hud_mode_gui").getString()
@@ -117,8 +113,7 @@ public class WireConnectorHudRenderer {
         int borderA = (int) (0xFF * fade);
         int bg = (bgA << 24) | 0x1a1a2e;
         int border = (borderA << 24) | 0x333344;
-        SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, border);
-        SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, bg);
+        com.manta.api.hud.HudChrome.innerRect(g, x, y, w, h, bg, border);
 
         String prefix = Component.translatable("tsu.wire_connector.hud_design_label").getString();
         String designName = type.displayName().getString();
@@ -135,8 +130,7 @@ public class WireConnectorHudRenderer {
         int borderA = (int) (0xFF * fade);
         int bg = (bgA << 24) | 0x1a1a2e;
         int border = (borderA << 24) | 0x333344;
-        SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, border);
-        SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, bg);
+        com.manta.api.hud.HudChrome.innerRect(g, x, y, w, h, bg, border);
 
         BlockPos pending = readPendingFromStack(stack);
         String text;
@@ -163,8 +157,7 @@ public class WireConnectorHudRenderer {
         int borderA = (int) (0xFF * fade);
         int bg = (bgA << 24) | 0x1a1a2e;
         int border = (borderA << 24) | 0x333344;
-        SmoothRenderer.fillRoundedRect(g, x, y, w, h, 5f, border);
-        SmoothRenderer.fillRoundedRect(g, x + 1, y + 1, w - 2, h - 2, 4f, bg);
+        com.manta.api.hud.HudChrome.innerRect(g, x, y, w, h, bg, border);
 
         boolean creative = mc.player != null && mc.player.getAbilities().instabuild;
         String text;

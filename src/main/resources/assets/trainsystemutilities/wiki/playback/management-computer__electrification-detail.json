@@ -1,0 +1,41 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "ed-car-list-canvas"
+        ],
+        "at": [
+          0.5,
+          0.2
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.ed.cars",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "ed-fold-all-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.ed.fold",
+      "holdMs": 1200
+    },
+    {
+      "target": {
+        "classes": [
+          "ed-deploy-all-btn"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.ed.deploy",
+      "holdMs": 1500
+    }
+  ]
+}

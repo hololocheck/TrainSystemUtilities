@@ -3,7 +3,6 @@ package com.trainsystemutilities.client;
 import com.manta.api.hud.HeldTools;
 import com.manta.api.hud.ModifierKeys;
 import com.trainsystemutilities.TrainSystemUtilities;
-import com.trainsystemutilities.network.StationRangeToolModePayload;
 import com.trainsystemutilities.registry.ModItems;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
@@ -11,7 +10,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -36,24 +34,26 @@ public class StationRangeToolClientHandler {
         ItemStack stack = findHeldTool();
         if (stack.isEmpty()) return;
 
+        // ここだけは R3.3.1 の優先順を使わない: 下の action は ctrl を優先させる設計で、
+        // WheelInput.mods() に寄せると alt+ctrl 同時押しの振る舞いが変わる。
         long window = mc.getWindow().getWindow();
         boolean alt = ModifierKeys.alt(window);
         boolean ctrl = ModifierKeys.ctrl(window);
         if (!alt && !ctrl) return;
 
         double dy = event.getScrollDeltaY();
-        if (Math.abs(dy) < 0.0001) return;
+        if (com.manta.api.hud.WheelInput.isDead(dy)) return;
 
         if (!SCROLL_COOLDOWN.tryAccept()) {
             event.setCanceled(true);
             return;
         }
 
-        int delta = dy > 0 ? 1 : -1;
+        int delta = com.manta.api.hud.WheelInput.direction(dy);
         // ctrl + ホイール: action 1 = edit mode 循環
         // alt + ホイール: action 0 = tool mode 循環 (GUI/SELECTION/VIEW)
         int action = ctrl ? 1 : 0;
-        PacketDistributor.sendToServer(new StationRangeToolModePayload(action, delta));
+        ToolsClient.stationRangeMode(action, delta);
         event.setCanceled(true);
     }
 
@@ -72,7 +72,7 @@ public class StationRangeToolClientHandler {
         if (com.trainsystemutilities.item.StationRangeToolItem.getToolMode(stack)
                 != com.trainsystemutilities.item.StationRangeToolItem.TOOL_MODE_SELECTION) return;
         // action 2 = numbering dir 循環
-        PacketDistributor.sendToServer(new StationRangeToolModePayload(2, 1));
+        ToolsClient.stationRangeMode(2, 1);
         event.setCanceled(true);
     }
 

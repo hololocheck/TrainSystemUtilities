@@ -1,26 +1,24 @@
 package com.trainsystemutilities.client.electrification;
 
 import com.manta.api.hud.HeldTools;
-import com.manta.api.hud.ModifierKeys;
 import com.trainsystemutilities.TrainSystemUtilities;
 import com.trainsystemutilities.electrification.autoplace.AutoPlaceConfig;
-import com.trainsystemutilities.network.OverheadPoleAutoToolPayload;
 import com.trainsystemutilities.registry.ModItems;
+import com.trainsystemutilities.client.ToolsClient;
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * 架線柱自動配置ツール所持時のクライアント入力処理。 列車プリセットツール / 駅範囲指定ツール
  * と同じ修飾子割当 + 値増減用 shift+wheel:
  * <ul>
- *   <li><b>alt + wheel</b>: tool mode 循環 (GUI / 選択) — 列車プリセットと統一</li>
- *   <li><b>ctrl + wheel</b>: 編集対象循環 (HEIGHT / CLEARANCE / SPAN)</li>
- *   <li><b>shift + wheel</b>: 現在編集対象の値を増減</li>
+ *   <li><b>alt + wheel</b>: tool mode 循環 (GUI / 選択) — 列車プリセットと統一。 「配置する」 サブモード中は手動回転 (8 方向)</li>
+ *   <li><b>ctrl + wheel</b>: 選択モード内のサブモード循環 (GUIへ戻る / 配置する)</li>
+ *   <li><b>shift + wheel</b>: 高さを増減</li>
  * </ul>
  */
 @EventBusSubscriber(modid = TrainSystemUtilities.MOD_ID, value = Dist.CLIENT)
@@ -38,21 +36,22 @@ public class OverheadPoleAutoToolClientHandler {
         ItemStack stack = findHeldTool();
         if (stack.isEmpty()) return;
 
-        long window = mc.getWindow().getWindow();
-        boolean ctrl = ModifierKeys.ctrl(window);
-        boolean alt = ModifierKeys.alt(window);
-        boolean shift = ModifierKeys.shift(window);
-        if (!ctrl && !alt && !shift) return;
+        // R3.3.1 の優先順 (Alt > Ctrl > Shift) は部品側が持つ。
+        // 下の if 連鎖が既に同じ順だったので振る舞いは変わらない。
+        com.manta.api.hud.WheelInput.Mods mods = com.manta.api.hud.WheelInput.mods(mc.getWindow().getWindow());
+        boolean alt = mods.alt();
+        boolean ctrl = mods.ctrl();
+        if (mods.none()) return;
 
         double dy = event.getScrollDeltaY();
-        if (Math.abs(dy) < 0.0001) return;
+        if (com.manta.api.hud.WheelInput.isDead(dy)) return;
 
         if (!SCROLL_COOLDOWN.tryAccept()) {
             event.setCanceled(true);
             return;
         }
 
-        int delta = dy > 0 ? 1 : -1;
+        int delta = com.manta.api.hud.WheelInput.direction(dy);
         // alt + wheel:
         //   PLACE モード時 → 手動回転 (= 8 方向 ANGLE_8 増減)
         //   それ以外 → tool mode 切替 (= GUI ⇔ SELECTION)
@@ -63,14 +62,14 @@ public class OverheadPoleAutoToolClientHandler {
             boolean inPlaceMode = (toolMode == AutoPlaceConfig.TOOL_MODE_SELECTION
                     && subMode == AutoPlaceConfig.SUB_MODE_PLACE);
             int action = inPlaceMode ? 3 : 2;
-            PacketDistributor.sendToServer(new OverheadPoleAutoToolPayload(action, delta));
+            ToolsClient.poleTool(action, delta);
         } else if (ctrl) {
-            PacketDistributor.sendToServer(new OverheadPoleAutoToolPayload(0, delta));
+            ToolsClient.poleTool(0, delta);
         } else {
-            // shift + wheel: 現在 edit mode の値増減 (= R3.2.3 / 本クラス Javadoc の契約)。
+            // shift + wheel: 高さの増減 (= R3.2.3 / 本クラス Javadoc の契約)。
             // 旧実装は setCanceled せず return しており、 cooldown を消費したうえ vanilla の
             // hotbar 切替が発火していた (= R3.5 違反)。
-            PacketDistributor.sendToServer(new OverheadPoleAutoToolPayload(1, delta));
+            ToolsClient.poleTool(1, delta);
         }
         event.setCanceled(true);
     }
@@ -88,8 +87,7 @@ public class OverheadPoleAutoToolClientHandler {
             net.minecraft.core.BlockPos chestPos =
                     com.trainsystemutilities.client.TrainPresetToolClientHandler.findLookedAtChest(mc);
             if (chestPos != null) {
-                PacketDistributor.sendToServer(
-                        new com.trainsystemutilities.network.OverheadPoleLinkChestPayload(chestPos));
+                ToolsClient.poleLinkChest(chestPos);
                 event.setCanceled(true);
             }
         }

@@ -12,7 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * クライアント側の「販売可な着駅」キャッシュ (= {@link TicketConfigSavedData} の鏡)。
  *
  * <p>管理用コンピューターの券売機タブが表示 / トグルに使う。
- * サーバが {@code TicketConfigSyncPayload} を push したときに {@link #replaceAll} で更新。
+ * 管理用コンピューターの画面が host (network.ManagementComputerData の ticket-* field) から受け取ったときに
+ * {@link #replaceAll} で更新 (MANTA_7_CONCEPT C4 まで TicketConfigSyncPayload)。
  * トグル操作時は {@link #setLocal} で即時反映してから C2S を送る (§4.9)。
  */
 @OnlyIn(Dist.CLIENT)

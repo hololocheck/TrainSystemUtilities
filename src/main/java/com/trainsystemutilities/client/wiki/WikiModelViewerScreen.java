@@ -38,17 +38,14 @@ public class WikiModelViewerScreen extends Screen {
     private final ItemStack stack;
     private final Screen parent;
 
-    private float rotY = 30f;
-    private float rotX = 25f;
-    private float zoom = 1.5f;
-    private float panX = 0f;
-    private float panY = 0f;
-
-    private boolean rotating = false;
-    private boolean panning = false;
-    private double dragStartX, dragStartY;
-    private float rotStartY, rotStartX;
-    private float panStartX, panStartY;
+    /** 視点の状態は部品が持つ (B9)。数値は移行前と同じ。 */
+    private final com.manta.api.preview.OrbitView view =
+            new com.manta.api.preview.OrbitView(30f, 25f, 1.5f)
+                    .degreesPerPixel(0.5f)
+                    .pitchRange(-90f, 90f)
+                    .zoomRange(0.2f, 8f)
+                    .zoomStep(1.15f, 1f / 1.15f)
+                    .invertPitch(true);
 
     public WikiModelViewerScreen(ItemStack stack, Screen parent) {
         super(Component.translatable("tsu.wiki.model_viewer"));
@@ -69,16 +66,16 @@ public class WikiModelViewerScreen extends Screen {
         g.fill(0, 0, this.width, this.height, 0xC0000000);
 
         // モデル描画 (中央配置)
-        float cx = this.width / 2f + panX;
-        float cy = this.height / 2f + panY;
+        float cx = this.width / 2f + view.panX();
+        float cy = this.height / 2f + view.panY();
         float baseSize = Math.min(this.width, this.height) * 0.4f;
-        float modelScale = baseSize * zoom / 16f;
+        float modelScale = baseSize * view.zoom() / 16f;
 
         g.pose().pushPose();
         g.pose().translate(cx, cy, 200);
         g.pose().scale(modelScale, modelScale, modelScale);
-        g.pose().mulPose(com.mojang.math.Axis.XP.rotationDegrees(rotX));
-        g.pose().mulPose(com.mojang.math.Axis.YP.rotationDegrees(rotY));
+        g.pose().mulPose(com.mojang.math.Axis.XP.rotationDegrees(view.pitch()));
+        g.pose().mulPose(com.mojang.math.Axis.YP.rotationDegrees(view.yaw()));
         g.pose().translate(-8f, -8f, 0f);
         g.renderItem(stack, 0, 0);
         g.pose().popPose();
@@ -86,33 +83,21 @@ public class WikiModelViewerScreen extends Screen {
         // 操作説明
         Minecraft mc = Minecraft.getInstance();
         String hint = Component.translatable("tsu.wiki.model_viewer_hint").getString();
-        int hintW = mc.font.width(hint);
-        g.drawString(mc.font, hint, (this.width - hintW) / 2, this.height - 24, 0xFFAAAAAA, true);
+        int hintW = com.manta.api.text.MantaText.uiWidth(mc.font, hint);
+        com.manta.api.text.MantaText.draw(g, mc.font, hint, (this.width - hintW) / 2, this.height - 24, 0xFFAAAAAA, true);
 
         // タイトル
         String title = stack.getHoverName().getString();
-        g.drawString(mc.font, title, 12, 12, 0xFFFFFFFF, true);
+        com.manta.api.text.MantaText.draw(g, mc.font, title, 12, 12, 0xFFFFFFFF, true);
 
         // 閉じるボタンヒント
-        g.drawString(mc.font, "ESC / Right-click to close", 12, this.height - 14, 0xFF888888, false);
+        com.manta.api.text.MantaText.draw(g, mc.font, "ESC / Right-click to close", 12, this.height - 14, 0xFF888888);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            rotating = true;
-            dragStartX = mouseX;
-            dragStartY = mouseY;
-            rotStartY = rotY;
-            rotStartX = rotX;
-            return true;
-        }
-        if (button == 1) {
-            panning = true;
-            dragStartX = mouseX;
-            dragStartY = mouseY;
-            panStartX = panX;
-            panStartY = panY;
+        if (button == 0 || button == 1) {
+            view.beginDrag(button, mouseX, mouseY);
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -120,31 +105,19 @@ public class WikiModelViewerScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dx, double dy) {
-        if (rotating && button == 0) {
-            rotY = rotStartY + (float) (mouseX - dragStartX) * 0.5f;
-            rotX = rotStartX - (float) (mouseY - dragStartY) * 0.5f;
-            rotX = Math.max(-90f, Math.min(90f, rotX));
-            return true;
-        }
-        if (panning && button == 1) {
-            panX = panStartX + (float) (mouseX - dragStartX);
-            panY = panStartY + (float) (mouseY - dragStartY);
-            return true;
-        }
+        if (view.drag(mouseX, mouseY, button)) return true;
         return super.mouseDragged(mouseX, mouseY, button, dx, dy);
     }
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) rotating = false;
-        if (button == 1) panning = false;
+        view.endDrag(button);
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
-        zoom *= scrollY > 0 ? 1.15f : 1f / 1.15f;
-        zoom = Math.max(0.2f, Math.min(8f, zoom));
+        view.zoomBy(scrollY);
         return true;
     }
 

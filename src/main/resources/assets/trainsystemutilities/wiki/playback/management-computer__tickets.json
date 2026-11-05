@@ -1,0 +1,37 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {
+      "target": {
+        "classes": [
+          "ticket-toggle-track"
+        ]
+      },
+      "do": "hover",
+      "say": "trainsystemutilities.wiki.play.tk.list",
+      "holdMs": 1000
+    },
+    {
+      "target": {
+        "classes": [
+          "ticket-toggle-track"
+        ]
+      },
+      "do": "click",
+      "say": "trainsystemutilities.wiki.play.tk.toggle",
+      "holdMs": 1000
+    },
+    {
+      "target": {
+        "classes": [
+          "ticket-toggle-track"
+        ],
+        "index": 1
+      },
+      "do": "click",
+      "holdMs": 1200
+    }
+  ]
+}

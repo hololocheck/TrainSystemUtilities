@@ -42,20 +42,28 @@ public final class ElectrificationCarListRenderer {
     /** drawCanvas("ed-car-list") から呼ばれる毎フレーム描画。 helper が参照する font をここで保持。 */
     private Font font;
 
+    /** 列車の電化状態の読み先: 同期済みの client cache (wiki の見本の画面は自分のサンプルを貸す)。 */
+    private java.util.function.Function<UUID, com.trainsystemutilities.electrification.contraption.TrainElectrificationView> views =
+            com.trainsystemutilities.client.electrification.ClientTrainElectrificationCache::get;
+
+    /** wiki の見本の画面 (ManagementComputerScreenV2.wikiCreate) のサンプル。global な cache には書かない。 */
+    public void viewsFrom(java.util.function.Function<UUID,
+            com.trainsystemutilities.electrification.contraption.TrainElectrificationView> views) {
+        this.views = views;
+    }
+
     /** drawCanvas("ed-car-list") の描画本体。 screen は this.font / selectedTrainId を引数で渡す。 */
     public void draw(GuiGraphics g, int x, int y, int w, int h, Font font, UUID selectedTrainId) {
         this.font = font;
         edPantoHits.clear();
         if (selectedTrainId == null) return;
-        var v = com.trainsystemutilities.client.electrification
-                .ClientTrainElectrificationCache.get(selectedTrainId);
+        var v = views.apply(selectedTrainId);
         if (v == null) {
-            g.drawString(this.font, net.minecraft.network.chat.Component.translatable("tsu.mc.not_synced_starting"),
-                    x + 6, y + 6, 0xFFEF5350, false);
+            com.manta.api.text.MantaText.draw(g, this.font, net.minecraft.network.chat.Component.translatable("tsu.mc.not_synced_starting"), x + 6, y + 6, 0xFFEF5350);
             return;
         }
         if (v.cars.isEmpty()) {
-            g.drawString(this.font, net.minecraft.network.chat.Component.translatable("tsu.mc.no_cars"), x + 6, y + 6, 0xFFAAAAAA, false);
+            com.manta.api.text.MantaText.draw(g, this.font, net.minecraft.network.chat.Component.translatable("tsu.mc.no_cars"), x + 6, y + 6, 0xFFAAAAAA);
             return;
         }
         int rowY = y;
@@ -81,13 +89,13 @@ public final class ElectrificationCarListRenderer {
         // === 上段: ラベル + FE 残量 (1行に収めて長い数字も収まる) ===
         String label = "Car #" + car.carriageIndex;
         int labelColor = car.hasInverter ? 0xFF80DEEA : 0xFFAAAAAA;
-        g.drawString(this.font, label, x + 6, y + 4, labelColor, false);
+        com.manta.api.text.MantaText.draw(g, this.font, label, x + 6, y + 4, labelColor);
         if (car.hasInverter) {
             String feText = String.format("%,d / %,d FE", car.storedEnergy, car.capacity);
             int feColor = car.inContact ? 0xFFA5D6A7 : 0xFFFFD54F;
-            g.drawString(this.font, feText, x + 52, y + 4, feColor, false);
+            com.manta.api.text.MantaText.draw(g, this.font, feText, x + 52, y + 4, feColor);
         } else {
-            g.drawString(this.font, net.minecraft.network.chat.Component.translatable("tsu.mc.not_electrified"), x + 52, y + 4, 0xFF888888, false);
+            com.manta.api.text.MantaText.draw(g, this.font, net.minecraft.network.chat.Component.translatable("tsu.mc.not_electrified"), x + 52, y + 4, 0xFF888888);
         }
 
         // === 縦区切り線 ===
@@ -130,7 +138,7 @@ public final class ElectrificationCarListRenderer {
         int rightX = dividerX + 8;
         int rightTopY = y + 16; // 上段テキスト下
         if (pantoCount == 0) {
-            g.drawString(this.font, net.minecraft.network.chat.Component.translatable("tsu.mc.no_pantograph"), rightX, rightTopY, 0xFF888888, false);
+            com.manta.api.text.MantaText.draw(g, this.font, net.minecraft.network.chat.Component.translatable("tsu.mc.no_pantograph"), rightX, rightTopY, 0xFF888888);
         } else {
             int rowStride = 14;
             for (int i = 0; i < pantoCount; i++) {
@@ -139,7 +147,7 @@ public final class ElectrificationCarListRenderer {
                 // ラベル
                 String lbl = net.minecraft.network.chat.Component.translatable("tsu.mc.pantograph_n", i + 1).getString();
                 int lblColor = p.deployed ? 0xFFE0F7FA : 0xFFAAAAAA;
-                g.drawString(this.font, lbl, rightX, ry + 2, lblColor, false);
+                com.manta.api.text.MantaText.draw(g, this.font, lbl, rightX, ry + 2, lblColor);
                 // トグル
                 int tx = rightX + 40;
                 int ty = ry;
@@ -160,10 +168,7 @@ public final class ElectrificationCarListRenderer {
         int bot = y + h;
         int thick = powered ? 2 : 1;  // 電力ありは太線
         // 枠 (powered なら 2 px 太さ)
-        g.fill(x, top, x + w, top + thick, color);
-        g.fill(x, bot - thick + 1, x + w, bot + 1, color);
-        g.fill(x, top, x + thick, bot + 1, color);
-        g.fill(x + w - thick, top, x + w, bot + 1, color);
+        com.manta.api.draw.SmoothRenderer.strokeRoundedRect(g, x, top, w, bot + 1 - top, 0f, thick, color);
         // 車輪 4 個 (車体下)
         int wheelY = bot + 3;
         int wheelR = 2;
@@ -177,10 +182,7 @@ public final class ElectrificationCarListRenderer {
             g.fill(cx - r, cy - r, cx + r + 1, cy + r + 1, color);
             g.fill(cx, cy, cx + 1, cy + 1, 0xFF000000);
         } else {
-            g.fill(cx - r, cy - r, cx + r + 1, cy - r + 1, color);
-            g.fill(cx - r, cy + r, cx + r + 1, cy + r + 1, color);
-            g.fill(cx - r, cy - r, cx - r + 1, cy + r + 1, color);
-            g.fill(cx + r, cy - r, cx + r + 1, cy + r + 1, color);
+            com.manta.api.draw.SmoothRenderer.strokeRoundedRect(g, cx - r, cy - r, 2 * r + 1, 2 * r + 1, 0f, 1f, color);
         }
     }
 

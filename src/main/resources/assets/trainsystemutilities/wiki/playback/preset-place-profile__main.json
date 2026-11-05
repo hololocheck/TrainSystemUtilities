@@ -1,0 +1,10 @@
+{
+  "schema": "manta-playback/1",
+  "loop": true,
+  "restartHoldMs": 1500,
+  "steps": [
+    {"target": {"classes": ["notif-clear-btn"]}, "do": "hover", "say": "trainsystemutilities.wiki.play.ppp.clear", "holdMs": 1300},
+    {"target": {"classes": ["header-btn", "back-btn"]}, "do": "hover", "say": "trainsystemutilities.wiki.play.ppp.back", "holdMs": 1100},
+    {"target": {"classes": ["notif-row"]}, "do": "hover", "say": "trainsystemutilities.wiki.play.ppp.notif", "holdMs": 1500}
+  ]
+}

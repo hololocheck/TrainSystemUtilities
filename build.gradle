@@ -80,7 +80,9 @@ dependencies {
         compileOnly "com.simibubi.create:create-${minecraft_version}:${create_version}:slim"
         runtimeOnly "com.simibubi.create:create-${minecraft_version}:${create_version}:slim"
     }
-    implementation "net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}"
+    // Ponder is compile-time only: at runtime Create's own jar-in-jar Ponder is used, and an explicit older
+    // runtime Ponder conflicts with Create's requirement and stops a dedicated server before it starts.
+    compileOnly "net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_version}"
     compileOnly "dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}"
     runtimeOnly "dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_version}"
     implementation "com.tterrag.registrate:Registrate:${registrate_version}"
@@ -90,7 +92,7 @@ dependencies {
 
     // Spatial Audio System (optional integration). API は belugalab.sas.api.* のみ参照。
     // 実行時は SAS が未導入でも SasIntegration の soft-dep ガードで no-op になる。
-    compileOnly files("../SpatialAudioSystem/build/libs/spatialaudiosystem-1.0.4.jar")
+    compileOnly files("../SpatialAudioSystem/build/libs/spatialaudiosystem-1.0.5.jar")
 
     // JEI API (optional, for exclusion areas)
     compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:19.27.0.340"

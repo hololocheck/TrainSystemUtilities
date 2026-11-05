@@ -41,8 +41,9 @@ public class ItemInteractionHandler {
                             tag.putLong("LinkedStationPos", pos.asLong());
                             stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
 
-                            player.displayClientMessage(Component.literal(
-                                    "\u00a7b\u99c5\u300c" + station.name + "\u300d\u3092\u767b\u9332\u3002\u8a2d\u7f6e\u3057\u3066\u30ea\u30f3\u30af\u3092\u5b8c\u4e86"), true);
+                            player.displayClientMessage(Component.translatable(
+                                    "message.trainsystemutilities.station_selected_fmt", station.name)
+                                    .withStyle(net.minecraft.ChatFormatting.AQUA), true);
                         }
                     } catch (Exception e) {
                         TrainSystemUtilities.LOGGER.warn("Failed to read station: {}", e.getMessage());

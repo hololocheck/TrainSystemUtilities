@@ -1,0 +1,53 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "pos-day-hi": {
+        "type": "int",
+        "min": -2147483648,
+        "max": 2147483647,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "pos-day-lo": {
+        "type": "int",
+        "min": -2147483648,
+        "max": 2147483647,
+        "sync": "s2c",
+        "persist": "none"
+      },
+      "positions": {
+        "type": "list",
+        "maxLength": 256,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "pos-train": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "pos-x": {
+            "type": "int",
+            "min": -536870912,
+            "max": 536870911
+          },
+          "pos-z": {
+            "type": "int",
+            "min": -536870912,
+            "max": 536870911
+          },
+          "pos-speed": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "pos-eta": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        }
+      }
+    }
+  }
+}

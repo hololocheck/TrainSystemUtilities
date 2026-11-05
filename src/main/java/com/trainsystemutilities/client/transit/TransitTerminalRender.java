@@ -37,8 +37,7 @@ final class TransitTerminalRender {
         int swapX = innerX + innerW - 16;
         int swapY = boxY + 7;
         int swapW = 14, swapH = 22;
-        boolean swapHover = mouseX >= swapX && mouseX < swapX + swapW
-                && mouseY >= swapY && mouseY < swapY + swapH;
+        boolean swapHover = com.manta.api.hud.Rects.contains(mouseX, mouseY, swapX, swapY, swapW, swapH);
         int swapBg = swapHover ? 0xFF1f5e7e : 0xFF1f3a50;
         SmoothRenderer.fillRoundedRect(g, swapX, swapY, swapW, swapH, 5f, 0xFF4FC3F7);
         g.fill(swapX + 1, swapY + 1, swapX + swapW - 1, swapY + swapH - 1, swapBg);
@@ -56,7 +55,7 @@ final class TransitTerminalRender {
         int btnY = boxY + 38;
         int btnH = 16;
         boolean canSearch = TransitTerminalState.fromGroupId() != null && TransitTerminalState.toGroupId() != null;
-        boolean btnHover = mouseX >= innerX && mouseX < innerX + innerW && mouseY >= btnY && mouseY < btnY + btnH;
+        boolean btnHover = com.manta.api.hud.Rects.contains(mouseX, mouseY, innerX, btnY, innerW, btnH);
         int btnBg = !canSearch ? 0xFF1f3030 : (btnHover ? 0xFF1f5e7e : 0xFF2da856);
         int btnBorder = !canSearch ? 0xFF445566 : 0xFF66BB6A;
         SmoothRenderer.fillRoundedRect(g, innerX, btnY, innerW, btnH, 5f, btnBorder);
@@ -65,13 +64,12 @@ final class TransitTerminalRender {
         // 幅は icon + gap + text で数えて塊ごと中央に置く — text 幅だけで中央を出すと
         // icon の分だけ左にずれる。
         String btnLabel = Component.translatable("tsu.transit_terminal.btn_search").getString();
-        int bw = CLEAR_ICON_SIZE + CLEAR_ICON_GAP + scr.fontAccess().width(btnLabel);
+        int bw = CLEAR_ICON_SIZE + CLEAR_ICON_GAP + com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), btnLabel);
         int btnTextColor = !canSearch ? 0xFF666666 : 0xFFFFFFFF;
         int btnX = innerX + (innerW - bw) / 2;
         com.manta.api.render.Icons.draw(g, "manta:search", btnX, btnY + 5,
                 CLEAR_ICON_SIZE, btnTextColor);
-        g.drawString(scr.fontAccess(), btnLabel,
-                btnX + CLEAR_ICON_SIZE + CLEAR_ICON_GAP, btnY + 4, btnTextColor, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), btnLabel, btnX + CLEAR_ICON_SIZE + CLEAR_ICON_GAP, btnY + 4, btnTextColor);
 
         // 結果領域 (or 履歴 if no result)
         int resY = btnY + btnH + 6;
@@ -84,7 +82,7 @@ final class TransitTerminalRender {
             // (当たり判定と描画で同じ式を使う — 片方だけ直すとクリック位置がずれる)。
             String clearText = Component.translatable("tsu.transit_terminal.clear_results").getString();
             int clIco = CLEAR_ICON_SIZE;
-            int clW = clIco + CLEAR_ICON_GAP + scr.fontAccess().width(clearText);
+            int clW = clIco + CLEAR_ICON_GAP + com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), clearText);
             boolean clHover = mouseX >= innerX + innerW - clW - 6
                     && mouseX < innerX + innerW
                     && mouseY >= resY && mouseY < resY + 11;
@@ -94,7 +92,7 @@ final class TransitTerminalRender {
             int clX = innerX + innerW - clW - 3;
             int clC = clHover ? 0xFFFFFFFF : 0xFFAAAAAA;
             com.manta.api.render.Icons.draw(g, "manta:x", clX, resY + 1, clIco, clC);
-            g.drawString(scr.fontAccess(), clearText, clX + clIco + CLEAR_ICON_GAP, resY, clC, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), clearText, clX + clIco + CLEAR_ICON_GAP, resY, clC);
             resY += 14;
             resH -= 14;
         }
@@ -119,15 +117,15 @@ final class TransitTerminalRender {
             int active = TransitTerminalState.sortMode();
             for (int i = 0; i < 3; i++) {
                 int cx = x + cellW * i;
-                boolean hover = mouseX >= cx && mouseX < cx + cellW && mouseY >= y && mouseY < y + h;
+                boolean hover = com.manta.api.hud.Rects.contains(mouseX, mouseY, cx, y, cellW, h);
                 boolean act = i == active;
                 int bg = act ? 0xFF1f5e7e : (hover ? 0xFF1f3a50 : 0xFF111928);
                 int border = act ? 0xFF4FC3F7 : 0xFF2a4a60;
                 g.fill(cx, y, cx + cellW, y + h, border);
                 g.fill(cx + 1, y + 1, cx + cellW - 1, y + h - 1, bg);
                 String label = Component.translatable(keys[i]).getString();
-                int lw = scr.fontAccess().width(label);
-                g.drawString(scr.fontAccess(), label, cx + (cellW - lw) / 2, y + 3, act ? 0xFFFFFFFF : 0xFFAAAAAA, false);
+                int lw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), label);
+                com.manta.api.text.MantaText.draw(g, scr.fontAccess(), label, cx + (cellW - lw) / 2, y + 3, act ? 0xFFFFFFFF : 0xFFAAAAAA);
             }
             return;
         }
@@ -135,7 +133,7 @@ final class TransitTerminalRender {
         int active = TransitTerminalState.selectedRouteIdx();
         for (int i = 0; i < n; i++) {
             int cx = x + cellW * i;
-            boolean hover = mouseX >= cx && mouseX < cx + cellW && mouseY >= y && mouseY < y + h;
+            boolean hover = com.manta.api.hud.Rects.contains(mouseX, mouseY, cx, y, cellW, h);
             boolean act = i == active;
             int bg = act ? 0xFF1f5e7e : (hover ? 0xFF1f3a50 : 0xFF111928);
             int border = act ? 0xFF4FC3F7 : 0xFF2a4a60;
@@ -147,8 +145,8 @@ final class TransitTerminalRender {
             int firstDep = legsCount == 0 ? 0 : route.trainLegs().get(0).departureTicksFromNow();
             int durSec = Math.max(0, (route.totalTicks() - firstDep) / 20);
             String label = (i + 1) + "  " + (durSec / 60) + "分";
-            int lw = scr.fontAccess().width(label);
-            g.drawString(scr.fontAccess(), label, cx + (cellW - lw) / 2, y + 3, act ? 0xFFFFFFFF : 0xFFAAAAAA, false);
+            int lw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), label);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), label, cx + (cellW - lw) / 2, y + 3, act ? 0xFFFFFFFF : 0xFFAAAAAA);
         }
     }
 
@@ -159,13 +157,12 @@ final class TransitTerminalRender {
             scr.drawWrapped(g, hint, x, y + 4, w, 0xFF80808F);
             return;
         }
-        g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.history_title").getString(),
-                x, y, 0xFFAAAAAA, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.history_title").getString(), x, y, 0xFFAAAAAA);
         String clearAll = Component.translatable("tsu.transit_terminal.history_clear_all").getString();
-        int caW = scr.fontAccess().width(clearAll);
+        int caW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), clearAll);
         boolean clearHover = mouseX >= x + w - caW - 4 && mouseX < x + w
                 && mouseY >= y - 1 && mouseY < y + 9;
-        g.drawString(scr.fontAccess(), clearAll, x + w - caW - 2, y, clearHover ? 0xFFFF8A65 : 0xFF80808F, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), clearAll, x + w - caW - 2, y, clearHover ? 0xFFFF8A65 : 0xFF80808F);
 
         int rowY = y + 12;
         int rowH = 22; // 18 → 22 で削除 × ボタンが見やすく
@@ -174,19 +171,17 @@ final class TransitTerminalRender {
         for (int i = 0; i < max; i++) {
             var e = history.get(i);
             // 行本体 (タイル領域)
-            boolean hover = mouseX >= x && mouseX < x + w - delBtnW - 2
-                    && mouseY >= rowY && mouseY < rowY + rowH;
+            boolean hover = com.manta.api.hud.Rects.contains(mouseX, mouseY, x, rowY, w - delBtnW - 2, rowH);
             int bg = hover ? 0xFF1f3a50 : 0xFF111928;
             SmoothRenderer.fillRoundedRect(g, x, rowY, w - delBtnW - 2, rowH, 5f, 0xFF2a4a60);
             g.fill(x + 1, rowY + 1, x + w - delBtnW - 3, rowY + rowH - 1, bg);
             // W7-1: 時刻 glyph を manta:clock icon へ。
             com.manta.api.render.Icons.draw(g, "manta:clock", x + 4, rowY + 6, 9, 0xFF80808F);
             String txt = TransitTerminalScreen.truncate(e.fromName() + " → " + e.toName(), w - delBtnW - 22);
-            g.drawString(scr.fontAccess(), txt, x + 16, rowY + 7, 0xFFE0E0E0, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), txt, x + 16, rowY + 7, 0xFFE0E0E0);
             // 削除ボタン (× ボックス、20×rowH の独立タイル)
             int delX = x + w - delBtnW;
-            boolean delHover = mouseX >= delX && mouseX < delX + delBtnW
-                    && mouseY >= rowY && mouseY < rowY + rowH;
+            boolean delHover = com.manta.api.hud.Rects.contains(mouseX, mouseY, delX, rowY, delBtnW, rowH);
             SmoothRenderer.fillRoundedRect(g, delX, rowY, delBtnW, rowH, 5f,
                     delHover ? 0xFFFF6655 : 0xFF555566);
             int delBg = delHover ? 0xFFAA1F1F : 0xFF333344;
@@ -218,18 +213,18 @@ final class TransitTerminalRender {
         SmoothRenderer.fillRoundedRect(g, x, y, w, headerH, 5f, 0xFF4FC3F7);
         g.fill(x + 1, y + 1, x + w - 1, y + headerH - 1, 0xFF1a3040);
         // 大きい時刻 (発 → 着)
-        g.drawString(scr.fontAccess(), depAbs, x + 4, y + 2, 0xFFFFFFFF, false);
-        int dw = scr.fontAccess().width(depAbs);
-        g.drawString(scr.fontAccess(), "→", x + 4 + dw + 3, y + 2, 0xFF80DEEA, false);
-        g.drawString(scr.fontAccess(), arrAbs, x + 4 + dw + 12, y + 2, 0xFFFFFFFF, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), depAbs, x + 4, y + 2, 0xFFFFFFFF);
+        int dw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), depAbs);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), "→", x + 4 + dw + 3, y + 2, 0xFF80DEEA);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), arrAbs, x + 4 + dw + 12, y + 2, 0xFFFFFFFF);
         // 所要時間 (右上)
         String dur = Component.translatable("tsu.transit_terminal.duration_fmt",
                 totalMin, totalSec % 60).getString();
-        int durW = scr.fontAccess().width(dur);
-        g.drawString(scr.fontAccess(), dur, x + w - durW - 4, y + 2, 0xFFFFD54F, false);
+        int durW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), dur);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), dur, x + w - durW - 4, y + 2, 0xFFFFD54F);
         // メタ行: 乗換 N 回 + 距離
         String meta = Component.translatable("tsu.transit_terminal.transfers_fmt", legs.size() - 1).getString();
-        g.drawString(scr.fontAccess(), meta, x + 4, y + 13, 0xFFAAAAAA, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), meta, x + 4, y + 13, 0xFFAAAAAA);
 
         int rowY = y + headerH + 4;
 
@@ -240,8 +235,7 @@ final class TransitTerminalRender {
                     r.fromGroupName(), walkSec).getString();
             // W7-1: 徒歩 glyph を manta:user icon へ。 text は icon 幅ぶん右へずらす。
             com.manta.api.render.Icons.draw(g, "manta:user", x, rowY, 9, 0xFF80DEEA);
-            g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(walkText, w - 14),
-                    x + 11, rowY, 0xFF80DEEA, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(walkText, w - 14), x + 11, rowY, 0xFF80DEEA);
             rowY += 12;
         }
 
@@ -268,7 +262,7 @@ final class TransitTerminalRender {
         int rowHTile = 44;
         for (int i = 0; i < legs.size() && rowY + rowHTile < y + h; i++) {
             TrainRouter.Leg leg = legs.get(i);
-            boolean hover = mouseX >= x && mouseX < x + w && mouseY >= rowY && mouseY < rowY + rowHTile;
+            boolean hover = com.manta.api.hud.Rects.contains(mouseX, mouseY, x, rowY, w, rowHTile);
             int bg = hover ? 0xFF1f3a50 : 0xFF111928;
             int border = 0xFF2a4a60;
             int lineColor = TransitTerminalScreen.lineColorForLeg(leg);
@@ -289,7 +283,7 @@ final class TransitTerminalRender {
             String fromName = TransitTerminalScreen.nameOf(leg.fromGroupId());
             String toName = TransitTerminalScreen.nameOf(leg.toGroupId());
             String l1 = TransitTerminalScreen.truncate(fromName + " → " + toName, rightTextEdge - (x + 8));
-            g.drawString(scr.fontAccess(), l1, x + 8, rowY + 4, 0xFFFFFFFF, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), l1, x + 8, rowY + 4, 0xFFFFFFFF);
 
             // 2 行目: 発車時刻 + あと N 分
             int delaySec = Math.max(0, leg.delayTicks() / 20);
@@ -298,36 +292,36 @@ final class TransitTerminalRender {
             int depSec = liveTicks / 20;
             String relDep = Component.translatable("tsu.transit_terminal.dep_in_fmt",
                     depSec / 60, depSec % 60).getString();
-            g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.abs_dep_fmt", absDep), x + 8, rowY + 15, 0xFFFFD54F, false);
-            int adw = scr.fontAccess().width("発 " + absDep);
-            g.drawString(scr.fontAccess(), " (" + relDep + ")", x + 8 + adw, rowY + 15, 0xFFAAAAAA, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.abs_dep_fmt", absDep), x + 8, rowY + 15, 0xFFFFD54F);
+            int adw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), "発 " + absDep);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), " (" + relDep + ")", x + 8 + adw, rowY + 15, 0xFFAAAAAA);
 
             // 3 行目: 走行時間 + 番線 + 遅延バッジ
             int legSec = leg.travelTicks() / 20;
             String travel = "🕐 " + Component.translatable("tsu.transit_terminal.leg_fmt_short",
                     legSec / 60, legSec % 60).getString();
-            g.drawString(scr.fontAccess(), travel, x + 8, rowY + 26, 0xFF80DEEA, false);
-            int travelW = scr.fontAccess().width(travel);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), travel, x + 8, rowY + 26, 0xFF80DEEA);
+            int travelW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), travel);
 
             int rightBadgeX = rightTextEdge;
             // 番線バッジ (記号バッジの左に置く)
             if (leg.boardPlatform() > 0) {
                 String plat = Component.translatable("tsu.transit_terminal.platform_fmt",
                         leg.boardPlatform()).getString();
-                int pw = scr.fontAccess().width(plat);
+                int pw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), plat);
                 int pbX = rightBadgeX - pw - 6;
                 g.fill(pbX, rowY + 25, rightBadgeX, rowY + 35, 0xFF1f4f3e);
-                g.drawString(scr.fontAccess(), plat, pbX + 3, rowY + 26, 0xFF80FFAA, false);
+                com.manta.api.text.MantaText.draw(g, scr.fontAccess(), plat, pbX + 3, rowY + 26, 0xFF80FFAA);
                 rightBadgeX = pbX - 4;
             }
             // 遅延バッジ
             if (delaySec > 0) {
                 String dlb = Component.translatable("tsu.transit_terminal.delay_fmt",
                         delaySec / 60, delaySec % 60).getString();
-                int dlw = scr.fontAccess().width(dlb);
+                int dlw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), dlb);
                 int dlx = rightBadgeX - dlw - 6;
                 g.fill(dlx, rowY + 14, rightBadgeX, rowY + 24, 0xFFAA1F1F);
-                g.drawString(scr.fontAccess(), dlb, dlx + 3, rowY + 15, 0xFFFFFFFF, false);
+                com.manta.api.text.MantaText.draw(g, scr.fontAccess(), dlb, dlx + 3, rowY + 15, 0xFFFFFFFF);
             }
             // 信頼度
             String confLabel;
@@ -342,11 +336,11 @@ final class TransitTerminalRender {
                 confLabel = "△ " + Component.translatable("tsu.transit_terminal.conf_unknown").getString();
                 confColor = 0xFF80808F;
             }
-            int cw = scr.fontAccess().width(confLabel);
+            int cw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), confLabel);
             // 信頼度は travel の右隣 (記号バッジ前まで)
             int confX = x + 8 + travelW + 6;
             if (confX + cw < rightTextEdge) {
-                g.drawString(scr.fontAccess(), confLabel, confX, rowY + 26, confColor, false);
+                com.manta.api.text.MantaText.draw(g, scr.fontAccess(), confLabel, confX, rowY + 26, confColor);
             }
 
             rowY += rowHTile + 2;
@@ -356,12 +350,11 @@ final class TransitTerminalRender {
     static void renderResultDetail(TransitTerminalScreen scr, GuiGraphics g, ComposedRouteFinder.ComposedRoute r,
                                     int x, int y, int w, int h, int mouseX, int mouseY) {
         // 戻るボタン (左上)
-        boolean backHover = mouseX >= x && mouseX < x + 40 && mouseY >= y && mouseY < y + 12;
+        boolean backHover = com.manta.api.hud.Rects.contains(mouseX, mouseY, x, y, 40, 12);
         // W7-1: 戻る glyph を manta:arrow-left icon へ (control glyph、hover 色は共通)。
         int backC = backHover ? 0xFFFFD54F : 0xFF80DEEA;
         com.manta.api.render.Icons.draw(g, "manta:arrow-left", x, y, 9, backC);
-        g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.back").getString(),
-                x + 11, y, backC, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.back").getString(), x + 11, y, backC);
 
         // 右上に 2 ボタンを横並びで配置 (重ならないよう 8px 空ける)
         boolean hudOn = TransitTerminalState.showDetailHud();
@@ -376,16 +369,15 @@ final class TransitTerminalRender {
         } else {
             navLabel = "🧭 " + Component.translatable("tsu.transit_terminal.nav_start").getString();
         }
-        int hudW = scr.fontAccess().width(hudLabel);
-        int navW = scr.fontAccess().width(navLabel);
+        int hudW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), hudLabel);
+        int navW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), navLabel);
         int btnGap = 8;
         // HUD button (一番右)
         int hudBoxX = x + w - hudW - 6;
         boolean hudHover = mouseX >= hudBoxX && mouseX < hudBoxX + hudW + 6
                 && mouseY >= y - 1 && mouseY < y + 10;
         g.fill(hudBoxX, y - 1, hudBoxX + hudW + 6, y + 10, hudOn ? 0xFF1f5e7e : 0xFF2a4a60);
-        g.drawString(scr.fontAccess(), hudLabel, hudBoxX + 3, y,
-                hudHover ? 0xFFFFD54F : 0xFFFFFFFF, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), hudLabel, hudBoxX + 3, y, hudHover ? 0xFFFFD54F : 0xFFFFFFFF);
 
         // Nav button (HUD button の左、btnGap 空けて)
         int navBoxX = hudBoxX - navW - 6 - btnGap;
@@ -393,8 +385,7 @@ final class TransitTerminalRender {
                 && mouseY >= y - 1 && mouseY < y + 10;
         g.fill(navBoxX, y - 1, navBoxX + navW + 6, y + 10,
                 TransitNavClientState.active() ? 0xFFAA3F1F : 0xFF2a4a60);
-        g.drawString(scr.fontAccess(), navLabel, navBoxX + 3, y,
-                navHover ? 0xFFFFD54F : 0xFFFFFFFF, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), navLabel, navBoxX + 3, y, navHover ? 0xFFFFD54F : 0xFFFFFFFF);
 
         if (hudOn) {
             TransitTerminalState.setHudRouteIdx(TransitTerminalState.selectedRouteIdx());
@@ -406,9 +397,9 @@ final class TransitTerminalRender {
         String navErr = TransitNavClientState.lastError();
         if (!navErr.isEmpty()) {
             String errMsg = "🧭 " + Component.translatable("tsu.transit_terminal.nav_error_fmt", navErr).getString();
-            int eW = scr.fontAccess().width(errMsg);
+            int eW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), errMsg);
             g.fill(x, y + 11, x + Math.min(w, eW + 6), y + 21, 0xCC8B0000);
-            g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(errMsg, w - 6), x + 3, y + 12, 0xFFFFE0E0, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(errMsg, w - 6), x + 3, y + 12, 0xFFFFE0E0);
             detailTextY += 12;
         }
 
@@ -418,9 +409,9 @@ final class TransitTerminalRender {
         String dr = scr.absoluteClockOffset(firstDep) + " → " + scr.absoluteClockOffset(r.totalTicks());
         int totalSec = Math.max(0, (r.totalTicks() - firstDep) / 20);
         String summary = dr + " (" + (totalSec / 60) + "m " + (totalSec % 60) + "s)";
-        g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(summary, w - 4), x, detailTextY, 0xFFFFFFFF, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(summary, w - 4), x, detailTextY, 0xFFFFFFFF);
         String trans = Component.translatable("tsu.transit_terminal.transfers_fmt", legs.size() - 1).getString();
-        g.drawString(scr.fontAccess(), trans, x, detailTextY + 10, 0xFFAAAAAA, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), trans, x, detailTextY + 10, 0xFFAAAAAA);
 
         // タイムライン
         int dy = detailTextY + 24;
@@ -443,7 +434,7 @@ final class TransitTerminalRender {
 
             // === 出発駅マーク ===
             // 時刻
-            g.drawString(scr.fontAccess(), depAbs, x, dy, 0xFFFFD54F, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), depAbs, x, dy, 0xFFFFD54F);
             // ●
             g.fill(barColX + 2, dy + 2, barColX + 9, dy + 9, 0xFF000000);
             g.fill(barColX + 3, dy + 3, barColX + 8, dy + 8, color);
@@ -451,14 +442,14 @@ final class TransitTerminalRender {
             String fromName = fromG != null ? fromG.name() : TransitTerminalScreen.nameOf(leg.fromGroupId());
             int reserveR = 50; // 番線分
             if (leg.symbolNumber() >= 0 || (leg.symbolLetters() != null && !leg.symbolLetters().isEmpty())) reserveR += 18;
-            g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(fromName, w - timeColW - reserveR), barColX + 14, dy + 1, 0xFFFFFFFF, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(fromName, w - timeColW - reserveR), barColX + 14, dy + 1, 0xFFFFFFFF);
             // 番線 (右側に小さく)
             if (leg.boardPlatform() > 0) {
                 String plat = Component.translatable("tsu.transit_terminal.platform_fmt",
                         leg.boardPlatform()).getString();
-                int pw = scr.fontAccess().width(plat);
+                int pw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), plat);
                 g.fill(x + w - pw - 8, dy, x + w - 2, dy + 10, 0xFF1f4f3e);
-                g.drawString(scr.fontAccess(), plat, x + w - pw - 5, dy + 1, 0xFF80FFAA, false);
+                com.manta.api.text.MantaText.draw(g, scr.fontAccess(), plat, x + w - pw - 5, dy + 1, 0xFF80FFAA);
             }
             dy += 12;
 
@@ -481,26 +472,25 @@ final class TransitTerminalRender {
                     trainName = "🚆 " + snap.trainName();
                 }
             }
-            g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(trainName, w - timeColW - 16 - (symBadgeW > 0 ? symBadgeW + 4 : 0)),
-                    barColX + 14, barTopY + 4, 0xFFE0E0E0, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(trainName, w - timeColW - 16 - (symBadgeW > 0 ? symBadgeW + 4 : 0)), barColX + 14, barTopY + 4, 0xFFE0E0E0);
             // 走行時間 + 駅数
             String legInfo = Component.translatable("tsu.transit_terminal.leg_fmt_short",
                     legSec / 60, legSec % 60).getString();
-            g.drawString(scr.fontAccess(), legInfo, barColX + 14, barTopY + 14, 0xFF80DEEA, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), legInfo, barColX + 14, barTopY + 14, 0xFF80DEEA);
             dy += legHeight;
 
             // === 到着駅マーク ===
-            g.drawString(scr.fontAccess(), arrAbs, x, dy, 0xFFFF8A65, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), arrAbs, x, dy, 0xFFFF8A65);
             g.fill(barColX + 2, dy + 2, barColX + 9, dy + 9, 0xFF000000);
             g.fill(barColX + 3, dy + 3, barColX + 8, dy + 8, color);
             String toName = toG != null ? toG.name() : TransitTerminalScreen.nameOf(leg.toGroupId());
-            g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(toName, w - timeColW - 50), barColX + 14, dy + 1, 0xFFFFFFFF, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(toName, w - timeColW - 50), barColX + 14, dy + 1, 0xFFFFFFFF);
             if (leg.alightPlatform() > 0) {
                 String plat = Component.translatable("tsu.transit_terminal.platform_fmt",
                         leg.alightPlatform()).getString();
-                int pw = scr.fontAccess().width(plat);
+                int pw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), plat);
                 g.fill(x + w - pw - 8, dy, x + w - 2, dy + 10, 0xFF4f3a1f);
-                g.drawString(scr.fontAccess(), plat, x + w - pw - 5, dy + 1, 0xFFFFD54F, false);
+                com.manta.api.text.MantaText.draw(g, scr.fontAccess(), plat, x + w - pw - 5, dy + 1, 0xFFFFD54F);
             }
             dy += 12;
 
@@ -515,7 +505,7 @@ final class TransitTerminalRender {
                     g.fill(barColX + 5, dy, barColX + 7, dy + 14, 0xFF606080);
                     // W7-1: 待機 glyph を manta:refresh-cw icon へ。
                     com.manta.api.render.Icons.draw(g, "manta:refresh-cw", barColX + 14, dy + 2, 8, 0xFFAAAAAA);
-                    g.drawString(scr.fontAccess(), waitText, barColX + 25, dy + 2, 0xFFAAAAAA, false);
+                    com.manta.api.text.MantaText.draw(g, scr.fontAccess(), waitText, barColX + 25, dy + 2, 0xFFAAAAAA);
                     dy += 14;
                 }
             }
@@ -538,10 +528,8 @@ final class TransitTerminalRender {
 
         var snapshots = TransitTerminalClientCache.allSchedules();
         if (snapshots.isEmpty()) {
-            g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.schedule_empty").getString(),
-                    innerX, listY + 4, 0xFF80808F, false);
-            g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.schedule_hint").getString(),
-                    innerX, listY + 16, 0xFF606080, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.schedule_empty").getString(), innerX, listY + 4, 0xFF80808F);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.schedule_hint").getString(), innerX, listY + 16, 0xFF606080);
             return;
         }
         String key = TransitTerminalState.scheduleQuery().toLowerCase(java.util.Locale.ROOT);
@@ -573,15 +561,13 @@ final class TransitTerminalRender {
             g.fill(innerX, rowY, innerX + listInnerW, rowY + 1, 0xFF2a4a60);
             // W7-1: 列車 glyph を manta:train-front icon へ。
             com.manta.api.render.Icons.draw(g, "manta:train-front", innerX + 2, rowY + 2, 8, 0xFFFFFFFF);
-            g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(snap.trainName(), listInnerW - 16),
-                    innerX + 13, rowY + 2, 0xFFFFFFFF, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(snap.trainName(), listInnerW - 16), innerX + 13, rowY + 2, 0xFFFFFFFF);
             String next = snap.nextGroupId() == null ? "—" : TransitTerminalScreen.nameOf(snap.nextGroupId());
             int eta = snap.etaTicksToNext() / 20;
             String etaText = Component.translatable("tsu.transit_terminal.eta_fmt", eta).getString();
-            g.drawString(scr.fontAccess(), "→ " + TransitTerminalScreen.truncate(next, listInnerW - 60),
-                    innerX + 2, rowY + 12, 0xFF80DEEA, false);
-            int ew = scr.fontAccess().width(etaText);
-            g.drawString(scr.fontAccess(), etaText, innerX + listInnerW - ew - 2, rowY + 12, 0xFFFFD54F, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), "→ " + TransitTerminalScreen.truncate(next, listInnerW - 60), innerX + 2, rowY + 12, 0xFF80DEEA);
+            int ew = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), etaText);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), etaText, innerX + listInnerW - ew - 2, rowY + 12, 0xFFFFD54F);
             drawn++;
         }
 
@@ -593,7 +579,7 @@ final class TransitTerminalRender {
             // track
             g.fill(sbX, sbY, sbX + sbW, sbY + sbHeight, 0xFF2a2a3a);
             // thumb
-            int thumbH = Math.max(12, sbHeight * rowsVisible / filteredCount);
+            int thumbH = TransitTerminalState.scheduleScroll().thumbH(sbHeight, 12);
             int thumbY = sbY + (maxScroll == 0 ? 0 : (sbHeight - thumbH) * scrollY / maxScroll);
             g.fill(sbX, thumbY, sbX + sbW, thumbY + thumbH, 0xFF4FC3F7);
         }
@@ -611,8 +597,8 @@ final class TransitTerminalRender {
         // データ無い場合の早期 return + 初期 fit
         if (segments.isEmpty() && groups.isEmpty()) {
             String msg = Component.translatable("tsu.transit_terminal.map_empty").getString();
-            int mw = scr.fontAccess().width(msg);
-            g.drawString(scr.fontAccess(), msg, innerX + (innerW - mw) / 2, y + h / 2 - 4, 0xFF80808F, false);
+            int mw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), msg);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), msg, innerX + (innerW - mw) / 2, y + h / 2 - 4, 0xFF80808F);
             return;
         }
 
@@ -652,11 +638,9 @@ final class TransitTerminalRender {
         double centerSY = y + h / 2.0;
 
         // Scissor: パネル領域内にクリップ
-        var msc = g.pose().last().pose();
-        float mscX = msc.m00(), mscY = msc.m11();
-        int mscTx = (int) msc.m30(), mscTy = (int) msc.m31();
-        g.enableScissor((int) (innerX * mscX) + mscTx, (int) ((y + 2) * mscY) + mscTy,
-                        (int) ((innerX + innerW) * mscX) + mscTx, (int) ((y + h - 4) * mscY) + mscTy);
+        int[] mclip = com.manta.api.preview.GuiPreviewCamera.scissorRect(
+                g.pose().last().pose(), innerX, y + 2, innerW, h - 6);
+        g.enableScissor(mclip[0], mclip[1], mclip[2], mclip[3]);
 
         // 線路セグメント (vector)
         var vc = com.manta.api.draw.VectorRenderer.getGuiBuffer(g.bufferSource());
@@ -701,7 +685,7 @@ final class TransitTerminalRender {
             g.fill(dx - 3, dz - 3, dx + 4, dz + 4, 0xFF1a1a2e);
             g.fill(dx - 2, dz - 2, dx + 3, dz + 3, 0xFF4FC3F7);
             if (mapZoom > 0.5) {
-                g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(grp.name(), 60), dx + 5, dz - 4, 0xFF4fc3f7, true);
+                com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(grp.name(), 60), dx + 5, dz - 4, 0xFF4fc3f7, true);
             }
             if (mouseX >= dx - 4 && mouseX <= dx + 4 && mouseY >= dz - 4 && mouseY <= dz + 4) {
                 hoverName = new StringBuilder(grp.name());
@@ -714,21 +698,20 @@ final class TransitTerminalRender {
         // Hover tooltip (scissor 外でも見えるよう scissor 終了後)
         if (hoverName != null) {
             String n = TransitTerminalScreen.truncate(hoverName.toString(), 100);
-            int w = scr.fontAccess().width(n);
+            int w = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), n);
             g.fill(hoverX + 4, hoverY - 6, hoverX + 8 + w, hoverY + 4, 0xFF000000);
-            g.drawString(scr.fontAccess(), n, hoverX + 6, hoverY - 4, 0xFFFFFFFF, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), n, hoverX + 6, hoverY - 4, 0xFFFFFFFF);
         }
 
         // ズーム表示 + ヒント
         String zoom = String.format("x%.2f", mapZoom);
-        g.drawString(scr.fontAccess(), zoom, innerX + 4, y + h - 14, 0xFF80808F, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), zoom, innerX + 4, y + h - 14, 0xFF80808F);
         if (!segments.isEmpty()) {
             String segInfo = segments.size() + " seg";
-            int sw = scr.fontAccess().width(segInfo);
-            g.drawString(scr.fontAccess(), segInfo, innerX + innerW - sw - 4, y + h - 14, 0xFF80808F, false);
+            int sw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), segInfo);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), segInfo, innerX + innerW - sw - 4, y + h - 14, 0xFF80808F);
         }
-        g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.map_hint").getString(),
-                innerX + 4, y + 4, 0xFF606080, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.map_hint").getString(), innerX + 4, y + 4, 0xFF606080);
     }
 
     static void renderSettingsTab(TransitTerminalScreen scr, GuiGraphics g, int mouseX, int mouseY, int y, int h) {
@@ -755,17 +738,15 @@ final class TransitTerminalRender {
 
         rowY += 8;
         // 位置リセットボタン
-        boolean rstHover = mouseX >= innerX && mouseX < innerX + innerW
-                && mouseY >= rowY && mouseY < rowY + 14;
+        boolean rstHover = com.manta.api.hud.Rects.contains(mouseX, mouseY, innerX, rowY, innerW, 14);
         g.fill(innerX, rowY, innerX + innerW, rowY + 14, 0xFF333344);
         g.fill(innerX + 1, rowY + 1, innerX + innerW - 1, rowY + 13, rstHover ? 0xFF1f3a50 : 0xFF111928);
         String rstLabel = Component.translatable("tsu.transit_terminal.setting_reset_layout").getString();
-        int rstW = scr.fontAccess().width(rstLabel);
-        g.drawString(scr.fontAccess(), rstLabel, innerX + (innerW - rstW) / 2, rowY + 3, 0xFFAAAAAA, false);
+        int rstW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), rstLabel);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), rstLabel, innerX + (innerW - rstW) / 2, rowY + 3, 0xFFAAAAAA);
         rowY += 18;
 
-        g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.setting_about").getString(),
-                innerX, rowY, 0xFF80808F, false);
+        com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.setting_about").getString(), innerX, rowY, 0xFF80808F);
     }
 
     static void drawMapCanvas(TransitTerminalScreen scr, GuiGraphics g, int x, int y, int w, int h, int mouseX, int mouseY) {
@@ -774,8 +755,8 @@ final class TransitTerminalRender {
         // データなし
         if (segments.isEmpty() && groups.isEmpty()) {
             String msg = Component.translatable("tsu.transit_terminal.map_empty").getString();
-            int mw = scr.fontAccess().width(msg);
-            g.drawString(scr.fontAccess(), msg, x + (w - mw) / 2, y + h / 2 - 4, 0xFF80808F, false);
+            int mw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), msg);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), msg, x + (w - mw) / 2, y + h / 2 - 4, 0xFF80808F);
             return;
         }
         // 初回 fit
@@ -813,13 +794,9 @@ final class TransitTerminalRender {
         // bg
         g.fill(x, y, x + w, y + h, 0xFF0a0a18);
         // scissor は screen 座標で渡す必要あり (pose translate を加算)
-        var sm = g.pose().last().pose();
-        float smX = sm.m00(), smY = sm.m11();
-        int sx = (int) sm.m30();
-        int sy = (int) sm.m31();
         g.flush();
-        g.enableScissor((int) (x * smX) + sx, (int) (y * smY) + sy,
-                        (int) ((x + w) * smX) + sx, (int) ((y + h) * smY) + sy);
+        int[] sclip = com.manta.api.preview.GuiPreviewCamera.scissorRect(g.pose().last().pose(), x, y, w, h);
+        g.enableScissor(sclip[0], sclip[1], sclip[2], sclip[3]);
         // 線路セグメント
         var vc = com.manta.api.draw.VectorRenderer.getGuiBuffer(g.bufferSource());
         var matrix = g.pose().last().pose();
@@ -858,7 +835,7 @@ final class TransitTerminalRender {
             g.fill(dx - 3, dz - 3, dx + 4, dz + 4, 0xFF1a1a2e);
             g.fill(dx - 2, dz - 2, dx + 3, dz + 3, 0xFF4FC3F7);
             if (mapZoom > 0.5) {
-                g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(grp.name(), 60), dx + 5, dz - 4, 0xFF4fc3f7, true);
+                com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(grp.name(), 60), dx + 5, dz - 4, 0xFF4fc3f7, true);
             }
             if (mouseX >= dx - 4 && mouseX <= dx + 4 && mouseY >= dz - 4 && mouseY <= dz + 4) {
                 hoverName = new StringBuilder(grp.name());
@@ -870,19 +847,17 @@ final class TransitTerminalRender {
         // hover tooltip
         if (hoverName != null) {
             String n = TransitTerminalScreen.truncate(hoverName.toString(), 100);
-            int tw = scr.fontAccess().width(n);
+            int tw = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), n);
             g.fill(hoverX + 4, hoverY - 6, hoverX + 8 + tw, hoverY + 4, 0xFF000000);
-            g.drawString(scr.fontAccess(), n, hoverX + 6, hoverY - 4, 0xFFFFFFFF, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), n, hoverX + 6, hoverY - 4, 0xFFFFFFFF);
         }
     }
 
     static void drawScheduleListCanvas(TransitTerminalScreen scr, GuiGraphics g, int x, int y, int w, int h, int mouseX, int mouseY) {
         var snapshots = TransitTerminalClientCache.allSchedules();
         if (snapshots.isEmpty()) {
-            g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.schedule_empty").getString(),
-                    x, y + 4, 0xFF80808F, false);
-            g.drawString(scr.fontAccess(), Component.translatable("tsu.transit_terminal.schedule_hint").getString(),
-                    x, y + 16, 0xFF606080, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.schedule_empty").getString(), x, y + 4, 0xFF80808F);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), Component.translatable("tsu.transit_terminal.schedule_hint").getString(), x, y + 16, 0xFF606080);
             return;
         }
         String key = TransitTerminalState.scheduleQuery().toLowerCase(java.util.Locale.ROOT);
@@ -903,15 +878,13 @@ final class TransitTerminalRender {
             g.fill(x, rowY, x + listInnerW, rowY + 1, 0xFF2a4a60);
             // W7-1: 列車 glyph を manta:train-front icon へ。
             com.manta.api.render.Icons.draw(g, "manta:train-front", x + 2, rowY + 2, 8, 0xFFFFFFFF);
-            g.drawString(scr.fontAccess(), TransitTerminalScreen.truncate(snap.trainName(), listInnerW - 16),
-                    x + 13, rowY + 2, 0xFFFFFFFF, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), TransitTerminalScreen.truncate(snap.trainName(), listInnerW - 16), x + 13, rowY + 2, 0xFFFFFFFF);
             String next = snap.nextGroupId() == null ? "—" : TransitTerminalScreen.nameOf(snap.nextGroupId());
             int eta = snap.etaTicksToNext() / 20;
             String etaText = Component.translatable("tsu.transit_terminal.eta_fmt", eta).getString();
-            g.drawString(scr.fontAccess(), "→ " + TransitTerminalScreen.truncate(next, listInnerW - 60),
-                    x + 2, rowY + 12, 0xFF80DEEA, false);
-            int ew = scr.fontAccess().width(etaText);
-            g.drawString(scr.fontAccess(), etaText, x + listInnerW - ew - 2, rowY + 12, 0xFFFFD54F, false);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), "→ " + TransitTerminalScreen.truncate(next, listInnerW - 60), x + 2, rowY + 12, 0xFF80DEEA);
+            int ew = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), etaText);
+            com.manta.api.text.MantaText.draw(g, scr.fontAccess(), etaText, x + listInnerW - ew - 2, rowY + 12, 0xFFFFD54F);
             drawn++;
         }
     }
@@ -925,7 +898,7 @@ final class TransitTerminalRender {
         // Swap ボタン
         int swapX = innerX + innerW - 16;
         int swapY = boxY + 7;
-        if (mouseX >= swapX && mouseX < swapX + 14 && mouseY >= swapY && mouseY < swapY + 22) {
+        if (com.manta.api.hud.Rects.contains(mouseX, mouseY, swapX, swapY, 14, 22)) {
             TransitTerminalState.swapFromTo();
             scr.rebuildEditBoxes();
             return true;
@@ -934,7 +907,7 @@ final class TransitTerminalRender {
         // 検索ボタン
         int btnY = boxY + 38;
         int btnH = 16;
-        if (mouseX >= innerX && mouseX < innerX + innerW && mouseY >= btnY && mouseY < btnY + btnH) {
+        if (com.manta.api.hud.Rects.contains(mouseX, mouseY, innerX, btnY, innerW, btnH)) {
             TransitTerminalState.onSearchSubmit();
             return true;
         }
@@ -945,7 +918,7 @@ final class TransitTerminalRender {
         if (r != null) {
             // W7-1: 描画側と同じ式で幅を出す (icon + gap + text)。
             String clearText = Component.translatable("tsu.transit_terminal.clear_results").getString();
-            int clW = CLEAR_ICON_SIZE + CLEAR_ICON_GAP + scr.fontAccess().width(clearText);
+            int clW = CLEAR_ICON_SIZE + CLEAR_ICON_GAP + com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), clearText);
             if (mouseX >= innerX + innerW - clW - 6 && mouseX < innerX + innerW
                     && mouseY >= resY - 1 && mouseY < resY + 11) {
                 TransitTerminalState.clearResults();
@@ -987,7 +960,7 @@ final class TransitTerminalRender {
         if (r != null && r.found()) {
             if (TransitTerminalState.expandedLegIdx() >= 0) {
                 // 詳細画面: 戻るボタン
-                if (mouseX >= innerX && mouseX < innerX + 40 && mouseY >= resY && mouseY < resY + 12) {
+                if (com.manta.api.hud.Rects.contains(mouseX, mouseY, innerX, resY, 40, 12)) {
                     TransitTerminalState.setExpandedLegIdx(-1);
                     return true;
                 }
@@ -998,8 +971,8 @@ final class TransitTerminalRender {
                 String navLabel = TransitNavClientState.active()
                         ? "🧭 " + Component.translatable("tsu.transit_terminal.nav_cancel").getString()
                         : "🧭 " + Component.translatable("tsu.transit_terminal.nav_start").getString();
-                int hudW = scr.fontAccess().width(hudLabel);
-                int navW = scr.fontAccess().width(navLabel);
+                int hudW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), hudLabel);
+                int navW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), navLabel);
                 int btnGap = 8;
                 int hudBoxX = innerX + innerW - hudW - 6;
                 int navBoxX = hudBoxX - navW - 6 - btnGap;
@@ -1015,6 +988,8 @@ final class TransitTerminalRender {
                 // Nav クリック
                 if (mouseX >= navBoxX && mouseX < navBoxX + navW + 6
                         && mouseY >= resY - 1 && mouseY < resY + 10) {
+                    // The wiki's stand-in starts no navigation: it is the player's, and the server's.
+                    if (TransitTerminalState.wiki()) return true;
                     if (TransitNavClientState.active()) {
                         TransitNavClientState.clear();
                     } else if (TransitNavClientState.isPending()) {
@@ -1041,7 +1016,7 @@ final class TransitTerminalRender {
                         }
                         TransitNavClientState.markPending();
                         TransitNavClientState.setRequestedPlatform(platform);
-                        com.trainsystemutilities.network.NavPathRequestPayload.send(target, platform);
+                        com.trainsystemutilities.client.TransitClient.nav(target, platform);
                         com.trainsystemutilities.TrainSystemUtilities.LOGGER.info(
                                 "[NavPath] sent request, target={} platform={} chain={}",
                                 target, platform, TransitNavClientState.chainSize());
@@ -1056,7 +1031,7 @@ final class TransitTerminalRender {
                 int rowH = 44;
                 List<TrainRouter.Leg> legs = r.trainLegs();
                 for (int i = 0; i < legs.size(); i++) {
-                    if (mouseX >= innerX && mouseX < innerX + innerW && mouseY >= rowY && mouseY < rowY + rowH) {
+                    if (com.manta.api.hud.Rects.contains(mouseX, mouseY, innerX, rowY, innerW, rowH)) {
                         TransitTerminalState.setExpandedLegIdx(i);
                         return true;
                     }
@@ -1069,7 +1044,7 @@ final class TransitTerminalRender {
             if (!history.isEmpty()) {
                 // ヘッダ「全消去」ボタン
                 String clearAll = Component.translatable("tsu.transit_terminal.history_clear_all").getString();
-                int caW = scr.fontAccess().width(clearAll);
+                int caW = com.manta.api.text.MantaText.uiWidth(scr.fontAccess(), clearAll);
                 if (mouseX >= innerX + innerW - caW - 4 && mouseX < innerX + innerW
                         && mouseY >= resY - 1 && mouseY < resY + 9) {
                     TransitTerminalState.clearHistory();
@@ -1081,14 +1056,12 @@ final class TransitTerminalRender {
                 for (int i = 0; i < history.size(); i++) {
                     // 削除 (×) ボタン
                     int delX = innerX + innerW - delBtnW;
-                    if (mouseX >= delX && mouseX < delX + delBtnW
-                            && mouseY >= rowY && mouseY < rowY + rowH) {
+                    if (com.manta.api.hud.Rects.contains(mouseX, mouseY, delX, rowY, delBtnW, rowH)) {
                         TransitTerminalState.removeHistoryAt(i);
                         return true;
                     }
                     // 行本体クリック
-                    if (mouseX >= innerX && mouseX < innerX + innerW - delBtnW - 2
-                            && mouseY >= rowY && mouseY < rowY + rowH) {
+                    if (com.manta.api.hud.Rects.contains(mouseX, mouseY, innerX, rowY, innerW - delBtnW - 2, rowH)) {
                         var e = history.get(i);
                         scr.fromCtrl.setValue(e.fromName());   // onChange が setFromQuery
                         scr.toCtrl.setValue(e.toName());       // onChange が setToQuery

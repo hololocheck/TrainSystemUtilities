@@ -1,0 +1,241 @@
+{
+  "tag": "div",
+  "state": {
+    "fields": {
+      "ticket-sellable": {
+        "type": "list",
+        "maxLength": 256,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "ticket-sellable-id": {
+            "type": "string",
+            "maxLen": 36
+          }
+        }
+      },
+      "ticket-network-groups": {
+        "type": "list",
+        "maxLength": 256,
+        "sync": "s2c",
+        "persist": "none",
+        "row": {
+          "ticket-network-group-id": {
+            "type": "string",
+            "maxLen": 36
+          }
+        }
+      }
+    },
+    "actions": {
+      "control": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 2
+          },
+          "train": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "symbol": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 2
+          },
+          "index": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          },
+          "letters": {
+            "type": "string",
+            "maxLen": 72
+          },
+          "number": {
+            "type": "int",
+            "min": 0,
+            "max": 2147483647
+          },
+          "border-color": {
+            "type": "string",
+            "maxLen": 144
+          },
+          "name": {
+            "type": "string",
+            "maxLen": 576
+          },
+          "border-radius": {
+            "type": "int",
+            "min": 0,
+            "max": 2147483647
+          },
+          "station": {
+            "type": "exact",
+            "maxLen": 768
+          },
+          "x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "symbol-id": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "monitor-layout": {
+        "params": {
+          "action": {
+            "type": "int",
+            "min": 0,
+            "max": 2
+          },
+          "data": {
+            "type": "exact",
+            "maxLen": 60000
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "schedule-request": {
+        "params": {
+          "train": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "schedule-apply": {
+        "params": {
+          "train": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "schedule": {
+            "type": "exact",
+            "maxLen": 60000
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 5
+      },
+      "export-timetable": {
+        "params": {
+          "train": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "share-timetable": {
+        "params": {
+          "source": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "target": {
+            "type": "string",
+            "maxLen": 36
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "set-train-type": {
+        "params": {
+          "train": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "type-index": {
+            "type": "int",
+            "min": -2147483648,
+            "max": 2147483647
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 1000
+      },
+      "ticket-request": {
+        "params": {},
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "ticket-update": {
+        "params": {
+          "group": {
+            "type": "string",
+            "maxLen": 36
+          },
+          "sellable": {
+            "type": "boolean"
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      },
+      "door-side": {
+        "params": {
+          "station": {
+            "type": "exact",
+            "maxLen": 768
+          },
+          "x": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "y": {
+            "type": "int",
+            "min": -2048,
+            "max": 2047
+          },
+          "z": {
+            "type": "int",
+            "min": -33554432,
+            "max": 33554431
+          },
+          "side": {
+            "type": "enum",
+            "values": [
+              "AUTO",
+              "NORTH",
+              "SOUTH",
+              "EAST",
+              "WEST",
+              "NONE"
+            ]
+          }
+        },
+        "permission": "any",
+        "ratePerSecond": 20
+      }
+    }
+  }
+}

@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.LongArrayTag;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -40,7 +41,8 @@ import java.util.List;
 public class MemoryCardItem extends Item {
 
     public static final String TYPE_SCREEN_DOOR_GROUP = "screen_door_group";
-    public static final String TAG_MEMBERS = "Members";
+    /** Not public: the key holds two forms, so a reader outside this class goes through {@link #readMembers}. */
+    static final String TAG_MEMBERS = "Members";
 
     public MemoryCardItem(Properties properties) {
         super(properties.stacksTo(1));
@@ -78,7 +80,7 @@ public class MemoryCardItem extends Item {
         }
 
         // Shift + right-click (= non-door block): 実消去は確認ダイアログが送る
-        // MemoryCardResetPayload が行う。 ここでは何もしない。
+        // memory-card-reset action (MemoryCardResetAction) が行う。 ここでは何もしない。
         if (shift) return InteractionResult.SUCCESS;
 
         BlockEntity be = level.getBlockEntity(pos);
@@ -92,8 +94,8 @@ public class MemoryCardItem extends Item {
             tag.putString("StationName", stationName != null ? stationName : "");
             setCardData(stack, tag);
             if (player != null) {
-                player.displayClientMessage(Component.literal(
-                        "\u00a7b\u9244\u9053\u7ba1\u7406\u30d6\u30ed\u30c3\u30af\u3092\u767b\u9332\u3057\u307e\u3057\u305f"), true);
+                player.displayClientMessage(Component.translatable("tsu.memory_card.registered_manager")
+                        .withStyle(net.minecraft.ChatFormatting.AQUA), true);
             }
             return InteractionResult.SUCCESS;
         }
@@ -107,8 +109,8 @@ public class MemoryCardItem extends Item {
                     BlockPos managerPos = BlockPos.of(tag.getLong("Pos"));
                     computer.setLinkedRailwayManagerPos(managerPos);
                     if (player != null) {
-                        player.displayClientMessage(Component.literal(
-                                "\u00a7a\u9244\u9053\u7ba1\u7406\u30d6\u30ed\u30c3\u30af\u3092\u30ea\u30f3\u30af\u3057\u307e\u3057\u305f"), true);
+                        player.displayClientMessage(Component.translatable("tsu.memory_card.linked_manager")
+                                .withStyle(net.minecraft.ChatFormatting.GREEN), true);
                     }
                     return InteractionResult.SUCCESS;
                 }
@@ -116,15 +118,15 @@ public class MemoryCardItem extends Item {
                     BlockPos trackPos = BlockPos.of(tag.getLong("Pos"));
                     computer.setLinkedTrackNetworkPos(trackPos);
                     if (player != null) {
-                        player.displayClientMessage(Component.literal(
-                                "\u00a7a\u7dda\u8def\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u3092\u30ea\u30f3\u30af\u3057\u307e\u3057\u305f"), true);
+                        player.displayClientMessage(Component.translatable("tsu.memory_card.linked_track")
+                                .withStyle(net.minecraft.ChatFormatting.GREEN), true);
                     }
                     return InteractionResult.SUCCESS;
                 }
             }
             if (player != null) {
-                player.displayClientMessage(Component.literal(
-                        "\u00a7c\u5148\u306b\u7dda\u8def\u307e\u305f\u306f\u9244\u9053\u7ba1\u7406\u30d6\u30ed\u30c3\u30af\u3092\u767b\u9332\u3057\u3066\u304f\u3060\u3055\u3044"), true);
+                player.displayClientMessage(Component.translatable("tsu.memory_card.register_first")
+                        .withStyle(net.minecraft.ChatFormatting.RED), true);
             }
             return InteractionResult.FAIL;
         }
@@ -144,9 +146,9 @@ public class MemoryCardItem extends Item {
                 tag.putInt("Trains", data.trains().size());
                 setCardData(stack, tag);
                 if (player != null) {
-                    player.displayClientMessage(Component.literal(
-                            "\u00a7b\u7dda\u8def\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u3092\u767b\u9332 (\u99c5:" + data.stations().size()
-                            + " \u4fe1\u53f7:" + data.signals().size() + " \u5217\u8eca:" + data.trains().size() + ")"), true);
+                    player.displayClientMessage(Component.translatable("tsu.memory_card.registered_track_fmt",
+                                    data.stations().size(), data.signals().size(), data.trains().size())
+                            .withStyle(net.minecraft.ChatFormatting.AQUA), true);
                 }
                 return InteractionResult.SUCCESS;
             }
@@ -171,7 +173,7 @@ public class MemoryCardItem extends Item {
     /**
      * \u30ab\u30fc\u30c9\u306e\u8a18\u9332\u5185\u5bb9\u3092\u5168\u6d88\u53bb\u3059\u308b (server)\u3002
      *
-     * <p>{@link com.trainsystemutilities.network.MemoryCardResetPayload} \u304b\u3089\u306e\u307f\u547c\u3070\u308c\u308b =
+     * <p>{@link com.trainsystemutilities.network.MemoryCardResetAction} \u304b\u3089\u306e\u307f\u547c\u3070\u308c\u308b =
      * \u5fc5\u305a\u78ba\u8a8d\u30c0\u30a4\u30a2\u30ed\u30b0\u3092\u901a\u308b\u3002 \u7ba1\u7406\u7528\u30b3\u30f3\u30d4\u30e5\u30fc\u30bf\u30fc\u306e\u8a2d\u5b9a\u4e00\u5f0f\u3082\u3053\u3053\u3067\u6d88\u3048\u308b\u305f\u3081\u3001
      * \u3053\u308c\u304c\u300c\u60c5\u5831\u304c\u6d88\u3048\u308b\u30bf\u30a4\u30df\u30f3\u30b0\u300d\u306e 1 \u3064 (\u3082\u3046 1 \u3064\u306f\u30ab\u30fc\u30c9\u81ea\u4f53\u306e\u6d88\u6ec5)\u3002
      */
@@ -226,27 +228,13 @@ public class MemoryCardItem extends Item {
         if (!TYPE_SCREEN_DOOR_GROUP.equals(tag.getString("Type"))) {
             tag = new CompoundTag();
             tag.putString("Type", TYPE_SCREEN_DOOR_GROUP);
-            tag.put(TAG_MEMBERS, new ListTag());
         }
-        ListTag members = tag.getList(TAG_MEMBERS, Tag.TAG_LONG);
-        java.util.Set<Long> existing = new java.util.HashSet<>();
-        for (int i = 0; i < members.size(); i++) {
-            existing.add(((LongTag) members.get(i)).getAsLong());
-        }
-        int added = 0;
-        for (BlockPos p : group) {
-            long key = p.asLong();
-            if (existing.add(key)) {
-                members.add(LongTag.valueOf(key));
-                added++;
-            }
-        }
-        tag.put(TAG_MEMBERS, members);
+        int added = addMembers(tag, group);
+        int total = readMembers(tag).length;
         setCardData(stack, tag);
         if (player != null) {
-            player.displayClientMessage(Component.literal(
-                    String.format("\u00a7b\u30db\u30fc\u30e0\u30c9\u30a2\u7fa4\u306b %d \u500b\u8ffd\u52a0 (\u8a08 %d \u500b)",
-                            added, members.size())), true);
+            player.displayClientMessage(Component.translatable("tsu.memory_card.doors_added_fmt", added, total)
+                    .withStyle(net.minecraft.ChatFormatting.AQUA), true);
         }
     }
 
@@ -255,18 +243,10 @@ public class MemoryCardItem extends Item {
         if (!stack.has(DataComponents.CUSTOM_DATA)) return;
         CompoundTag tag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
         if (!TYPE_SCREEN_DOOR_GROUP.equals(tag.getString("Type"))) return;
-        ListTag members = tag.getList(TAG_MEMBERS, Tag.TAG_LONG);
-        java.util.Set<Long> remove = new java.util.HashSet<>();
-        for (BlockPos p : group) remove.add(p.asLong());
-        int removed = 0;
-        for (int i = members.size() - 1; i >= 0; i--) {
-            if (remove.contains(((LongTag) members.get(i)).getAsLong())) {
-                members.remove(i);
-                removed++;
-            }
-        }
+        int removed = removeMembers(tag, group);
         if (removed == 0) return;
-        if (members.isEmpty()) {
+        int left = readMembers(tag).length;
+        if (left == 0) {
             // \u7ba1\u7406\u8a2d\u5b9a\u306f\u6b8b\u3059 (\u30b0\u30eb\u30fc\u30d7\u3092\u7a7a\u306b\u3057\u305f\u3060\u3051\u3067\u8a2d\u5b9a\u307e\u3067\u6d88\u3055\u306a\u3044)\u3002
             CompoundTag settings = ManagementComputerSettings.readSettings(stack);
             if (settings != null) {
@@ -276,18 +256,72 @@ public class MemoryCardItem extends Item {
                 stack.remove(DataComponents.CUSTOM_DATA);
             }
             if (player != null) {
-                player.displayClientMessage(Component.literal(
-                        "\u00a77\u30db\u30fc\u30e0\u30c9\u30a2\u7fa4\u3092\u30af\u30ea\u30a2"), true);
+                player.displayClientMessage(Component.translatable("tsu.memory_card.doors_cleared")
+                        .withStyle(net.minecraft.ChatFormatting.GRAY), true);
             }
         } else {
-            tag.put(TAG_MEMBERS, members);
             setCardData(stack, tag);
             if (player != null) {
-                player.displayClientMessage(Component.literal(
-                        String.format("\u00a77%d \u500b\u524a\u9664 (\u6b8b\u308a %d \u500b)",
-                                removed, members.size())), true);
+                player.displayClientMessage(Component.translatable("tsu.memory_card.doors_removed_fmt",
+                                removed, left)
+                        .withStyle(net.minecraft.ChatFormatting.GRAY), true);
             }
         }
+    }
+
+    /**
+     * The door group's members, in either form a card holds them in: the {@link ListTag} of {@link LongTag} that
+     * {@link #writeMembers} writes, or the {@link LongArrayTag} every codec round trip of the stack hands back.
+     * {@code CUSTOM_DATA} has no network codec of its own, so a slot sync and a world save both encode it with
+     * {@code CustomData.CODEC} over {@code RegistryOps}, and {@code NbtOps.createList} collects a list of nothing but
+     * {@code LongTag} into a long array. Every reader goes through here: reading the list form only, a synced card
+     * showed 0 members, and once the creative inventory had sent that copy back to the server, Shift+right-click
+     * removed nothing (2026-10-07).
+     */
+    public static long[] readMembers(CompoundTag tag) {
+        Tag raw = tag.get(TAG_MEMBERS);
+        if (raw instanceof LongArrayTag lat) return lat.getAsLongArray();
+        if (raw instanceof ListTag lt) {
+            long[] arr = new long[lt.size()];
+            for (int i = 0; i < lt.size(); i++) {
+                if (lt.get(i) instanceof LongTag longTag) arr[i] = longTag.getAsLong();
+            }
+            return arr;
+        }
+        return new long[0];
+    }
+
+    /** The one form the members are written in, whichever form they were read from. */
+    private static void writeMembers(CompoundTag tag, java.util.Collection<Long> members) {
+        ListTag list = new ListTag();
+        for (long m : members) list.add(LongTag.valueOf(m));
+        tag.put(TAG_MEMBERS, list);
+    }
+
+    /** Adds {@code group} to the members in {@code tag} (a union); how many were new. */
+    static int addMembers(CompoundTag tag, java.util.Collection<BlockPos> group) {
+        java.util.Set<Long> members = new java.util.LinkedHashSet<>();
+        for (long m : readMembers(tag)) members.add(m);
+        int added = 0;
+        for (BlockPos p : group) {
+            if (members.add(p.asLong())) added++;
+        }
+        writeMembers(tag, members);
+        return added;
+    }
+
+    /** Removes {@code group} from the members in {@code tag}; how many were removed. */
+    static int removeMembers(CompoundTag tag, java.util.Collection<BlockPos> group) {
+        java.util.Set<Long> remove = new java.util.HashSet<>();
+        for (BlockPos p : group) remove.add(p.asLong());
+        java.util.List<Long> kept = new java.util.ArrayList<>();
+        int removed = 0;
+        for (long m : readMembers(tag)) {
+            if (remove.contains(m)) removed++;
+            else kept.add(m);
+        }
+        if (removed > 0) writeMembers(tag, kept);
+        return removed;
     }
 
     @Override
@@ -296,20 +330,25 @@ public class MemoryCardItem extends Item {
             CompoundTag tag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
             String type = tag.getString("Type");
             if ("railway_manager".equals(type)) {
-                tooltip.add(Component.literal("\u00a7b\u9244\u9053\u7ba1\u7406\u30d6\u30ed\u30c3\u30af\u767b\u9332\u6e08"));
+                tooltip.add(Component.translatable("tsu.memory_card.tooltip_manager")
+                        .withStyle(net.minecraft.ChatFormatting.AQUA));
                 String station = tag.getString("StationName");
                 if (!station.isEmpty()) {
-                    tooltip.add(Component.literal("\u00a77\u99c5: \u00a7f" + station));
+                    tooltip.add(Component.translatable("tsu.memory_card.tooltip_station_fmt", white(station))
+                            .withStyle(net.minecraft.ChatFormatting.GRAY));
                 }
             } else if ("track_network".equals(type)) {
-                tooltip.add(Component.literal("\u00a7b\u7dda\u8def\u30cd\u30c3\u30c8\u30ef\u30fc\u30af\u767b\u9332\u6e08"));
-                tooltip.add(Component.literal("\u00a77\u99c5: \u00a7f" + tag.getInt("Stations")
-                        + " \u00a77\u4fe1\u53f7: \u00a7f" + tag.getInt("Signals")
-                        + " \u00a77\u5217\u8eca: \u00a7f" + tag.getInt("Trains")));
+                tooltip.add(Component.translatable("tsu.memory_card.tooltip_track")
+                        .withStyle(net.minecraft.ChatFormatting.AQUA));
+                tooltip.add(Component.translatable("tsu.memory_card.tooltip_track_counts_fmt",
+                                white(tag.getInt("Stations")), white(tag.getInt("Signals")), white(tag.getInt("Trains")))
+                        .withStyle(net.minecraft.ChatFormatting.GRAY));
             } else if (TYPE_SCREEN_DOOR_GROUP.equals(type)) {
-                int count = tag.getList(TAG_MEMBERS, Tag.TAG_LONG).size();
-                tooltip.add(Component.literal("\u00a7b\u30db\u30fc\u30e0\u30c9\u30a2\u7fa4\u767b\u9332\u6e08"));
-                tooltip.add(Component.literal("\u00a77\u30e1\u30f3\u30d0\u30fc: \u00a7f" + count + " \u500b"));
+                int count = readMembers(tag).length;
+                tooltip.add(Component.translatable("tsu.memory_card.tooltip_doors")
+                        .withStyle(net.minecraft.ChatFormatting.AQUA));
+                tooltip.add(Component.translatable("tsu.memory_card.tooltip_door_members_fmt", white(count))
+                        .withStyle(net.minecraft.ChatFormatting.GRAY));
             }
             // \u7ba1\u7406\u7528\u30b3\u30f3\u30d4\u30e5\u30fc\u30bf\u30fc\u306e\u8a2d\u5b9a (1.0.10)\u3002 \u30ea\u30f3\u30af\u767b\u9332\u306e\u7a2e\u5225\u3068\u306f\u72ec\u7acb\u306b\u8f09\u308b\u3002
             if (com.trainsystemutilities.blockentity.ManagementComputerSettings.hasSettings(stack)) {
@@ -321,8 +360,15 @@ public class MemoryCardItem extends Item {
                         .withStyle(net.minecraft.ChatFormatting.GRAY));
             }
         } else {
-            tooltip.add(Component.literal("\u00a78\u7dda\u8def\u307e\u305f\u306f\u7ba1\u7406\u30d6\u30ed\u30c3\u30af\u3092\u53f3\u30af\u30ea\u30c3\u30af\u3067\u767b\u9332"));
-            tooltip.add(Component.literal("\u00a78\u30b7\u30d5\u30c8\u53f3\u30af\u30ea\u30c3\u30af\u3067\u521d\u671f\u5316"));
+            tooltip.add(Component.translatable("tsu.memory_card.tooltip_empty_register")
+                    .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.translatable("tsu.memory_card.tooltip_empty_reset")
+                    .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
         }
+    }
+
+    /** A tooltip value in white inside a gray line, as the \u00a7 codes these lines were written with drew it. */
+    private static Component white(Object value) {
+        return Component.literal(String.valueOf(value)).withStyle(net.minecraft.ChatFormatting.WHITE);
     }
 }

@@ -44,294 +44,15 @@ public final class AutoPlaceExecutor {
         public static Result noMaterials() { return new Result(0, 0, 0, 0, true); }
     }
 
-    /**
-     * 1 つの TrackEdge 全体を span 間隔で sample し、 各点に portal を配置 (= 1 click で
-     * carve 全体を覆う連続配置)。 隣接 portal の truss line は連続的に繋がる。
-     *
-     * @param edgeLengthMin この長さ以下の edge は配置しない (= turnout 部の短い edge skip)
-     */
-    /**
-     * carve 全体を **1.0 ブロック間隔** で sample し、 各 sample 点に **truss cells** を
-     * 配置 (= 隣接 sample の truss が連続)。 さらに **span 間隔** で pole stack を立てる。
-     * これで「carve 全体を 1 連続 portal で覆う」 動作になる。
-     */
-    public static Result placeAlongCurveContinuous(net.minecraft.world.level.Level level,
-                                                     com.simibubi.create.content.trains.graph.TrackGraph graph,
-                                                     com.simibubi.create.content.trains.graph.TrackEdge edge,
-                                                     ItemStack tool) {
-        if (level == null || graph == null || edge == null || tool == null) return new Result(0);
-        int span = Math.max(1, AutoPlaceConfig.getSpan(tool));
-        int scanRange = AutoPlaceConfig.getScanRange(tool);
-        int height = AutoPlaceConfig.getHeight(tool);
-        int clearance = AutoPlaceConfig.getClearance(tool);
-        boolean placeTruss = AutoPlaceConfig.getPlaceTruss(tool);
-        boolean placeIns = AutoPlaceConfig.getPlaceInsulator(tool);
-        boolean cantilever = AutoPlaceConfig.getCantilever(tool);
-        int polesPerStack = height + 1;
-        Block poleBlock = ModBlocks.OVERHEAD_POLE.get();
-        Block trussBlock = ModBlocks.OVERHEAD_TRUSS.get();
-        Block insBlock = ModBlocks.INSULATOR.get();
-
-        double length;
-        try { length = edge.getLength(); } catch (Throwable t) { return new Result(0); }
-        if (!Double.isFinite(length) || length < 1.0) return new Result(0);
-
-        // Step 1: carve 全体を fine 間隔 (= 1.0 block) で sample
-        java.util.List<Vec3> pts = new ArrayList<>();
-        java.util.List<Vec3> axes = new ArrayList<>();
-        final double fineStep = 1.0;
-        double distance = 0;
-        double t = 0;
-        while (distance <= length + 1.0E-4) {
-            Vec3 pt;
-            Vec3 axis;
-            try {
-                pt = edge.getPosition(graph, t);
-                Vec3 dir = edge.getDirectionAt(Math.min(distance, length));
-                if (dir == null) break;
-                Vec3 flat = new Vec3(dir.x, 0, dir.z);
-                if (flat.lengthSqr() < 1.0E-4) break;
-                axis = flat.normalize();
-            } catch (Throwable tx) { break; }
-            if (pt == null) break;
-            pts.add(pt);
-            axes.add(axis);
-            if (distance >= length) break;
-            double step = Math.min(fineStep, length - distance);
-            t = incrementT(edge, t, step);
-            distance += step;
-            if (t >= 1.0) break;
-        }
-        if (pts.size() < 2) return new Result(0);
-
-        com.trainsystemutilities.TrainSystemUtilities.LOGGER.info(
-                "[Continuous] sampled {} points along edge length={}", pts.size(), length);
-
-        java.util.Set<Long> placedCells = new java.util.HashSet<>();
-        int total = 0;
-
-        // Step 2: 各 sample 点に truss cells + 碍子 を配置 (= 連続)
-        for (int i = 0; i < pts.size(); i++) {
-            Vec3 pt = pts.get(i);
-            Vec3 axis = axes.get(i);
-            Vec3 perp = new Vec3(-axis.z, 0, axis.x).normalize();
-            java.util.List<Vec3> parallel = TrackCurveRaycast.findParallelCurveCenters(level, pt, axis, scanRange);
-
-            Vec3 outerNeg = pt, outerPos = pt;
-            if (parallel.size() >= 2) {
-                double minP = 0, maxP = 0;
-                Vec3 mn = pt, mx = pt;
-                for (Vec3 c : parallel) {
-                    double a = (c.x - pt.x) * perp.x + (c.z - pt.z) * perp.z;
-                    if (a < minP) { minP = a; mn = c; }
-                    if (a > maxP) { maxP = a; mx = c; }
-                }
-                outerNeg = mn; outerPos = mx;
-            }
-
-            int topY = (int) Math.floor(pt.y) + height - 1;
-            float trussYaw = (float) (((Math.toDegrees(Math.atan2(perp.z, perp.x)) % 360) + 360) % 360);
-
-            // truss line: outerNeg pole 位置 → outerPos pole 位置 を Bresenham
-            if (placeTruss) {
-                BlockPos start = computePolePos(pt, outerNeg, perp, -1, clearance);
-                BlockPos end = computePolePos(pt, outerPos, perp, +1, clearance);
-                BlockPos startTop = new BlockPos(start.getX(), topY, start.getZ());
-                BlockPos endTop = new BlockPos(end.getX(), topY, end.getZ());
-                BlockPos center = new BlockPos((int) Math.floor(pt.x), topY, (int) Math.floor(pt.z));
-                java.util.List<BlockPos> cells = lineThroughCenter(startTop, endTop, center, topY);
-                int last = cells.size() - 1;
-                for (int s = 1; s < last; s++) {
-                    BlockPos pos = cells.get(s);
-                    if (!placedCells.add(pos.asLong())) continue;
-                    BlockState existing = level.getBlockState(pos);
-                    if (!existing.isAir() && !existing.canBeReplaced()) continue;
-                    BlockState state = trussBlock.defaultBlockState()
-                            .setValue(OverheadTrussBlock.ANGLE_8, 0)  // cardinal model 強制
-                            .setValue(OverheadTrussBlock.CORNER, false);
-                    level.setBlock(pos, state, Block.UPDATE_ALL);
-                    var be = level.getBlockEntity(pos);
-                    if (be instanceof com.trainsystemutilities.electrification.blockentity.OverheadTrussBlockEntity tbe) {
-                        tbe.setYawDegrees(trussYaw);
-                    }
-                    total++;
-                }
-            }
-
-            // 碍子: 並走 N 本の各々 (= cantilever は単線専用)
-            if (placeIns) {
-                java.util.List<Vec3> insTargets = (!cantilever && parallel.size() >= 2)
-                        ? parallel : java.util.List.of(pt);
-                for (Vec3 c : insTargets) {
-                    int ix = (int) Math.floor(c.x);
-                    int iz = (int) Math.floor(c.z);
-                    int iy = (int) Math.floor(c.y) + height - 2;
-                    BlockPos insPos = new BlockPos(ix, iy, iz);
-                    if (!placedCells.add(insPos.asLong())) continue;
-                    BlockState existing = level.getBlockState(insPos);
-                    if (!existing.isAir() && !existing.canBeReplaced()) continue;
-                    BlockState state = insBlock.defaultBlockState().setValue(InsulatorBlock.FACING, Direction.DOWN);
-                    level.setBlock(insPos, state, Block.UPDATE_ALL);
-                    total++;
-                }
-            }
-        }
-
-        // Step 3: span 間隔で pole stack 配置
-        for (int i = 0; i < pts.size(); i += span) {
-            Vec3 pt = pts.get(i);
-            Vec3 axis = axes.get(i);
-            Vec3 perp = new Vec3(-axis.z, 0, axis.x).normalize();
-            int poleAngle = OverheadPlacementHelper.axisToAngle8(axis);
-            float poleYawDeg = axisToYawDegrees(axis);
-
-            java.util.List<Vec3> parallel = TrackCurveRaycast.findParallelCurveCenters(level, pt, axis, scanRange);
-            Vec3 outerNeg = pt, outerPos = pt;
-            if (parallel.size() >= 2) {
-                double minP = 0, maxP = 0;
-                Vec3 mn = pt, mx = pt;
-                for (Vec3 c : parallel) {
-                    double a = (c.x - pt.x) * perp.x + (c.z - pt.z) * perp.z;
-                    if (a < minP) { minP = a; mn = c; }
-                    if (a > maxP) { maxP = a; mx = c; }
-                }
-                outerNeg = mn; outerPos = mx;
-            }
-
-            BlockPos polePosPos = findUsablePolePos(level, pt, outerPos, perp, +1, clearance, polesPerStack);
-            BlockPos polePosNeg = cantilever ? null
-                    : findUsablePolePos(level, pt, outerNeg, perp, -1, clearance, polesPerStack);
-
-            for (BlockPos polePos : new BlockPos[]{polePosNeg, polePosPos}) {
-                if (polePos == null) continue;
-                for (int y = 0; y < polesPerStack; y++) {
-                    BlockPos pos = polePos.above(y);
-                    if (!placedCells.add(pos.asLong())) continue;
-                    BlockState existing = level.getBlockState(pos);
-                    if (!existing.isAir() && !existing.canBeReplaced()) break;
-                    BlockState state = poleBlock.defaultBlockState().setValue(OverheadPoleBlock.ANGLE_8, poleAngle);
-                    level.setBlock(pos, state, Block.UPDATE_ALL);
-                    var be = level.getBlockEntity(pos);
-                    if (be instanceof com.trainsystemutilities.electrification.blockentity.OverheadPoleBlockEntity pbe) {
-                        pbe.setYawDegrees(poleYawDeg);
-                    }
-                    total++;
-                }
-            }
-        }
-
-        com.trainsystemutilities.TrainSystemUtilities.LOGGER.info(
-                "[Continuous] DONE total={}", total);
-        return new Result(total);
-    }
-
-    public static Result placeAlongEdge(net.minecraft.world.level.Level level,
-                                          com.simibubi.create.content.trains.graph.TrackGraph graph,
-                                          com.simibubi.create.content.trains.graph.TrackEdge edge,
-                                          ItemStack tool, double edgeLengthMin) {
-        if (level == null || graph == null || edge == null || tool == null) return new Result(0);
-        int span = Math.max(1, AutoPlaceConfig.getSpan(tool));
-        int scanRange = AutoPlaceConfig.getScanRange(tool);
-        double length;
-        try { length = edge.getLength(); } catch (Throwable t) { return new Result(0); }
-        if (!Double.isFinite(length) || length < edgeLengthMin) return new Result(0);
-
-        com.trainsystemutilities.TrainSystemUtilities.LOGGER.info(
-                "[EdgeAlong] START edge length={}, span={}", length, span);
-        int total = 0;
-        double distance = 0;
-        double t = 0;
-        while (distance < length) {
-            Vec3 pt;
-            Vec3 axis;
-            try {
-                pt = edge.getPosition(graph, t);
-                axis = edge.getDirectionAt(distance);
-                if (axis == null) break;
-                Vec3 axisFlat = new Vec3(axis.x, 0, axis.z);
-                if (axisFlat.lengthSqr() < 1.0E-4) break;
-                axis = axisFlat.normalize();
-            } catch (Throwable tx) { break; }
-            if (pt == null) break;
-
-            // 並走 curve 検出 (= 同 edge の hit 点周辺で並走他 graph を scan)
-            java.util.List<Vec3> parallel =
-                    TrackCurveRaycast.findParallelCurveCenters(level, pt, axis, scanRange);
-            float yawDeg = axisToYawDegrees(axis);
-            Result r = placeOneAt(level, pt, axis, tool, parallel.size() >= 2 ? parallel : null);
-            com.trainsystemutilities.TrainSystemUtilities.LOGGER.info(
-                    "[EdgeAlong] t={} dist={} pt=({},{},{}) yaw={}° parallel={} placed={}",
-                    String.format("%.3f", t), String.format("%.2f", distance),
-                    String.format("%.2f", pt.x), String.format("%.2f", pt.y), String.format("%.2f", pt.z),
-                    String.format("%.2f", yawDeg), parallel.size(), r.placedCount());
-            total += r.placedCount();
-
-            double step = Math.min(span, length - distance);
-            t = incrementT(edge, t, step);
-            distance += step;
-            if (t >= 1.0) break;
-        }
-        com.trainsystemutilities.TrainSystemUtilities.LOGGER.info(
-                "[EdgeAlong] DONE total blocks placed={}", total);
-        return new Result(total);
-    }
-
-    private static double incrementT(com.simibubi.create.content.trains.graph.TrackEdge edge,
-                                      double t, double distance) {
-        double remaining = distance;
-        while (remaining > 1.0E-4) {
-            double step = Math.min(1.0, remaining);
-            try { t = edge.incrementT(t, step); } catch (Throwable e) { return Math.min(1.0, t); }
-            remaining -= step;
-        }
-        return Math.min(1.0, t);
-    }
-
     /** プレビュー用: 配置する 1 ブロックの情報 (= position + state + yaw)。 */
     public record PreviewItem(BlockPos pos, BlockState state, float yawDegrees) {
         public PreviewItem(BlockPos pos, BlockState state) { this(pos, state, Float.NaN); }
-    }
-
-    /**
-     * pole 用 yaw 変換 (= **北 (-Z) が 0°** の convention、 **16 方向 snap**)。
-     * 22.5° 刻みに snap して既存 4 model を流用 + BE float yaw で滑らかな表示。
-     * 最大誤差 ±11.25° (= 旧 ANGLE_8 の ±22.5° から半減)。
-     */
-    public static float axisToYawDegrees(Vec3 axis) {
-        double rad = Math.atan2(axis.x, -axis.z);
-        double deg = ((Math.toDegrees(rad) % 360) + 360) % 360;
-        return (float) (Math.round(deg / 22.5) * 22.5);  // 16 方向 snap
-    }
-
-    /** axis を 16 方向 index (= 0..15) に snap。 axisToAngle8 の +2 offset と同じ convention。 */
-    public static int axisToAngle16(Vec3 axis) {
-        double rad = Math.atan2(axis.z, axis.x);
-        double deg = ((Math.toDegrees(rad) % 360) + 360) % 360;
-        int idx = (int) Math.round(deg / 22.5) % 16;
-        return (idx + 4) % 16;  // +90° offset (= +2 in ANGLE_8、 +4 in ANGLE_16)
-    }
-
-    /** angle16 index (= 0..15) を horizontal axis に逆変換 (= ANGLE_8 と同 convention)。 */
-    public static Vec3 angle16ToHorizontalAxis(int angle16) {
-        double rad = Math.toRadians(((angle16 % 16) + 16) % 16 * 22.5);
-        return new Vec3(Math.sin(rad), 0, -Math.cos(rad));
     }
 
     /** angle8 index (= 0..7) を horizontal axis に逆変換 (= ANGLE_8 convention)。 */
     public static Vec3 angle8ToHorizontalAxis(int angle8) {
         double rad = Math.toRadians(((angle8 % 8) + 8) % 8 * 45.0);
         return new Vec3(Math.sin(rad), 0, -Math.cos(rad));
-    }
-
-    /**
-     * truss 用 yaw 変換 (= **+X が 0°** の convention)。
-     * OverheadTruss model の初期 orientation は +X 向き (= directionToTrussAngle と一致)。
-     * 0° = +X, 90° = +Z, 180° = -X, 270° = -Z。
-     */
-    private static float directionToTrussYawDegrees(int dx, int dz) {
-        if (dx == 0 && dz == 0) return 0f;
-        double rad = Math.atan2(dz, dx);
-        return (float) (((Math.toDegrees(rad) % 360) + 360) % 360);
     }
 
     private AutoPlaceExecutor() {}
@@ -509,14 +230,10 @@ public final class AutoPlaceExecutor {
     }
 
     /**
-     * trackPos (= ユーザーがクリックした線路) の真上に portal frame 1 個を配置する。
+     * trackPos (= ユーザーがクリックした線路) の真上に portal frame 1 個を配置する
+     * (= player が非クリエイティブならリンク済み chest+ME から資材を消費)。
      * @return 配置されたブロック数
      */
-    public static Result placeOne(Level level, BlockPos trackPos, ItemStack tool) {
-        return placeOne(level, trackPos, tool, null);
-    }
-
-    /** player 付き版 (= 非クリエイティブならリンク済み chest+ME から資材を消費)。 */
     public static Result placeOne(Level level, BlockPos trackPos, ItemStack tool, Player player) {
         if (level == null || trackPos == null || tool == null) return new Result(0);
         if (!AutoPlacePathFinder.isTrack(level, trackPos)) return new Result(0);
@@ -528,20 +245,7 @@ public final class AutoPlaceExecutor {
     /**
      * Vec3 trackCenter (= carve 内部の連続位置 OK) と axis を直接受け取って配置。
      * Create カーブ raycast (= {@link TrackCurveRaycast}) からの hit を そのまま配置できる。
-     */
-    public static Result placeOneAt(Level level, Vec3 trackCenter, Vec3 axis, ItemStack tool) {
-        return placeOneAt(level, trackCenter, axis, tool, null);
-    }
-
-    /** 5-arg 版 (= player なし = クリエイティブ扱い・消費なし。 legacy / preview path 用)。 */
-    public static Result placeOneAt(Level level, Vec3 trackCenter, Vec3 axis, ItemStack tool,
-                                      List<Vec3> parallelCenters) {
-        return placeOneAt(level, trackCenter, axis, tool, parallelCenters, null);
-    }
-
-    /**
-     * 並走 centers + player override 版 (= curve 並走複線対応)。
-     * {@code parallelCenters} が非 null + size ≥ 2 なら、 outerNeg/outerPos と碍子配置に使用。
+     * {@code parallelCenters} が非 null + size ≥ 2 なら (= curve 並走複線対応)、 outerNeg/outerPos と碍子配置に使用。
      * {@code player} が非 null かつ非クリエイティブなら、 リンク済み chest+ME から
      * 架線柱/トラス/碍子 を消費する (= サバイバルコスト)。 不足時は {@link Result#insufficient()}。
      */
@@ -815,14 +519,6 @@ public final class AutoPlaceExecutor {
         return (int) Math.round(deg / 45.0) % 8;
     }
 
-    /** truss 16 方向 index (= +X が 0、 22.5° 刻み)。 */
-    private static int directionToTrussAngle16(int dx, int dz) {
-        if (dx == 0 && dz == 0) return 0;
-        double rad = Math.atan2(dz, dx);
-        double deg = ((Math.toDegrees(rad) % 360) + 360) % 360;
-        return (int) Math.round(deg / 22.5) % 16;
-    }
-
     private static List<BlockPos> lineThroughCenter(BlockPos start, BlockPos end,
                                                      BlockPos center, int y) {
         List<BlockPos> seg1 = bresenhamLine(start.getX(), start.getZ(),
@@ -851,33 +547,5 @@ public final class AutoPlaceExecutor {
             result.add(new BlockPos(cx, y, cz));
         }
         return result;
-    }
-
-    /** 並走 N 本の各 trackCenter 真上に碍子配置。 */
-    private static int placeInsulators(Level level, Vec3 trackCenter, Vec3 outerNeg, Vec3 outerPos,
-                                         Vec3 perp, int trackY, int height, Block insBlock) {
-        int insY = trackY + height - 2;
-        double negAlong = (outerNeg.x - trackCenter.x) * perp.x
-                + (outerNeg.z - trackCenter.z) * perp.z;
-        double posAlong = (outerPos.x - trackCenter.x) * perp.x
-                + (outerPos.z - trackCenter.z) * perp.z;
-        double totalPerpDist = posAlong - negAlong;
-        final int trackSpacing = 3;
-        int numTracks = Math.max(1, (int) Math.round(totalPerpDist / trackSpacing) + 1);
-        int trackX = (int) Math.floor(trackCenter.x);
-        int trackZ = (int) Math.floor(trackCenter.z);
-        int placed = 0;
-        for (int i = 0; i < numTracks; i++) {
-            double perpOffset = negAlong + i * trackSpacing;
-            int insX = trackX + (int) Math.round(perp.x * perpOffset);
-            int insZ = trackZ + (int) Math.round(perp.z * perpOffset);
-            BlockPos insPos = new BlockPos(insX, insY, insZ);
-            BlockState existing = level.getBlockState(insPos);
-            if (!existing.isAir() && !existing.canBeReplaced()) continue;
-            BlockState state = insBlock.defaultBlockState().setValue(InsulatorBlock.FACING, Direction.DOWN);
-            level.setBlock(insPos, state, Block.UPDATE_ALL);
-            placed++;
-        }
-        return placed;
     }
 }

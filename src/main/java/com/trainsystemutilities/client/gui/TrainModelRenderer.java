@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
-import com.trainsystemutilities.network.TrackNetworkScanner;
+import com.simibubi.create.CreateClient;
 
 import java.util.UUID;
 
@@ -71,9 +71,11 @@ public final class TrainModelRenderer {
                      Minecraft mc, Font font, UUID selectedTrainId, int overlayX, int overlayY) {
         if (selectedTrainId == null) return;
         if (mc == null || mc.level == null) return;
-        // 列車 entity が client にロード済みなら直接描画。 dedicated server で getTrainById が空
-        // (= 遠方/未同期) でも、 server 同期の TrainPreviewCache へ fall through してプレビューを出す。
-        var train = TrackNetworkScanner.getTrainById(selectedTrainId).orElse(null);
+        // 列車 entity が client にロード済みなら直接描画。 The client's own copy of the train: its carriages' entities
+        // are the client's (Create.RAILWAYS is the server's - empty on a dedicated server, and in single-player its
+        // entities are the server's). A carriage with no entity loaded (far away) is skipped, and with none drawn the
+        // server-synced TrainPreviewCache below gives the preview.
+        var train = CreateClient.RAILWAYS.trains.get(selectedTrainId);
 
         try {
             // 全車両のブロックとボギー情報を集約 (V1 と同じロジック)

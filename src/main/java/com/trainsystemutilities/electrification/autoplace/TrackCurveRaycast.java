@@ -54,7 +54,7 @@ public final class TrackCurveRaycast {
         String currentDim = level.dimension().location().toString();
 
         try {
-            for (TrackGraph graph : Create.RAILWAYS.trackNetworks.values()) {
+            for (TrackGraph graph : Create.RAILWAYS.sided(level).trackNetworks.values()) {
                 if (graph == null) continue;
                 for (var nodeLoc : graph.getNodes()) {
                     TrackNode node = graph.locateNode(nodeLoc);
@@ -135,7 +135,7 @@ public final class TrackCurveRaycast {
         String currentDim = level.dimension().location().toString();
 
         try {
-            for (TrackGraph graph : Create.RAILWAYS.trackNetworks.values()) {
+            for (TrackGraph graph : Create.RAILWAYS.sided(level).trackNetworks.values()) {
                 if (graph == null) continue;
                 for (var nodeLoc : graph.getNodes()) {
                     TrackNode node = graph.locateNode(nodeLoc);

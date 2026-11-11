@@ -1,7 +1,7 @@
 package com.trainsystemutilities.client;
 
 import com.manta.api.data.Mirror;
-import com.simibubi.create.Create;
+import com.simibubi.create.CreateClient;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.entity.Carriage;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
@@ -122,7 +122,9 @@ public final class TrainClient {
     private static void applyDeployedToClientContraptionBEs(List<TrainElectrificationView> views) {
         if (views == null || views.isEmpty()) return;
         for (TrainElectrificationView v : views) {
-            Train train = Create.RAILWAYS.trains.get(v.trainId);
+            // The client's own copy: Create.RAILWAYS is the server's, empty on a dedicated server, and its carriages'
+            // entities are the server's, whose contraptions are not the ones drawn.
+            Train train = CreateClient.RAILWAYS.trains.get(v.trainId);
             if (train == null) {
                 continue;
             }

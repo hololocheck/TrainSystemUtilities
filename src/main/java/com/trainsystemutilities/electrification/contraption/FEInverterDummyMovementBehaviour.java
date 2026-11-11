@@ -23,7 +23,8 @@ public class FEInverterDummyMovementBehaviour implements MovementBehaviour {
 
     @Override
     public void startMoving(MovementContext context) {
-        ContraptionElectrificationState.registerDummyInverter(context.contraption, context.localPos);
+        // Create starts an actor for each of the inverter's three blocks; only the CENTER's registers it.
+        if (!ContraptionElectrificationState.registerDummyInverter(context.contraption, context.localPos, context.state)) return;
         TrainSystemUtilities.LOGGER.info(
                 "[Electrification] FEInverterDummy assembled at local {} (decorativeMode)",
                 context.localPos);

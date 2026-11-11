@@ -15,7 +15,7 @@ tags: [electrification, tool]
 
 觀看從設置到放置的完整流程（Manta 的內嵌視頻功能）。
 
-```embed:youtube url=https://youtu.be/ecg9SXoiEd4 title="Overhead Pole Auto Tool"
+```embed:youtube url=https://youtu.be/ecg9SXoiEd4 title="Overhead Pole Auto Tool" url.ja=https://youtu.be/96rQAbeh5DI url.zh=https://youtu.be/_icdpBLl9O8 title.ja="TSU ガイド: 架線柱の自動設置" title.zh="TSU 指南：自动放置接触网支柱"
 ```
 
 ## 打開 / 持有

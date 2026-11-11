@@ -93,8 +93,8 @@ public final class ComputerLayoutHandler {
                 int trainIdx = ((schedulePage % totalScheduleTrains) + totalScheduleTrains) % totalScheduleTrains;
                 var info = valid.get(trainIdx);
                 int maxEntries = Math.max(1, (ph - fs * 3) / Math.max(1, fs + gap));
-                // サーバー権威 SchedView (BE 同期) を優先 — dedicated MP では client の live
-                // Create schedule (runtime) が取れず時刻表が空になるため。 無い場合のみ live へ fallback (SP 互換)。
+                // The server-synced SchedView (BE update tag) only. The live fallback read the server's train
+                // (Create.RAILWAYS) from the render thread: single-player only, it finds nothing on a dedicated server.
                 var sv = computer != null ? computer.getSyncedSchedView(info.id()) : null;
                 if (sv != null && !sv.entries().isEmpty()) {
                     currentScheduleTrainName = info.name();
@@ -102,30 +102,6 @@ public final class ComputerLayoutHandler {
                     currentScheduleEntryIdx = sv.current();
                     int showCount = Math.min(totalScheduleEntries, Math.min(maxEntries, MAX_SCHEDULE_ENTRIES));
                     scheduleEntries = new ArrayList<>(sv.entries().subList(0, showCount));
-                } else {
-                    try {
-                        var opt = TrackNetworkScanner.getTrainById(info.id());
-                        if (opt.isPresent() && opt.get().runtime != null
-                                && opt.get().runtime.getSchedule() != null) {
-                            var liveTrain = opt.get();
-                            currentScheduleTrainName = liveTrain.name.getString();
-                            var sched = liveTrain.runtime.getSchedule();
-                            totalScheduleEntries = sched.entries.size();
-                            currentScheduleEntryIdx = liveTrain.runtime.currentEntry;
-                            int showCount = Math.min(totalScheduleEntries, Math.min(maxEntries, MAX_SCHEDULE_ENTRIES));
-                            List<String> entries = new ArrayList<>(showCount);
-                            for (int j = 0; j < showCount; j++) {
-                                String dest = "?";
-                                try {
-                                    if (sched.entries.get(j).instruction instanceof com.simibubi.create.content.trains.schedule.destination.DestinationInstruction d) {
-                                        dest = d.getFilter();
-                                    }
-                                } catch (Exception e) { com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[LayoutHandler] schedule destination read failed", e); }
-                                entries.add(dest);
-                            }
-                            scheduleEntries = entries;
-                        }
-                    } catch (Exception e) { com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[LayoutHandler] schedule entries build failed", e); }
                 }
             }
         }
@@ -218,7 +194,7 @@ public final class ComputerLayoutHandler {
             case "cars" -> trf("tsu.monitor.cars_fmt", t.carriageCount());
             case "dest" -> {
                 if (t.id() == null) yield null;
-                // サーバー権威 SchedView (BE 同期) を優先 (MP)。 無ければ live へ fallback (SP 互換)。
+                // The server-synced SchedView only (the schedule panel's reason above).
                 var sv = computer != null ? computer.getSyncedSchedView(t.id()) : null;
                 if (sv != null && !sv.entries().isEmpty()) {
                     int cur = sv.current();
@@ -226,32 +202,16 @@ public final class ComputerLayoutHandler {
                     String dest = sv.entries().get(cur);
                     yield trf("tsu.monitor.dest_fmt", dest);
                 }
-                try {
-                    var opt = TrackNetworkScanner.getTrainById(t.id());
-                    if (opt.isEmpty() || opt.get().runtime == null
-                            || opt.get().runtime.getSchedule() == null) yield null;
-                    int cur = opt.get().runtime.currentEntry;
-                    var sched = opt.get().runtime.getSchedule();
-                    if (cur < 0 || cur >= sched.entries.size()) yield null;
-                    if (sched.entries.get(cur).instruction instanceof com.simibubi.create.content.trains.schedule.destination.DestinationInstruction d) {
-                        yield trf("tsu.monitor.dest_fmt", d.getFilter());
-                    }
-                    yield null;
-                } catch (Exception ignored) { yield null; }
+                yield null;
             }
             case "paused" -> {
                 if (t.id() == null) yield null;
-                // サーバー同期 paused フラグ優先 (MP)。 false は「非 paused か未同期」なので live で補完。
+                // The server-synced paused flag only: the live fill-in for an unsynced flag read the server's train
+                // from the render thread (single-player only; it found nothing on a dedicated server).
                 if (computer != null && computer.hasSyncedPaused(t.id())) {
                     yield tr("tsu.monitor.train_paused");
                 }
-                try {
-                    var opt = TrackNetworkScanner.getTrainById(t.id());
-                    if (opt.isPresent() && opt.get().runtime != null && opt.get().runtime.paused) {
-                        yield tr("tsu.monitor.train_paused");
-                    }
-                    yield null;
-                } catch (Exception ignored) { yield null; }
+                yield null;
             }
             default -> null;
         };

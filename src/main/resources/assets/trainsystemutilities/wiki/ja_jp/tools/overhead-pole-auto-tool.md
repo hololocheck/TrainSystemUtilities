@@ -24,5 +24,5 @@ tags: [electrification, tool]
 
 設定から配置までの流れは、掲載しているチュートリアル動画でも確認できます。
 
-```embed:youtube url=https://youtu.be/ecg9SXoiEd4 title=架線柱自動配置ツールの使い方
+```embed:youtube url=https://youtu.be/ecg9SXoiEd4 title=架線柱自動配置ツールの使い方 url.ja=https://youtu.be/96rQAbeh5DI url.zh=https://youtu.be/_icdpBLl9O8 title.zh="TSU 指南：自动放置接触网支柱"
 ```

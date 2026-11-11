@@ -60,7 +60,7 @@ public final class TsuScreenHints {
     private static void registerSaveRefill() {
         HintRegistry.register("save-name-input", "tsu.hint.save_input", "train-preset-tool/save");
         HintRegistry.register("save-btn", "tsu.hint.save_btn", "train-preset-tool/save");
-        HintRegistry.register("cancel-btn", "tsu.common.cancel");
+        HintRegistry.register("cancel-btn", "tsu.hint.cancel_save");
         HintRegistry.register("refill-tank-bar", "tsu.hint.refill_bar", "train-preset-tool/refill");
         HintRegistry.register("refill-dump-btn", "tsu.hint.refill_dump", "train-preset-tool/refill");
         HintRegistry.register("refill-inv-slot", "tsu.hint.refill_slot", "train-preset-tool/refill");
@@ -103,8 +103,10 @@ public final class TsuScreenHints {
         HintRegistry.register("monitor-status-label", "tsu.hint.monitor_toggle", "management-computer/monitor");
         HintRegistry.register("layout-edit-btn", "tsu.hint.layout_edit", "management-computer/layout-editor");
         HintRegistry.register("monitor-color-btn", "tsu.hint.monitor_color", "management-computer/color-settings");
-        HintRegistry.register("tab-trigger", "tsu.hint.tab_trigger", wiki);
-        HintRegistry.register("sym-edit-btn", "tsu.hint.sym_edit", "management-computer/symbol-editor");
+        HintRegistry.register("tab-dropdown", "tsu.hint.tab_trigger", wiki);
+        // 路線記号の編集画面を開くのは記号タブの「+ 新規作成」と各記号のタイル (左クリック)
+        HintRegistry.register("sym-create-btn", "tsu.hint.sym_edit", "management-computer/symbol-editor");
+        HintRegistry.register("sym-tile", "tsu.hint.sym_edit", "management-computer/symbol-editor");
         // モード dropdown 各項目 (= 選択中にモード別の簡単な説明)
         HintRegistry.register("tab-item-map", "tsu.hint.mode_map", wiki);
         HintRegistry.register("tab-item-trains", "tsu.hint.mode_trains", wiki);
@@ -137,7 +139,6 @@ public final class TsuScreenHints {
         HintRegistry.register("announcement-btn", "tsu.hint.announcement_btn", "railway-management/announcement");
         // ポスター管理
         String pAnim = "poster-management/animation";
-        HintRegistry.register("anim-row", "tsu.hint.anim_row", pAnim);
         HintRegistry.register("anim-settings-btn", "tsu.hint.anim_row", pAnim);
         HintRegistry.register("file-pick-btn", "tsu.hint.poster_file_pick", "poster-management");
         HintRegistry.register("fit-toggle-track", "tsu.hint.poster_fit", "poster-management");

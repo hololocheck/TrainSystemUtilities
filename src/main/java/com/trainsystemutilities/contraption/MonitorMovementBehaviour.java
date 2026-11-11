@@ -1050,14 +1050,15 @@ public class MonitorMovementBehaviour implements MovementBehaviour {
             if (!(entity instanceof CarriageContraptionEntity cce)) return null;
             var carriage = cce.getCarriage();
             if (carriage == null) return null;
-            if (carriage.train != null
-                    && com.simibubi.create.Create.RAILWAYS.trains.containsKey(carriage.train.id)) {
+            // sided: the render path runs on the client, where Create.RAILWAYS is the server's (empty on a dedicated server)
+            var railways = com.simibubi.create.Create.RAILWAYS.sided(context.world);
+            if (carriage.train != null && railways.trains.containsKey(carriage.train.id)) {
                 return carriage.train;
             }
             // フォールバック: entityIdToTrainIdから取得（RAILWAYS全列車ループ回避）
             UUID cached = entityIdToTrainId.get(entity.getId());
             if (cached != null) {
-                Train t = com.simibubi.create.Create.RAILWAYS.trains.get(cached);
+                Train t = railways.trains.get(cached);
                 if (t != null) return t;
             }
             return null;

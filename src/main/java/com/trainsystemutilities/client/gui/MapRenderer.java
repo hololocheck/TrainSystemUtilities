@@ -176,96 +176,58 @@ public final class MapRenderer {
             g.fill(sx - 2, sy - 2, sx + 2, sy + 2, color);
         }
         for (var train : mapTrains) {
-            // 各車両のボギー位置を取得して描画 (curve 追従 + 可変長対応)。
-            // live train が取得できない場合のみ、旧 fallback (worldX/Z + 固定長) を使う。
-            boolean rendered = false;
-            float headSx = 0, headSy = 0;
-
+            // server broadcast の TrainPositionsData の host (= 実 leading bogey 位置) を lerp 平滑化して
+            // 滑らかに動かす。 無ければ 1秒同期の worldX/Z を使う。 Never a live bogey: that read the server's train
+            // (Create.RAILWAYS) from the render thread - single-player only; on a dedicated server it found nothing
+            // and this path drew every train.
+            double targetX = train.worldX(), targetZ = train.worldZ();
             if (train.id() != null) {
-                try {
-                    var optTrain = TrackNetworkScanner.getTrainById(train.id());
-                    if (optTrain.isPresent() && !optTrain.get().carriages.isEmpty()) {
-                        var live = optTrain.get();
-                        for (var c : live.carriages) {
-                            var lead = c.leadingBogey();
-                            if (lead == null || lead.getAnchorPosition() == null) continue;
-                            var leadPos = lead.getAnchorPosition();
-                            var trail = c.trailingBogey();
-                            var trailPos = (trail != null && trail != lead && trail.getAnchorPosition() != null)
-                                    ? trail.getAnchorPosition() : leadPos;
-
-                            float lsx = (float)(centerSX + (leadPos.x + mapPanX) * mapZoom);
-                            float lsy = (float)(centerSY + (leadPos.z + mapPanZ) * mapZoom);
-                            float tsx = (float)(centerSX + (trailPos.x + mapPanX) * mapZoom);
-                            float tsy = (float)(centerSY + (trailPos.z + mapPanZ) * mapZoom);
-
-                            drawCarriageIcon(g, lsx, lsy, tsx, tsy);
-
-                            // 先頭車両の中心を train name 表示位置として記録
-                            if (!rendered) {
-                                headSx = (lsx + tsx) * 0.5f;
-                                headSy = (lsy + tsy) * 0.5f;
-                                rendered = true;
-                            }
-                        }
-                    }
-                } catch (Exception e) { com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[MgmtScreen] GUI op failed", e); }
+                var live = com.trainsystemutilities.client.transit.TransitTerminalClientCache
+                        .trainPositions().get(train.id());
+                if (live != null) { targetX = live.x(); targetZ = live.z(); }
             }
-
-            if (!rendered) {
-                // Fallback (live train が取れない = dedicated server で離れた列車等):
-                // server broadcast の TrainPositionsData の host (= 実 leading bogey 位置) を lerp 平滑化して
-                // 滑らかに動かす。 無ければ 1秒同期の worldX/Z を使う。
-                double targetX = train.worldX(), targetZ = train.worldZ();
-                if (train.id() != null) {
-                    var live = com.trainsystemutilities.client.transit.TransitTerminalClientCache
-                            .trainPositions().get(train.id());
-                    if (live != null) { targetX = live.x(); targetZ = live.z(); }
-                }
-                if (targetX == 0 && targetZ == 0) continue;
-                double headX = targetX, headZ = targetZ;
-                // 進行方向 (world): broadcast payload に角度が無いため、平滑化した移動ベクトルから
-                // heading を導出して保持する (= curve でアイコンが縦向き固定のままになる不具合の解消)。
-                // 停止中は動かないので最後に検出した向きを維持。 sm = {x, z, dirX, dirZ}。
-                double dirX = 0, dirZ = 1;   // default: 縦 (初回 / 未移動時)
-                if (train.id() != null) {
-                    double[] sm = smoothTrainPos.get(train.id());
-                    if (sm == null) sm = new double[]{targetX, targetZ, 0, 1};
-                    double nx = sm[0] + (targetX - sm[0]) * 0.2;   // 毎フレーム 0.2 ずつ目標へ glide
-                    double nz = sm[1] + (targetZ - sm[1]) * 0.2;
-                    double mvx = nx - sm[0], mvz = nz - sm[1];
-                    if (mvx * mvx + mvz * mvz > 1e-5) { sm[2] = mvx; sm[3] = mvz; } // 動いた時だけ heading 更新
-                    sm[0] = nx; sm[1] = nz;
-                    smoothTrainPos.put(train.id(), sm);
-                    headX = nx; headZ = nz;
-                    dirX = sm[2]; dirZ = sm[3];
-                }
-                float sx = (float)(centerSX + (headX + mapPanX) * mapZoom);
-                float sy = (float)(centerSY + (headZ + mapPanZ) * mapZoom);
-                // world 進行方向 (単位)。 各車両を head から後方 (heading の逆) へ world 間隔でずらし、
-                // それぞれ最寄り線路セグメント上へ snap して局所 tangent で向ける。 これで curve でも
-                // アイコンが線路パスからはみ出さず、両数に関わらずパスに沿う。
-                double wlen = Math.sqrt(dirX * dirX + dirZ * dirZ);
-                double uwx = wlen > 1e-6 ? dirX / wlen : 0.0;
-                double uwz = wlen > 1e-6 ? dirZ / wlen : 1.0;
-                double worldStep = 5.0 / Math.max(0.05, mapZoom); // 画面上 ~5px 相当の world 間隔
-                float carHalf = 2.5f;
-                for (int ci = 0; ci < train.carriageCount(); ci++) {
-                    double wx = headX - uwx * worldStep * ci;
-                    double wz = headZ - uwz * worldStep * ci;
-                    double cxw, czw, tgx, tgz;
-                    double[] snap = nearestTrackPoint(wx, wz, mapEdges, mapNodes);
-                    if (snap != null) { cxw = snap[0]; czw = snap[1]; tgx = snap[2]; tgz = snap[3]; }
-                    else { cxw = wx; czw = wz; tgx = dirX; tgz = dirZ; } // 線路情報が無ければ heading
-                    float cx = (float)(centerSX + (cxw + mapPanX) * mapZoom);
-                    float cy = (float)(centerSY + (czw + mapPanZ) * mapZoom);
-                    double tl = Math.sqrt(tgx * tgx + tgz * tgz);
-                    float tux = tl > 1e-6 ? (float)(tgx / tl) : 0f;
-                    float tuz = tl > 1e-6 ? (float)(tgz / tl) : 1f;
-                    drawCarriageIcon(g, cx + tux * carHalf, cy + tuz * carHalf,
-                                        cx - tux * carHalf, cy - tuz * carHalf);
-                }
-                headSx = sx; headSy = sy;
+            if (targetX == 0 && targetZ == 0) continue;
+            double headX = targetX, headZ = targetZ;
+            // 進行方向 (world): broadcast payload に角度が無いため、平滑化した移動ベクトルから
+            // heading を導出して保持する (= curve でアイコンが縦向き固定のままになる不具合の解消)。
+            // 停止中は動かないので最後に検出した向きを維持。 sm = {x, z, dirX, dirZ}。
+            double dirX = 0, dirZ = 1;   // default: 縦 (初回 / 未移動時)
+            if (train.id() != null) {
+                double[] sm = smoothTrainPos.get(train.id());
+                if (sm == null) sm = new double[]{targetX, targetZ, 0, 1};
+                double nx = sm[0] + (targetX - sm[0]) * 0.2;   // 毎フレーム 0.2 ずつ目標へ glide
+                double nz = sm[1] + (targetZ - sm[1]) * 0.2;
+                double mvx = nx - sm[0], mvz = nz - sm[1];
+                if (mvx * mvx + mvz * mvz > 1e-5) { sm[2] = mvx; sm[3] = mvz; } // 動いた時だけ heading 更新
+                sm[0] = nx; sm[1] = nz;
+                smoothTrainPos.put(train.id(), sm);
+                headX = nx; headZ = nz;
+                dirX = sm[2]; dirZ = sm[3];
+            }
+            float headSx = (float)(centerSX + (headX + mapPanX) * mapZoom);
+            float headSy = (float)(centerSY + (headZ + mapPanZ) * mapZoom);
+            // world 進行方向 (単位)。 各車両を head から後方 (heading の逆) へ world 間隔でずらし、
+            // それぞれ最寄り線路セグメント上へ snap して局所 tangent で向ける。 これで curve でも
+            // アイコンが線路パスからはみ出さず、両数に関わらずパスに沿う。
+            double wlen = Math.sqrt(dirX * dirX + dirZ * dirZ);
+            double uwx = wlen > 1e-6 ? dirX / wlen : 0.0;
+            double uwz = wlen > 1e-6 ? dirZ / wlen : 1.0;
+            double worldStep = 5.0 / Math.max(0.05, mapZoom); // 画面上 ~5px 相当の world 間隔
+            float carHalf = 2.5f;
+            for (int ci = 0; ci < train.carriageCount(); ci++) {
+                double wx = headX - uwx * worldStep * ci;
+                double wz = headZ - uwz * worldStep * ci;
+                double cxw, czw, tgx, tgz;
+                double[] snap = nearestTrackPoint(wx, wz, mapEdges, mapNodes);
+                if (snap != null) { cxw = snap[0]; czw = snap[1]; tgx = snap[2]; tgz = snap[3]; }
+                else { cxw = wx; czw = wz; tgx = dirX; tgz = dirZ; } // 線路情報が無ければ heading
+                float cx = (float)(centerSX + (cxw + mapPanX) * mapZoom);
+                float cy = (float)(centerSY + (czw + mapPanZ) * mapZoom);
+                double tl = Math.sqrt(tgx * tgx + tgz * tgz);
+                float tux = tl > 1e-6 ? (float)(tgx / tl) : 0f;
+                float tuz = tl > 1e-6 ? (float)(tgz / tl) : 1f;
+                drawCarriageIcon(g, cx + tux * carHalf, cy + tuz * carHalf,
+                                    cx - tux * carHalf, cy - tuz * carHalf);
             }
 
             if (train.id() != null) {   // #15: 列車の当たり判定 (先頭位置)

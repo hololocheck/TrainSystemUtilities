@@ -17,7 +17,7 @@ tags: [electrification, overview]
 
 观看从放置箱式变电站到列车靠受电弓取电行驶的完整流程（Manta 的内嵌视频功能）。
 
-```embed:youtube url=https://youtu.be/p5o8KkhweF8 title="Create Train Electrification"
+```embed:youtube url=https://youtu.be/p5o8KkhweF8 title="Create Train Electrification" url.ja=https://youtu.be/-oco9pSUWQ4 url.zh=https://youtu.be/L1cS29JTroY title.ja="TSU ガイド: Create の列車を電化する" title.zh="TSU 指南：Create 列车电气化"
 ```
 
 ## 导入流程

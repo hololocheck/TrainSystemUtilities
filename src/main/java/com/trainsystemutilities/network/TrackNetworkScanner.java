@@ -1,5 +1,6 @@
 package com.trainsystemutilities.network;
 
+import com.simibubi.create.content.trains.GlobalRailwayManager;
 import com.simibubi.create.content.trains.entity.Train;
 import com.simibubi.create.content.trains.graph.TrackGraph;
 import com.simibubi.create.content.trains.graph.TrackNode;
@@ -166,11 +167,13 @@ public class TrackNetworkScanner {
             }
 
             // 列車スキャン（ワールド座標付き）
-            int totalRailwaysTrains = com.simibubi.create.Create.RAILWAYS.trains.size();
+            // sided: the same side's trains as targetGraph (MonitorWorldRenderer scans with the client level)
+            var railways = com.simibubi.create.Create.RAILWAYS.sided(level);
+            int totalRailwaysTrains = railways.trains.size();
             int[] matchedCount = new int[]{0};
             int[] mismatchedCount = new int[]{0};
             int[] nullGraphCount = new int[]{0};
-            com.simibubi.create.Create.RAILWAYS.trains.forEach((id, train) -> {
+            railways.trains.forEach((id, train) -> {
                 if (train.graph == null) { nullGraphCount[0]++; return; }
                 if (train.graph != targetGraph) { mismatchedCount[0]++; return; }
                 matchedCount[0]++;
@@ -250,19 +253,25 @@ public class TrackNetworkScanner {
         return result;
     }
 
+    /** Any dimension, on the server's graphs: with no level there is no side to choose (its caller is server-side). */
     public static TrackGraph findGraphForPosition(BlockPos pos) {
-        return findGraphForPosition(null, pos);
+        return closestGraph(com.simibubi.create.Create.RAILWAYS, null, pos);
     }
 
     public static TrackGraph findGraphForPosition(Level level, BlockPos pos) {
-        if (com.simibubi.create.Create.RAILWAYS == null
-                || com.simibubi.create.Create.RAILWAYS.trackNetworks == null) return null;
+        // sided: MonitorWorldRenderer scans with the client level, where Create.RAILWAYS is the server's manager
+        // (empty on a dedicated server, or a single-player world's trains left in the same JVM)
+        return closestGraph(com.simibubi.create.Create.RAILWAYS.sided(level), level, pos);
+    }
+
+    private static TrackGraph closestGraph(GlobalRailwayManager railways, Level level, BlockPos pos) {
+        if (railways == null || railways.trackNetworks == null) return null;
 
         TrackGraph closest = null;
         double closestDist = 128 * 128;
 
         try {
-            for (TrackGraph graph : com.simibubi.create.Create.RAILWAYS.trackNetworks.values()) {
+            for (TrackGraph graph : railways.trackNetworks.values()) {
                 for (var nodeLoc : graph.getNodes()) {
                     if (level != null && !Objects.equals(level.dimension(), nodeLoc.getDimension())) continue;
                     var vec = nodeLoc.getLocation();

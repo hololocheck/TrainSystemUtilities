@@ -1809,103 +1809,57 @@ public class MonitorWorldRenderer {
             VectorRenderer.fillRect(vc, matrix, sx - signalIconSz, sy - signalIconSz, signalIconSz * 2, signalIconSz * 2, color);
         }
 
-        // 列車アイコン（クリップ内のみ、リアルタイム位置、車両数分の連結アイコン）
+        // 列車アイコン（クリップ内のみ、車両数分の連結アイコン）。 The position is the server's broadcast
+        // (TrainPositionsData's host, 1 Hz), never a live bogey: that read the server's train (Create.RAILWAYS) from the
+        // render thread - single-player only; on a dedicated server it found nothing and this path drew every train.
         for (var train : data.trains()) {
-            // 先頭位置と進行方向を取得
-            float headSx = 0, headSy = 0;
-            float dirX = 0, dirY = 1; // 進行方向（マップ座標系）
             int carriageCount = train.carriageCount();
-            boolean posFound = false;
+            // server broadcast を lerp 平滑化し、移動ベクトルから heading を導出。 各車両は最寄り線路セグメントへ
+            // snap して曲線に沿わせる (= 画面 MapRenderer の fallback と同方式)。
+            double tx = train.worldX(), tz = train.worldZ();
             if (train.id() != null) {
-                try {
-                    var opt = com.trainsystemutilities.network.TrackNetworkScanner.getTrainById(train.id());
-                    if (opt.isPresent() && !opt.get().carriages.isEmpty()) {
-                        // 先頭車両位置
-                        var leadBogey = opt.get().carriages.get(0).leadingBogey();
-                        if (leadBogey != null && leadBogey.getAnchorPosition() != null) {
-                            var lp = leadBogey.getAnchorPosition();
-                            headSx = (float)(centerSX + (lp.x - cx) * zoom);
-                            headSy = (float)(centerSY + (lp.z - cz) * zoom);
-                            posFound = true;
-                            // 末尾車両位置から進行方向を計算
-                            if (opt.get().carriages.size() >= 2) {
-                                var lastCarriage = opt.get().carriages.get(opt.get().carriages.size() - 1);
-                                var tailBogey = lastCarriage.trailingBogey() != null ? lastCarriage.trailingBogey() : lastCarriage.leadingBogey();
-                                if (tailBogey != null && tailBogey.getAnchorPosition() != null) {
-                                    var tp = tailBogey.getAnchorPosition();
-                                    float tailSx = (float)(centerSX + (tp.x - cx) * zoom);
-                                    float tailSy = (float)(centerSY + (tp.z - cz) * zoom);
-                                    float dx = tailSx - headSx, dy = tailSy - headSy;
-                                    float len = (float) Math.sqrt(dx * dx + dy * dy);
-                                    if (len > 0.01f) { dirX = dx / len; dirY = dy / len; }
-                                }
-                            }
-                        }
-                    }
-                } catch (Exception ignored) { com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[MonitorWorld] op failed", ignored); }
+                var live = com.trainsystemutilities.client.transit.TransitTerminalClientCache
+                        .trainPositions().get(train.id());
+                if (live != null) { tx = live.x(); tz = live.z(); }
             }
-            boolean fallbackMode = false;
-            double fbHeadX = 0, fbHeadZ = 0, fbUx = 0, fbUz = 1;
-            if (!posFound) {
-                // MP fallback: live train が取れない (dedicated server の未ロード列車等)。
-                // server broadcast (TrainPositionsData の host 1Hz) を lerp 平滑化し、移動ベクトルから
-                // heading を導出。 各車両は最寄り線路セグメントへ snap して曲線に沿わせる
-                // (= 画面 MapRenderer の fallback と同方式)。
-                double tx = train.worldX(), tz = train.worldZ();
-                if (train.id() != null) {
-                    var live = com.trainsystemutilities.client.transit.TransitTerminalClientCache
-                            .trainPositions().get(train.id());
-                    if (live != null) { tx = live.x(); tz = live.z(); }
-                }
-                if (tx == 0 && tz == 0) continue;
-                fbHeadX = tx; fbHeadZ = tz;
-                double dwx = 0, dwz = 1;
-                if (train.id() != null) {
-                    double[] sm = fallbackSmoothPos.get(train.id());
-                    if (sm == null) sm = new double[]{tx, tz, 0, 1};
-                    double nx = sm[0] + (tx - sm[0]) * 0.2;   // 毎フレーム 0.2 ずつ目標へ glide
-                    double nz = sm[1] + (tz - sm[1]) * 0.2;
-                    double mvx = nx - sm[0], mvz = nz - sm[1];
-                    if (mvx * mvx + mvz * mvz > 1e-5) { sm[2] = mvx; sm[3] = mvz; } // 動いた時だけ heading 更新
-                    sm[0] = nx; sm[1] = nz;
-                    fallbackSmoothPos.put(train.id(), sm);
-                    fbHeadX = nx; fbHeadZ = nz; dwx = sm[2]; dwz = sm[3];
-                }
-                double dl = Math.sqrt(dwx * dwx + dwz * dwz);
-                fbUx = dl > 1e-6 ? dwx / dl : 0.0;
-                fbUz = dl > 1e-6 ? dwz / dl : 1.0;
-                headSx = (float)(centerSX + (fbHeadX - cx) * zoom);
-                headSy = (float)(centerSY + (fbHeadZ - cz) * zoom);
-                fallbackMode = true;
+            if (tx == 0 && tz == 0) continue;
+            double fbHeadX = tx, fbHeadZ = tz;
+            double dwx = 0, dwz = 1;
+            if (train.id() != null) {
+                double[] sm = fallbackSmoothPos.get(train.id());
+                if (sm == null) sm = new double[]{tx, tz, 0, 1};
+                double nx = sm[0] + (tx - sm[0]) * 0.2;   // 毎フレーム 0.2 ずつ目標へ glide
+                double nz = sm[1] + (tz - sm[1]) * 0.2;
+                double mvx = nx - sm[0], mvz = nz - sm[1];
+                if (mvx * mvx + mvz * mvz > 1e-5) { sm[2] = mvx; sm[3] = mvz; } // 動いた時だけ heading 更新
+                sm[0] = nx; sm[1] = nz;
+                fallbackSmoothPos.put(train.id(), sm);
+                fbHeadX = nx; fbHeadZ = nz; dwx = sm[2]; dwz = sm[3];
             }
+            double dl = Math.sqrt(dwx * dwx + dwz * dwz);
+            double fbUx = dl > 1e-6 ? dwx / dl : 0.0;
+            double fbUz = dl > 1e-6 ? dwz / dl : 1.0;
+            float headSx = (float)(centerSX + (fbHeadX - cx) * zoom);
+            float headSy = (float)(centerSY + (fbHeadZ - cz) * zoom);
             if (headSx < clipX1 - trainIconSz * carriageCount || headSx > clipX2 + trainIconSz * carriageCount
                     || headSy < clipY1 - trainIconSz * carriageCount || headSy > clipY2 + trainIconSz * carriageCount) continue;
 
             // 車両数分のアイコンを進行方向に沿って連ねて描画
             float iconStep = trainIconSz * 1.8f; // アイコン間隔（少し重なるように密着）
-            if (fallbackMode) {
-                // 各車両を head から heading 逆方向へ world 間隔でずらし、線路セグメントへ snap
-                // (= curve でアイコンがパスからはみ出さない)。
-                double worldStep = iconStep / Math.max(1e-6, zoom);
-                for (int ci = 0; ci < carriageCount; ci++) {
-                    double wx2 = fbHeadX - fbUx * worldStep * ci;
-                    double wz2 = fbHeadZ - fbUz * worldStep * ci;
-                    double[] snap = com.trainsystemutilities.client.gui.MapRenderer
-                            .nearestTrackPoint(wx2, wz2, edges, nodes);
-                    double px2 = snap != null ? snap[0] : wx2;
-                    double pz2 = snap != null ? snap[1] : wz2;
-                    float isx = (float)(centerSX + (px2 - cx) * zoom);
-                    float isy = (float)(centerSY + (pz2 - cz) * zoom);
-                    if (isx < clipX1 || isx > clipX2 || isy < clipY1 || isy > clipY2) continue;
-                    VectorRenderer.fillRect(vc, matrix, isx - trainIconSz, isy - trainIconSz + 1, trainIconSz * 2, trainIconSz * 2 - 2, trainColor);
-                }
-            } else {
-                for (int ci = 0; ci < carriageCount; ci++) {
-                    float isx = headSx + dirX * iconStep * ci;
-                    float isy = headSy + dirY * iconStep * ci;
-                    if (isx < clipX1 || isx > clipX2 || isy < clipY1 || isy > clipY2) continue;
-                    VectorRenderer.fillRect(vc, matrix, isx - trainIconSz, isy - trainIconSz + 1, trainIconSz * 2, trainIconSz * 2 - 2, trainColor);
-                }
+            // 各車両を head から heading 逆方向へ world 間隔でずらし、線路セグメントへ snap
+            // (= curve でアイコンがパスからはみ出さない)。
+            double worldStep = iconStep / Math.max(1e-6, zoom);
+            for (int ci = 0; ci < carriageCount; ci++) {
+                double wx2 = fbHeadX - fbUx * worldStep * ci;
+                double wz2 = fbHeadZ - fbUz * worldStep * ci;
+                double[] snap = com.trainsystemutilities.client.gui.MapRenderer
+                        .nearestTrackPoint(wx2, wz2, edges, nodes);
+                double px2 = snap != null ? snap[0] : wx2;
+                double pz2 = snap != null ? snap[1] : wz2;
+                float isx = (float)(centerSX + (px2 - cx) * zoom);
+                float isy = (float)(centerSY + (pz2 - cz) * zoom);
+                if (isx < clipX1 || isx > clipX2 || isy < clipY1 || isy > clipY2) continue;
+                VectorRenderer.fillRect(vc, matrix, isx - trainIconSz, isy - trainIconSz + 1, trainIconSz * 2, trainIconSz * 2 - 2, trainColor);
             }
             // 列車名テキスト（先頭車両位置に表示）
             if (showText) {

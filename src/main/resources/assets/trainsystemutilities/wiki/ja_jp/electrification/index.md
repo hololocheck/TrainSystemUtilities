@@ -17,7 +17,7 @@ tags: [electrification, overview]
 
 キュービクルの設置から、パンタグラフで集めた電力で列車が走るまでの流れを、動画で確認できます（Manta のゲーム内動画機能）。
 
-```embed:youtube url=https://youtu.be/p5o8KkhweF8 title=列車の電化方法
+```embed:youtube url=https://youtu.be/p5o8KkhweF8 title=列車の電化方法 url.ja=https://youtu.be/-oco9pSUWQ4 url.zh=https://youtu.be/L1cS29JTroY title.zh="TSU 指南：Create 列车电气化"
 ```
 
 ## 導入の流れ

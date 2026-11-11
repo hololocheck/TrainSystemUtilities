@@ -17,7 +17,7 @@ This system carries power from an FE source on the ground to trains, through a s
 
 Watch the full flow from placing the Cubicle to a train running on the power its pantograph collects (Manta's embedded video feature).
 
-```embed:youtube url=https://youtu.be/p5o8KkhweF8 title="Create Train Electrification"
+```embed:youtube url=https://youtu.be/p5o8KkhweF8 title="Create Train Electrification" url.ja=https://youtu.be/-oco9pSUWQ4 url.zh=https://youtu.be/L1cS29JTroY title.ja="TSU ガイド: Create の列車を電化する" title.zh="TSU 指南：Create 列车电气化"
 ```
 
 ## How to set it up

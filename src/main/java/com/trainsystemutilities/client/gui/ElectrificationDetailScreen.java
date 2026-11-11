@@ -41,8 +41,8 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
 
     /** Car row 1 行の高さ (pixel)。 */
     private static final int ROW_H = 36;
-    /** Car ラベル列の幅。 */
-    private static final int LABEL_W = 70;
+    /** Car ラベル列の最小幅 (実際の幅は {@link #labelColumnWidth})。 */
+    static final int LABEL_W = 70;
     /** パンタクリック判定の半径。 */
     private static final int PANTO_HIT_R = 8;
 
@@ -154,50 +154,84 @@ public class ElectrificationDetailScreen extends JsonLayoutPlainScreen {
             return;
         }
 
+        var font = Minecraft.getInstance().font;
+        int labelW = labelColumnWidth(v.cars, s -> com.manta.api.text.MantaText.uiWidth(font, s));
         int rowY = y;
         for (TrainElectrificationView.Car car : v.cars) {
-            drawCarRow(g, x, rowY, w, ROW_H - 2, car);
+            drawCarRow(g, x, rowY, w, ROW_H - 2, car, labelW);
             rowY += ROW_H;
             if (rowY + ROW_H > y + h) break; // overflow
         }
     }
 
-    private void drawCarRow(GuiGraphics g, int x, int y, int w, int h, TrainElectrificationView.Car car) {
+    /** A row's second line in the label column, and its colour. */
+    record Line(String text, int color) {}
+
+    static String carLabel(TrainElectrificationView.Car car) {
+        return "Car #" + car.carriageIndex;
+    }
+
+    /** インバータ数バッジ。装飾版も合算してカウント表示。インバータの無い車両は null。 */
+    static String badge(TrainElectrificationView.Car car) {
+        int totalInverters = car.inverterCount + car.dummyInverterCount;
+        return totalInverters > 0 ? "⚡×" + totalInverters : null;
+    }
+
+    /** 2 行目: FE 残量 (機能版) / 装飾モード表示 (装飾版) / 状態表示 (それ以外)。 */
+    static Line secondLine(TrainElectrificationView.Car car) {
+        if (car.hasInverter) {
+            return new Line(String.format("%,d / %,d FE", car.storedEnergy, car.capacity),
+                    car.inContact ? 0xFFA5D6A7 : 0xFFFFD54F);
+        }
+        if (car.dummyInverterCount > 0) {
+            return new Line(Component.translatable("tsu.elec_detail.mode_decorative").getString(), 0xFFB39DDB);
+        }
+        if (!car.pantographs.isEmpty()) {
+            return new Line(Component.translatable("tsu.elec_detail.mode_panto_only").getString(), 0xFF80DEEA);
+        }
+        return new Line(Component.translatable("tsu.elec_detail.mode_no_power").getString(), 0xFF888888);
+    }
+
+    /** The label column is as wide as the widest of every row's two lines, plus a 4 px gap, and never narrower than
+     *  LABEL_W, so the side views, which line up, all start right of the text. At the fixed 70 a 5-digit FE ran under the
+     *  side view (measured on a real client, 2026-11-05: "12,345 / 50,000 FE"). */
+    static int labelColumnWidth(java.util.List<TrainElectrificationView.Car> cars,
+                                java.util.function.ToIntFunction<String> width) {
+        int column = LABEL_W;
+        for (TrainElectrificationView.Car car : cars) {
+            String badge = badge(car);
+            int first = width.applyAsInt(carLabel(car)) + (badge == null ? 0 : 6 + width.applyAsInt(badge));
+            int second = width.applyAsInt(secondLine(car).text());
+            column = Math.max(column, Math.max(first, second) + 4);
+        }
+        return column;
+    }
+
+    private void drawCarRow(GuiGraphics g, int x, int y, int w, int h, TrainElectrificationView.Car car, int labelW) {
         boolean anyInverter = car.hasInverter || car.dummyInverterCount > 0;
         // 行背景 (= 軽くハイライト)。装飾版は機能版と同じハイライト色で「インバータ車両」として見せる。
         int bg = anyInverter ? 0x402A4060 : 0x40404040;
         g.fill(x, y, x + w, y + h, bg);
         // ラベル + FE 残量を 1 行目に表示
         var font = Minecraft.getInstance().font;
-        String label = "Car #" + car.carriageIndex;
+        String label = carLabel(car);
         int labelColor = anyInverter ? 0xFF80DEEA : 0xFFAAAAAA;
         com.manta.api.text.MantaText.draw(g, font, label, x + 4, y + 4, labelColor);
 
-        // インバータ数バッジ (= ラベルの右隣)。装飾版も合算してカウント表示。
-        int totalInverters = car.inverterCount + car.dummyInverterCount;
-        if (totalInverters > 0) {
-            String invText = "⚡×" + totalInverters;
+        // インバータ数バッジ (= ラベルの右隣)。
+        String invText = badge(car);
+        if (invText != null) {
             int invX = x + 4 + com.manta.api.text.MantaText.uiWidth(font, label) + 6;
             com.manta.api.text.MantaText.draw(g, font, invText, invX, y + 4, 0xFFFFD54F);
         }
 
-        // 2 行目: FE 残量 (機能版) / 装飾モード表示 (装飾版) / 状態表示 (それ以外)
-        if (car.hasInverter) {
-            String feText = String.format("%,d / %,d FE", car.storedEnergy, car.capacity);
-            int feColor = car.inContact ? 0xFFA5D6A7 : 0xFFFFD54F;
-            com.manta.api.text.MantaText.draw(g, font, feText, x + 4, y + 16, feColor);
-        } else if (car.dummyInverterCount > 0) {
-            com.manta.api.text.MantaText.draw(g, font, Component.translatable("tsu.elec_detail.mode_decorative"), x + 4, y + 16, 0xFFB39DDB);
-        } else if (!car.pantographs.isEmpty()) {
-            com.manta.api.text.MantaText.draw(g, font, Component.translatable("tsu.elec_detail.mode_panto_only"), x + 4, y + 16, 0xFF80DEEA);
-        } else {
-            com.manta.api.text.MantaText.draw(g, font, Component.translatable("tsu.elec_detail.mode_no_power"), x + 4, y + 16, 0xFF888888);
-        }
+        Line second = secondLine(car);
+        com.manta.api.text.MantaText.draw(g, font, second.text(), x + 4, y + 16, second.color());
 
-        // 2D 車両ビュー: 右側の領域
-        int viewX = x + LABEL_W + 4;
+        // 2D 車両ビュー: 右側の領域 (ラベル列の右から)
+        int viewX = x + labelW + 4;
         int viewY = y + 4;
-        int viewW = w - LABEL_W - 8;
+        int viewW = w - labelW - 8;
         int viewH = h - 8;
         drawCarSideView(g, viewX, viewY, viewW, viewH, car);
     }

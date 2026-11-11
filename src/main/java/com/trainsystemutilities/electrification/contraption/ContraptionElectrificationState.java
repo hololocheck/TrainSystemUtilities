@@ -3,9 +3,12 @@ package com.trainsystemutilities.electrification.contraption;
 import com.manta.api.util.concurrent.MutableIntCell;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.trains.entity.CarriageContraptionEntity;
+import com.trainsystemutilities.electrification.block.FEInverterBlock;
 import com.trainsystemutilities.registry.ModBlocks;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +31,9 @@ import java.util.concurrent.ConcurrentMap;
 public final class ContraptionElectrificationState {
 
     public static final class Info {
-        /** contraption 内ローカル座標で登録された FE インバータ位置 (= 機能版)。 */
+        /** contraption 内ローカル座標で登録された FE インバータ位置 (= 機能版)。
+         *  One entry per inverter, at its CENTER ({@link ContraptionElectrificationState#addInverter}); the same for
+         *  {@link #dummyInverters}. */
         public final Set<BlockPos> inverters = ConcurrentHashMap.newKeySet();
         /** contraption 内ローカル座標で登録された装飾版 FE インバータ位置。
          *  機能版と違い FE バッファとして動作せず、UI 上で「インバータあり」扱いするためだけに使う。
@@ -115,6 +120,8 @@ public final class ContraptionElectrificationState {
          *  これを防ぐため (trainId, carriageIndex) ペアの永続キーで PERSISTENT_ENERGY map と
          *  紐付ける。 */
         private volatile long persistentKey = 0L;
+        /** The car's FE came from {@link #PERSISTENT_ENERGY}, which an inverter's NBT must not overwrite. */
+        private volatile boolean energyRestored = false;
 
         /** UI ゲート判定: 機能版 / 装飾版いずれかのインバータがあるか。 */
         public boolean hasAnyInverterType() {
@@ -131,7 +138,10 @@ public final class ContraptionElectrificationState {
         public void bindToCarriage(long key) {
             this.persistentKey = key;
             Integer stored = PERSISTENT_ENERGY.get(key);
-            if (stored != null) setStoredEnergy(stored);
+            if (stored != null) {
+                setStoredEnergy(stored);
+                energyRestored = true;
+            }
         }
 
         public int receive(int amount) {
@@ -234,9 +244,31 @@ public final class ContraptionElectrificationState {
 
     private ContraptionElectrificationState() {}
 
-    public static void registerInverter(Contraption c, BlockPos localPos) {
-        if (c == null || localPos == null) return;
-        getOrCreate(c).inverters.add(localPos.immutable());
+    /** Registers the block whose actor starts, when it is the inverter ({@link #addInverter}); true when it was. The car
+     *  starts with the FE the inverter held as a block (user decision 2026-11-05: until then an assembled train started
+     *  at 0 whatever its inverter held). */
+    public static boolean registerInverter(Contraption c, BlockPos localPos, BlockState state) {
+        if (c == null || localPos == null || state == null) return false;
+        var block = c.getBlocks().get(localPos);
+        return addInverter(getOrCreate(c), localPos.immutable(), state.getValue(FEInverterBlock.PART),
+                block == null ? null : block.nbt());
+    }
+
+    /** Adds an FE inverter's block to a car; true when added. One inverter is three blocks of one block, and only the
+     *  CENTER, the part with the block entity, is the inverter: counting HEAD and TAIL too made one inverter three and
+     *  seeded the FE from a part with no NBT (measured on a real client, 2026-11-05). The car's FE is seeded from the
+     *  canonical first inverter's NBT, the one {@link #persistEnergyToInverterNbt} writes back, unless it was restored
+     *  from {@link #PERSISTENT_ENERGY}. */
+    static boolean addInverter(Info info, BlockPos pos, FEInverterBlock.Part part, CompoundTag nbt) {
+        if (part != FEInverterBlock.Part.CENTER) return false;
+        info.inverters.add(pos);
+        if (!info.energyRestored && pos.equals(info.firstInverterPos())) info.setStoredEnergy(energyIn(nbt));
+        return true;
+    }
+
+    /** The FE an inverter's block entity NBT holds, within a car's capacity; 0 without it. */
+    private static int energyIn(CompoundTag nbt) {
+        return nbt != null && nbt.contains("Energy") ? Math.max(0, Math.min(Info.CAPACITY, nbt.getInt("Energy"))) : 0;
     }
 
     public static void unregisterInverter(Contraption c, BlockPos localPos) {
@@ -247,10 +279,17 @@ public final class ContraptionElectrificationState {
         cleanupIfEmpty(c, info);
     }
 
-    /** 装飾版インバータの登録。{@link #registerInverter} と違い FE 集電/維持の対象外。 */
-    public static void registerDummyInverter(Contraption c, BlockPos localPos) {
-        if (c == null || localPos == null) return;
-        getOrCreate(c).dummyInverters.add(localPos.immutable());
+    /** 装飾版インバータの登録。{@link #registerInverter} と違い FE 集電/維持の対象外。 Held at its CENTER, as an inverter. */
+    public static boolean registerDummyInverter(Contraption c, BlockPos localPos, BlockState state) {
+        if (c == null || localPos == null || state == null) return false;
+        return addDummyInverter(getOrCreate(c), localPos.immutable(), state.getValue(FEInverterBlock.PART));
+    }
+
+    /** {@link #addInverter} for a dummy inverter, which holds no FE. */
+    static boolean addDummyInverter(Info info, BlockPos pos, FEInverterBlock.Part part) {
+        if (part != FEInverterBlock.Part.CENTER) return false;
+        info.dummyInverters.add(pos);
+        return true;
     }
 
     public static void unregisterDummyInverter(Contraption c, BlockPos localPos) {
@@ -317,9 +356,7 @@ public final class ContraptionElectrificationState {
         // persist 経路 ({@link #persistEnergyToInverterNbt}) は 1 つの inverter NBT にしか
         // 書き戻さないため、 secondary inverter NBT に過去の高値が残ると Math.max が
         // それを採用して duplication 発生。 canonical first (= pos.asLong 最小) のみから
-        // seed することで persist/load の対称性を確保。
-        BlockPos firstInverterPos = null;
-        int firstInverterEnergy = 0;
+        // seed することで persist/load の対称性を確保 (= addInverter)。
         try {
             for (var entry : c.getBlocks().entrySet()) {
                 BlockPos pos = entry.getKey();
@@ -327,16 +364,9 @@ public final class ContraptionElectrificationState {
                 if (blockInfo == null || blockInfo.state() == null) continue;
                 Block block = blockInfo.state().getBlock();
                 if (block == inverterBlock) {
-                    BlockPos immut = pos.immutable();
-                    info.inverters.add(immut);
-                    if (firstInverterPos == null || immut.asLong() < firstInverterPos.asLong()) {
-                        firstInverterPos = immut;
-                        var nbt = blockInfo.nbt();
-                        firstInverterEnergy = (nbt != null && nbt.contains("Energy"))
-                                ? Math.max(0, Math.min(Info.CAPACITY, nbt.getInt("Energy"))) : 0;
-                    }
+                    addInverter(info, pos.immutable(), blockInfo.state().getValue(FEInverterBlock.PART), blockInfo.nbt());
                 } else if (block == dummyInverterBlock) {
-                    info.dummyInverters.add(pos.immutable());
+                    addDummyInverter(info, pos.immutable(), blockInfo.state().getValue(FEInverterBlock.PART));
                 } else if (block == pantographBlock) {
                     info.pantographs.add(pos.immutable());
                     // BE NBT の Deployed フィールドから初期状態を復元
@@ -350,7 +380,6 @@ public final class ContraptionElectrificationState {
             com.trainsystemutilities.TrainSystemUtilities.LOGGER.debug("[Electrify] contraption scan failed", ex);
             // 走査失敗時は空 Info を返す (= 電化なしとして扱う)
         }
-        info.setStoredEnergy(firstInverterEnergy);
         return info;
     }
 

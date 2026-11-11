@@ -19,7 +19,8 @@ public class FEInverterMovementBehaviour implements MovementBehaviour {
 
     @Override
     public void startMoving(MovementContext context) {
-        ContraptionElectrificationState.registerInverter(context.contraption, context.localPos);
+        // Create starts an actor for each of the inverter's three blocks; only the CENTER's registers it.
+        if (!ContraptionElectrificationState.registerInverter(context.contraption, context.localPos, context.state)) return;
         TrainSystemUtilities.LOGGER.info(
                 "[Electrification] FEInverter assembled at local {}", context.localPos);
     }

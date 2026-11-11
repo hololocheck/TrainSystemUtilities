@@ -42,6 +42,12 @@ public class MonitorBlockEntity extends BlockEntity {
     }
 
     @Override
+    public void setLevel(Level level) {
+        super.setLevel(level);
+        ClientBlockEntityChunks.MONITORS.joined(this, level);   // MonitorWorldRenderer walks only their chunks
+    }
+
+    @Override
     public void setRemoved() {
         super.setRemoved();
         // 描画側のグループキャッシュ (CSSWorldRenderer / アニメ状態) を破棄してメモリリーク防止。

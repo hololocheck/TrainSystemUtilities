@@ -9,13 +9,16 @@ import com.manta.api.world.CSSWorldRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.trainsystemutilities.TrainSystemUtilities;
+import com.trainsystemutilities.blockentity.ClientBlockEntityChunks;
 import com.trainsystemutilities.blockentity.LineSymbol;
 import com.trainsystemutilities.structure.block.StationNameSignBlock;
 import com.trainsystemutilities.structure.blockentity.StationNameSignBlockEntity;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -197,12 +200,18 @@ public class StationSignWorldRenderer {
 
     private static List<BlockEntity> nearbySigns(Level level, BlockPos center) {
         List<BlockEntity> result = new ArrayList<>();
+        // Only the chunks that hold a client sign: walking every block entity around the player every frame cost
+        // 1 - 11 % of the render thread (with the poster and monitor walks) with 1000 other mods' block entities nearby
+        // and no sign at all (measured 2026-11-11).
+        LongSet holding = ClientBlockEntityChunks.STATION_SIGNS.chunksHolding(level);
+        if (holding == null) return result;
         Set<Long> checked = new HashSet<>();
         for (int x = -SCAN_RANGE; x <= SCAN_RANGE; x += 16) {
             for (int z = -SCAN_RANGE; z <= SCAN_RANGE; z += 16) {
                 BlockPos cp = center.offset(x, 0, z);
                 long ck = ((long) (cp.getX() >> 4) << 32) | ((long) (cp.getZ() >> 4) & 0xFFFFFFFFL);
                 if (!checked.add(ck)) continue;
+                if (!holding.contains(ChunkPos.asLong(cp.getX() >> 4, cp.getZ() >> 4))) continue;
                 var chunk = level.getChunkAt(cp);
                 if (chunk == null) continue;
                 for (BlockEntity be : chunk.getBlockEntities().values()) {

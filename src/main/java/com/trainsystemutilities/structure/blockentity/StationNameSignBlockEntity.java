@@ -69,6 +69,13 @@ public class StationNameSignBlockEntity extends BlockEntity implements GeoBlockE
         super(ModBlockEntities.STATION_NAME_SIGN.get(), pos, state);
     }
 
+    @Override
+    public void setLevel(Level level) {
+        super.setLevel(level);
+        // StationSignWorldRenderer walks only the chunks that hold a client sign
+        com.trainsystemutilities.blockentity.ClientBlockEntityChunks.STATION_SIGNS.joined(this, level);
+    }
+
     // --- Geckolib (静的モデル) ---
 
     @Override

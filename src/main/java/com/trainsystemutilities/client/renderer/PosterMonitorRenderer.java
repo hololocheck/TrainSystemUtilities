@@ -410,12 +410,17 @@ public class PosterMonitorRenderer {
 
     private static List<BlockEntity> getPosterBlockEntities(Level level, BlockPos center, int range) {
         List<BlockEntity> result = new ArrayList<>();
+        // Only the chunks that hold a client poster manager (see StationSignWorldRenderer.nearbySigns, measured 2026-11-11).
+        it.unimi.dsi.fastutil.longs.LongSet holding =
+                com.trainsystemutilities.blockentity.ClientBlockEntityChunks.POSTER_MANAGERS.chunksHolding(level);
+        if (holding == null) return result;
         Set<Long> checked = new HashSet<>();
         for (int x = -range; x <= range; x += 16) {
             for (int z = -range; z <= range; z += 16) {
                 BlockPos cp = center.offset(x, 0, z);
                 long key = ((long)(cp.getX() >> 4) << 32) | ((long)(cp.getZ() >> 4) & 0xFFFFFFFFL);
                 if (!checked.add(key)) continue;
+                if (!holding.contains(net.minecraft.world.level.ChunkPos.asLong(cp.getX() >> 4, cp.getZ() >> 4))) continue;
                 var chunk = level.getChunkAt(cp);
                 if (chunk != null) {
                     for (BlockEntity be : chunk.getBlockEntities().values()) {

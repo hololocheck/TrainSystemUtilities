@@ -128,6 +128,12 @@ public class PosterManagementBlockEntity extends BlockEntity
         super(ModBlockEntities.POSTER_MANAGEMENT.get(), pos, state);
     }
 
+    @Override
+    public void setLevel(Level level) {
+        super.setLevel(level);
+        ClientBlockEntityChunks.POSTER_MANAGERS.joined(this, level);   // PosterMonitorRenderer walks only their chunks
+    }
+
     // --- Geckolib (= 静的モデル。 カード有無で bone 表示 / status LED テクスチャを切替) ---
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
